@@ -146,7 +146,7 @@ function render(){
   $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${t.cat}</span></button>`).join('');
   document.querySelectorAll('.tb').forEach(b => b.onclick = () => openPicker(firstEmpty(), b.dataset.cat === '홈' ? null : b.dataset.cat));
   paintIcons();
-  if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; showDialog(); }
+  if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; $('dialog').hidden = true; }
 }
 function setPlan(i, id){
   const p = S.plan;

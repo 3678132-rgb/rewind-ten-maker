@@ -63,7 +63,7 @@ function renderWiz(){
 // 활동이 올려 주는 것을 미리 보여 주는 태그 (고르기 전에 알 수 있게)
 function actTags(S, id, max){
   const a = ACTS[id]; let eff = a.eff || {}, pay = a.pay, hp = a.hp || 0, st = a.stress || 0;
-  if(id === 'job' && S.hired){ const j = jobOf(S); eff = j.eff; pay = j.pay; hp = -j.hp; st = j.stress; }
+  if(id === 'job' && S.hired){ const j = jobOf(S); eff = j.eff; pay = payOf(S); hp = -j.hp; st = j.stress; }
   if(id === 'intern' && CAREERS[S.interest]) eff = Object.assign({}, eff, CAREERS[S.interest].eff);
   const out = [], ent = Object.entries(eff).filter(([k, v]) => v > 0 && LABEL[k]).sort((x, y) => y[1] - x[1]);
   for(const [k] of ent.slice(0, 3)) out.push({t:LABEL[k] + '▲', c:'up'});
@@ -102,6 +102,7 @@ const ICONS = {
   money:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.2 1.2-2 2.5-2s2.5.8 2.5 2-1.2 1.7-2.5 2-2.5.8-2.5 2 1.2 2 2.5 2 2.5-.8 2.5-2"/></svg>',
   rest:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
   self:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>',
+  shop:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M5 8h14l-1.2 11H6.2zM9 8V6a3 3 0 0 1 6 0v2"/></svg>',
   heart:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 4.3 2.4h2c.8-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>',
 };
 function paintIcons(){ document.querySelectorAll('[data-icon]').forEach(el => { if(!el.dataset.painted){ el.innerHTML = ICONS[el.dataset.icon] || ''; el.dataset.painted = '1'; } }); }
@@ -139,7 +140,8 @@ function render(){
     const id = S.plan[i];
     if(id === '>') return `<button class="slot3 cont" disabled><small>${SLOT_NAMES[i]}</small><b>↳ 이어서</b></button>`;
     if(!id) return `<button class="slot3 ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>＋ 비어 있음</b></button>`;
-    return `<button class="slot3 filled ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>${ACTS[id].icon} ${actName(S, id)}</b></button>`;
+    const who = id === 'date' && S.dateTo && S.dateTo[i] && LOVERS[S.dateTo[i]] ? ' · ' + LOVERS[S.dateTo[i]].name : '';
+    return `<button class="slot3 filled ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>${ACTS[id].icon} ${actName(S, id)}${who}</b></button>`;
   }).join('');
   document.querySelectorAll('.slot3[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   const go = $('btn-go'); go.textContent = full ? '이번 달 시작' : '스케줄 정하기'; go.classList.toggle('ready', full);
@@ -149,12 +151,21 @@ function render(){
   if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; $('dialog').hidden = true; }
 }
 function setPlan(i, id){
-  const p = S.plan;
+  const p = S.plan; if(S.dateTo) S.dateTo[i] = null;
   const clear = j => { if(p[j] === '>'){ p[j] = null; if(p[j - 1] && ACTS[p[j - 1]] && ACTS[p[j - 1]].slots === 2) p[j - 1] = null; } else if(p[j] && ACTS[p[j]].slots === 2){ p[j] = null; p[j + 1] = null; } else p[j] = null; };
   clear(i); const a = ACTS[id];
   if(a.slots === 2){ clear(i + 1); p[i] = id; p[i + 1] = '>'; } else p[i] = id;
 }
 const sheetHead = (t, sub) => `<div class="sh-head"><b>${t}</b><button class="sh-x" id="x" aria-label="닫기">×</button></div>${sub ? `<div class="sub" style="margin-bottom:8px">${sub}</div>` : ''}`;
+// 데이트 상대 고르기: 여러 명을 동시에 만날 수 있다. 공식 연인이 있는데 다른 사람을 고르면 몰래 만나는 것
+function chooseDate(slot, ts, done, back){
+  const off = officialOf(S);
+  const rows = ts.sort((a, b) => S.love[b].aff - S.love[a].aff).map(id => { const lv = LOVERS[id], v = S.love[id], secret = off && off !== id;
+    return `<button class="lcard" data-id="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '썸'}${secret ? ' 🤫' : ''}</b><small>${secret ? `${esc(LOVERS[off].name)} 몰래 만나요 · 들킬 위험이 쌓여요` : esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">💞</span></button>`; }).join('');
+  openSheet(sheetHead('누구와 데이트할까요?', `${SLOT_NAMES[slot]} 칸 · 여러 명을 동시에 만날 수도 있어요`) + rows);
+  $('x').onclick = () => { back(); };
+  document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done(b.dataset.id));
+}
 function openPicker(i, cat){
   activeSlot = i;
   if(S.plan[i] === '>') i = activeSlot = i - 1;
@@ -175,10 +186,11 @@ function openPicker(i, cat){
     $('b-auto').onclick = () => { S.plan = autoPlan(); save(); closeSheet(); render(); };
     $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
+    const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
-      setPlan(activeSlot, b.dataset.id); save();
-      const nx = S.plan.findIndex(x => !x);
-      if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); }
+      const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
+      if(ts.length > 1){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
+      setPlan(slot, id); placed();
     });
   };
   draw();
@@ -206,7 +218,7 @@ function showCareer(){
   const m = majorOf(S);
   const list = CAREER_IDS.map(id => { const c = CAREERS[id], p = fitP(S, id), cur = S.track === id;
     return `<div class="kv"><span>${c.icon} ${c.name}${cur ? ' ✔' : ''}${m.fav.includes(id) ? ' ★' : ''}<br><small class="sub">${c.company}</small></span><b>${cur && S.hired ? rankName(S) : fitLabel(p)}</b></div>`; }).join('');
-  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${jobOf(S).pay}만</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
+  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
   $('x').onclick = closeSheet;
 }
 function showLove(){
@@ -214,10 +226,18 @@ function showLove(){
   const row = id => { const lv = LOVERS[id], v = S.love[id];
     if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
-    return `<button class="lcard" data-call="${id}" ${callable ? '' : 'disabled'}><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">${callable ? '📞' : '·'}</span></button>`; };
+    const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫 비밀' : '') + (S.partner === id && v.stage >= 1 ? ' ❤ 공식' : '');
+    return `<button class="lcard" data-call="${id}" ${callable ? '' : 'disabled'}><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">${callable ? '📞' : '·'}</span></button>`; };
   openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화해요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async () => { const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+}
+function showShop(){
+  const rows = Object.keys(ITEMS).map(id => { const it = ITEMS[id], n = owned(S, id), cap = it.stack || 1, full = n >= cap, poor = S.cash < it.price;
+    return `<button class="act ${full ? '' : ''}" data-id="${id}" ${full || poor ? 'disabled' : ''}><span class="top"><span class="ic">${it.icon}</span><b>${it.name}</b></span><span class="em">${it.price}만원${it.stack ? ` · ${n}/${cap}` : n ? ' · 보유' : ''}</span><span class="${full || !poor ? 'd' : 'why'}">${full ? (it.stack ? '더 살 수 없어요' : '이미 가지고 있어요') : poor ? '자금이 모자라요' : it.desc}</span></button>`; }).join('');
+  openSheet(sheetHead('상점', `자금 ${fmtMoney(S.cash)} · 소지품은 매달 효과가 나타나요`) + `<div class="acts">${rows}</div>`);
+  $('x').onclick = () => { closeSheet(); render(); };
+  document.querySelectorAll('#sheet .act').forEach(b => b.onclick = () => { const r = buyItem(S, b.dataset.id); if(r){ toast(r); return; } save(); toast(`${ITEMS[b.dataset.id].name} 구입!`); showShop(); });
 }
 function showDex(){
   const seen = store(ENDINGS_KEY) || [];
@@ -281,7 +301,8 @@ function showAct(slotName, id, out){
     if(!sp){ card(); return; }
     // 1) 계절 배경 + 움직이는 2.5등신 캐릭터, 2) 탭하거나 잠시 뒤 결과 카드
     el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
-    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${sp}_a.webp" alt=""><img class="fb" src="art/chibi/${sp}_b.webp" alt=""></div><div class="shint">${a.icon} ${esc(actName(S, id))} 중…</div>`;
+    const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
+    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div><div class="shint">${a.icon} ${esc(actName(S, id))} 중…</div>`;
     el.classList.add('on'); let done = false;
     const go = () => { if(done) return; done = true; clearTimeout(t); card(); };
     const t = setTimeout(go, 2300); el.onclick = go;
@@ -292,7 +313,7 @@ async function runMonth(){
   for(let i = 0; i < 3; i++){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
-    const out = doAction(S, id); i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    S.curDate = S.dateTo && S.dateTo[first] || null; const out = doAction(S, id); S.curDate = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     await showAct(SLOT_NAMES[first], id, out);
     if(out.burnout) break;
   }
@@ -330,8 +351,8 @@ function initGame(){
   $('b-call').onclick = openPhone;
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
-  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div>`);
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__</div>`);
     $('x').onclick = closeSheet;
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
@@ -340,3 +361,14 @@ initTitle(); initGame(); paintIcons();
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
+
+// 아이폰 전체 화면(홈 화면 앱·전체 화면 모드)에서는 innerHeight가 아래 안전 영역을 빼고 줄 때가 있어, 실제 화면 높이로 맞춘다
+function fitFull(){
+  try{
+    const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+    const app = $('app'), mobile = Math.min(screen.width, screen.height) < 600;
+    if(standalone && mobile){ const h = Math.max(window.innerHeight, screen.width > screen.height ? screen.width : screen.height); app.style.bottom = 'auto'; app.style.height = h + 'px'; }
+    else { app.style.bottom = ''; app.style.height = ''; }
+  }catch(e){}
+}
+fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 200));

@@ -11,6 +11,7 @@ const LOVE_VOICE = {
   seunghyun:{warm:'“카메라 밖의 네가 제일 좋아요.”', tease:'“이번엔 내가 대본 없이 말해 볼게요.”', sorry:'“괜히 불안하게 했죠.”'},
   geonwoo:  {warm:'“오늘 하루의 마지막이 너라서 좋다.”', tease:'“이의 있습니다. 반론은 저녁 먹고.”', sorry:'“내가 너무 원칙만 따졌네요.”'},
   yuchan:   {warm:'“네가 있으면 에러도 귀여워.”', tease:'“재부팅하면 기분이 풀릴까?”', sorry:'“알림 꺼 놓고 있었네. 미안.”'},
+  raon:     {warm:'“무대 위에서도, 밖에서도 네가 제일 먼저 떠올라요.”', tease:'“사인해 드릴까요? 오늘만 특별히 공짜예요.”', sorry:'“스케줄 때문에 또 늦었어요. 미안해요.”'},
   ujin:     {warm:'“네 손끝의 색이 좋아요.”', tease:'“이 천은 안 어울리는데, 너는 어울려요.”', sorry:'“또 작업에만 빠졌어요.”'},
 };
 const hasP = S => !!S.partner && !!S.love[S.partner] && S.love[S.partner].stage >= 1;

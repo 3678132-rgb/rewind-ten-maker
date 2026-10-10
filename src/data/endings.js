@@ -1,5 +1,5 @@
 // 엔딩 판정과 텍스트 (ENGINE 구간 안, DOM 금지)
-const FREE_MIN = 50, FREE_SUM = 190;
+const FREE_MIN = 50, FREE_SUM = 193;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
 function finalPillars(S){
@@ -15,7 +15,7 @@ function computeEnding(S){
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};
   if(isFree(P)){
     if(CAREERS[S.track] && S.hired && P.work >= 62 && !inLawSchool(S)) return 'free_' + S.track;
-    if(S.engaged && P.bond >= 70) return 'free_home';
+    if((S.engaged || S.married) && P.bond >= 70) return 'free_home';
     if(P.self >= 75) return 'free_soul';
     return 'free_balance';
   }

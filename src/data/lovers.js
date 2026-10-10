@@ -104,6 +104,15 @@ LOVERS.ujin = {id:'ujin', career:'designer', name:'신우진', age:'31', job:'�
       {label:'함께 입장문을 낸다', sub:'호감 +6 · 관계 +2', run(S, v, ch){ addAff(S, 'ujin', 6, ch); fx(S, {bond:2, stress:4}, ch); return '둘의 이름이 나란히 적힌 입장문이 나갔다. 비난 속에서도 그의 손이 내 손을 놓지 않았다.'; }},
       {label:'내가 책임지고 도안을 내린다', sub:'일 -3 · 호감 +4', run(S, v, ch){ addAff(S, 'ujin', 4, ch); fx(S, {work:-3, self:2}, ch); return '“내가 할게.” 도안은 내려갔고 평판은 조금 흔들렸다. 우진은 말없이 내 어깨를 오래 안았다.'; }},
     ]}};
+LOVERS.raon = {id:'raon', name:'강라온', age:'24', job:'인기 아이돌 · 5인조 그룹 센터', like:'charm', meet:40,
+  intro:'음악방송 대기실 복도에서 마스크를 쓴 청년과 부딪혔다. 모자 아래로 보이는 라일락빛 머리카락. TV 속에서만 보던 아이돌 라온이었다. “죄송해요… 혹시 지금 본 거, 비밀로 해 주실래요?”',
+  dateLines:['마스크와 모자로 꽁꽁 싸맨 그가 포장마차 구석에 앉아 어묵을 호호 불었다. “이렇게 평범하게 먹는 거 오랜만이에요.”', '심야 편의점 앞 벤치. 그가 이어폰 한쪽을 내 귀에 꽂아 주었다. 아직 발매 전인 노래가 흘러나왔다.', '무대 뒤편에서 몰래 만났다. 화려한 조명 아래의 그가 아니라, 땀에 젖은 머리를 쓸어 올리는 평범한 스물넷의 얼굴이었다.'],
+  trial:{title:'열애 의혹', text:'새벽, 소속사 실장이 급하게 전화를 걸었다. 우리가 함께 있는 사진이 커뮤니티에 올라왔다. 라온의 컴백을 앞둔 시기다. 팬들의 댓글이 불길처럼 번지고 있다.',
+    choices:[
+      {label:'그의 곁에서 함께 견딘다', sub:'관계 +4 · 스트레스 + · 호감 +6', run(S, v, ch){ addAff(S, 'raon', 6, ch); fx(S, {bond:4, stress:9, self:1}, ch); return '“저는 이 사람을 좋아합니다.” 라온이 직접 올린 짧은 글이 화제가 되었다. 한동안 악플이 이어졌지만 그의 손은 한 번도 놓이지 않았다.'; }},
+      {label:'잠시 거리를 두자고 한다', sub:'호감 -6 · 스트레스 +4', run(S, v, ch){ addAff(S, 'raon', -6, ch); fx(S, {stress:4, self:2}, ch); return '“컴백 끝날 때까지만.” 그는 입술을 깨물며 고개를 끄덕였다. 약속은 지켜질까. 휴대폰 속 마지막 메시지가 오래 마음에 남았다.'; }},
+      {label:'조용히 사진을 내려 달라고 부탁한다', sub:'스트레스 +3', run(S, v, ch){ fx(S, {stress:3, work:1}, ch); return '소속사 쪽에서 신속하게 정리해 주었다. 해결은 되었지만 우리 사이엔 보이지 않는 선이 하나 더 생겼다.'; }},
+    ]}};
 const LOVER_IDS = Object.keys(LOVERS);
 
 function meetEvent(S, id){
@@ -140,7 +149,7 @@ function proposeEvent(S, id){
   return {id:'propose_' + id, lover:id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}${id === 'jaewoo' ? '가' : '이'} 작은 상자를 열었다. “우리, 같이 살자.” 마흔의 나는 이 질문 뒤의 이십 년을 안다. 지금의 나는 어떤 대답을 하고 싶은가.`,
     choices:[
-      {label:'응, 약속해', sub:'결혼 약속 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 2; S.engaged = true; fx(S, {bond:7, stress:-8}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼을 약속함`); return {text:'반지가 손가락에 들어갔다. 이번에는 도장이 아니라 손을 잡았다.', chips:ch}; }},
+      {label:'응, 약속해', sub:'결혼 약속 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 2; S.engaged = true; v.engagedAt = S.m; fx(S, {bond:7, stress:-8}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼을 약속함`); return {text:'반지가 손가락에 들어갔다. 이번에는 도장이 아니라 손을 잡았다.', chips:ch}; }},
       {label:'나를 먼저 세우고 싶어', sub:'관계는 유지 · 나 +4', run(S){ const ch = []; addAff(S, id, -8, ch); fx(S, {self:4}, ch); return {text:'그는 잠시 말이 없다가 상자를 닫았다. “기다릴게.” 그 말이 고마웠고 조금 무거웠다.', chips:ch}; }},
     ]};
 }
@@ -214,10 +223,11 @@ function loveEvent(S){
   const jw = jaewooEvent(S); if(jw) return jw;
   for(const id of LOVER_IDS){ const lv = LOVERS[id]; if(L[id] || S.seen['meet_' + id]) continue; const ok = lv.career ? (S.track === lv.career && S.hired && S.hiredAt != null && S.m >= S.hiredAt + 2) : S.m >= lv.meet; if(ok) return meetEvent(S, id); }
   for(const id of LOVER_IDS){ const v = L[id]; if(!v) continue;
-    if(v.stage >= 1 && v.fading && !S.seen['fade_' + id]) return breakupEvent(S, id);
-    if(v.stage === -1 && v.aff >= 40 && !S.partner && !S.seen['confess_' + id]) return confessEvent(S, id);
-    if(v.stage === 1 && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
-    if(v.stage === 1 && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
+    const sec = S.secret && S.secret[id];
+    if(v.stage >= 1 && v.stage <= 2 && v.fading && !sec && !S.seen['fade_' + id]) return breakupEvent(S, id);
+    if(v.stage === -1 && v.aff >= 40 && !S.seen['confess_' + id]) return officialOf(S) ? secretConfessEvent(S, id) : confessEvent(S, id);
+    if(v.stage === 1 && !sec && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
+    if(v.stage === 1 && !sec && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return romEvent(S) || rom2Event(S);
+  return romance3Event(S) || romEvent(S) || rom2Event(S);
 }

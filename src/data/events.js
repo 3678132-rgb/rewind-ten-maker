@@ -95,7 +95,7 @@ function graduationEvent(S){
     text:S => `${UNIVERSITY} 졸업. 마흔의 나는 이때 아무 생각 없이 큰 회사에 들어갔다. 이번에는 내가 고른 길로 간다. ${S.interest ? `(인턴으로 관심을 보인 곳: ${CAREERS[S.interest].company})` : ''}`,
     choices:CAREER_IDS.map(id => ({label:`${CAREERS[id].icon} ${CAREERS[id].name}`, sub:careerSub(S, id), run(S){
       const c = CAREERS[id], ch = []; S.track = id; S.tries = 0; const p = fitP(S, id);
-      if(R() < p){ S.hired = true; S.hiredAt = c.school || S.m; gauge(S, 'work', 6, ch);
+      if(R() < p){ S.hired = true; S.rank = 0; S.promoAt = null; S.hiredAt = c.school || S.m; gauge(S, 'work', 6, ch);
         const t = {beauty:'최종 합격. 사원증을 목에 거는 순간 마흔의 기억이 스쳤다. 이번엔 다르게 다닐 것이다.', pd:'“내일부터 조연출로 출근하세요.” 촬영장의 무전기 소리가 벌써부터 귀에 선하다.', writer:'공모전 당선 끝에 방송국 작가실의 막내 자리를 얻었다. 노트북 하나와 마감일이 내 세계다.', actor:'오디션 합격. 연습생 계약서에 이름을 쓰는 손이 떨렸다. 마흔의 나에게는 없던 종류의 용기였다.', lawyer:'로스쿨에 합격했다. 앞으로 삼 년, 도서관과 판례가 나의 일상이다. 변호사시험은 2013년 2월이다.', dev:'코딩 테스트와 면접을 통과했다. 네오플랫의 첫 출근날, 책상에는 모니터 두 대가 놓여 있었다.', designer:'포트폴리오가 통했다. 메종 오름의 작업실에는 원단 냄새와 연필 소리가 가득했다.'}[id];
         return {text:t, chips:ch}; }
       S.hired = false; fx(S, {stress:8}, ch); return {text:`${c.company}에서 아쉬운 소식이 왔다. 구직 활동을 이어 가며 다시 도전해야 한다.`, chips:ch}; }}))};
@@ -285,6 +285,7 @@ function fixedEvents(S){
   if(S.m === INTEREST_M && !S.seen.interest) out.push(interestEvent(S));
   if(S.m === GRAD_M && !S.seen.graduation) out.push(graduationEvent(S));
   if(S.m === CAREERS.lawyer.school - 1 && !S.seen.bar_exam && BAR_EXAM.cond(S)) out.push(BAR_EXAM);
+  const ce = careerEvent(S); if(ce) out.push(ce);
   const le = loveEvent(S); if(le) out.push(le);
   if(S.m === TOTAL_MONTHS - 1) out.push(FINALE);
   return out;

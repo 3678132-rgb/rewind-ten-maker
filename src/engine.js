@@ -105,7 +105,7 @@ function addAff(S, id, d, ch){
 }
 function dateTarget(S){
   if(S.partner) return S.partner;
-  const c = Object.keys(S.love).filter(i => S.love[i].stage === -1 && S.love[i].aff >= 18).sort((a, b) => S.love[b].aff - S.love[a].aff);
+  const c = Object.keys(S.love).filter(i => S.love[i].stage === -1 && S.love[i].aff >= 3).sort((a, b) => S.love[b].aff - S.love[a].aff);
   return c[0] || null;
 }
 
@@ -142,7 +142,7 @@ const ACTS = {
   friends: {cat:'관계', icon:'🥂', name:'친구 만나기', desc:'수다 한 번이 이렇게 비싼 시간이었다니.', cost:8, hp:0, stress:-7, eff:{bond:2.4, charm:0.7}},
   club:    {cat:'관계', icon:'🎪', name:'동아리·모임', desc:'새로운 얼굴들. 인연은 여기서 시작되기도 한다.', cost:5, hp:-3, stress:-2, eff:{charm:1.6, neg:1.0, dare:0.6, bond:1.4}},
   date:    {cat:'관계', icon:'💞', name:'데이트', desc:'마음 가는 사람과 보내는 시간.', cost:12, hp:-1, stress:-6, eff:{bond:2.2}, req:S => dateTarget(S) ? null : '호감 가는 사람이 아직 없어요', run(S, ch, out){
-    const id = dateTarget(S), lv = LOVERS[id], v = S.love[id]; out.lover = id; v.lastDate = S.m; v.dates = (v.dates || 0) + 1; addAff(S, id, 5 + (S.st[lv.like] || 0) / 28 + (S.st.charm / 60), ch); out.note = pick(lv.dateLines); }},
+    const id = dateTarget(S), lv = LOVERS[id], v = S.love[id]; out.lover = id; v.lastDate = S.m; v.dates = (v.dates || 0) + 1; addAff(S, id, 5 + (S.st[lv.like] || 0) / 28 + (S.st.charm / 60), ch); out.note = (v.dates === 1 ? '처음으로 둘만의 약속이었다. ' : '') + pick(lv.dateLines); }},
   travel:  {cat:'휴식', icon:'🧳', name:'여행', desc:'두 칸을 쓰는 긴 호흡. 낯선 곳에서 나를 만난다.', cost:60, slots:2, hp:6, stress:-24, eff:{self:3.2, sense:1.6, ins:1.2, dare:0.8}},
   rest:    {cat:'휴식', icon:'🛌', name:'휴식', desc:'아무것도 하지 않을 권리.', cost:0, hp:18, stress:-12, eff:{}},
 };

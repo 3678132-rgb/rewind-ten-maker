@@ -5,39 +5,46 @@
 <style>/*CSS*/</style></head><body>
 <div id="app">
  <section id="title" class="screen on">
-  <div class="coverbg"></div>
-  <div class="tcontent"><div class="hourglass">⏳</div><h1>다시, 스무 살</h1>
-  <p>마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</p>
-  <button class="btn" id="b-new">새로 시작</button>
-  <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
-  <p class="note">저장은 이 기기에만 보관돼요.</p></div>
+  <div class="coverart"></div>
+  <div class="ctop"><div class="eyebrow">REWIND TEN · 2006 → 2016</div><h1 class="wordmark">다시,<br>스무 살<small>REWIND TEN</small></h1><div class="csub">십 년의 시간 · 자유 시계를 향해</div></div>
+  <div class="cbot">
+   <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
+   <button class="btn blue" id="b-new">새로 시작</button>
+   <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
+   <div class="note">저장은 이 기기에만 보관돼요.</div>
+  </div>
  </section>
  <section id="setup" class="screen">
-  <div class="wizbg"></div>
   <div class="wiz">
    <div class="wizhead"><button class="wizback" id="w-back" aria-label="이전">←</button><div class="dots" id="w-dots"></div></div>
    <div class="wizq" id="w-q"></div>
    <div class="wizbody" id="w-body"></div>
-   <div class="wizfoot"><button class="btn" id="w-next">다음</button></div>
+   <div class="wizfoot"><button class="btn blue" id="w-next">다음</button></div>
   </div>
  </section>
  <section id="game" class="screen">
-  <div class="gbg" id="g-bg"></div><div class="gshade"></div>
-  <div class="ghud">
-   <div class="hrow">
-    <div class="hdate"><b id="h-date"></b></div>
-    <div class="ibtns"><button class="ibtn" id="b-call" aria-label="전화하기">📞<span class="badge" id="call-badge"></span></button><button class="ibtn" id="b-stat" aria-label="능력치">📊</button><button class="ibtn" id="b-log" aria-label="기록">📖</button><button class="ibtn" id="b-menu" aria-label="메뉴">⚙️</button></div>
-   </div>
-   <div class="hjob" id="h-job"></div>
-   <div class="sandwrap"><div class="sand"><i id="h-sand"></i></div><span class="left" id="h-left"></span></div>
-   <div class="res" id="h-res"></div>
+  <div class="scene" id="scene"><img class="pimg" id="g-img" alt=""><div class="scene-shade"></div></div>
+  <div class="hud-top">
+   <div class="avatar" id="hud-avatar"></div>
+   <div class="hud-center"><div class="hud-line"><b id="tb-date"></b><span id="hud-age"></span></div><div class="hud-bar"><i id="hud-prog"></i></div><div class="hud-sub" id="tb-sub"></div></div>
+   <button class="gear" id="b-call" aria-label="전화하기"><span data-icon="phone"></span><span class="badge" id="call-badge"></span></button>
+   <button class="gear" id="b-menu" aria-label="메뉴"><span data-icon="gear"></span></button>
   </div>
-  <div class="gbottom">
-   <div class="pillars" id="pillars"></div>
-   <div class="slots" id="slots"></div>
-   <div class="plans"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev">↻ 지난달처럼</button></div>
-   <button class="btn" id="b-run">이번 달 시작</button>
+  <div class="hud-res" id="hud-res"></div>
+  <div class="side-l">
+   <button class="fab c-pink" data-sheet="stat"><span class="ic" data-icon="stats"></span><span class="lb">능력치</span></button>
+   <button class="fab c-orange" data-sheet="career"><span class="ic" data-icon="company"></span><span class="lb">진로</span></button>
+   <button class="fab c-pink" data-sheet="love"><span class="ic" data-icon="heart"></span><span class="lb">연애</span></button>
+   <button class="fab c-purple" data-sheet="dex"><span class="ic" data-icon="dex"></span><span class="lb">도감</span></button>
   </div>
+  <div class="side-r">
+   <button class="fab c-green" data-sheet="stat"><span class="ic gauge" id="g-hp"></span><span class="lb">체력</span></button>
+   <button class="fab c-red" data-sheet="stat"><span class="ic gauge" id="g-st"></span><span class="lb">스트레스</span></button>
+   <button class="fab c-teal" id="btn-advice"><span class="ic" data-icon="chat"></span><span class="lb">조언</span></button>
+  </div>
+  <div class="dialog" id="dialog" hidden><img class="face" id="dlg-face" src="art/grandma.webp" alt=""><div><div class="head" id="dlg-head"></div><div class="body" id="dlg-body"></div></div><button class="nx" id="dlg-x">닫기</button></div>
+  <div class="bottom-area"><div class="slots3" id="slots3"></div><button class="cta" id="btn-go">스케줄 정하기</button></div>
+  <nav class="tabbar" id="tabbar"></nav>
  </section>
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>

@@ -215,9 +215,9 @@ function loveEvent(S){
   for(const id of LOVER_IDS){ const lv = LOVERS[id]; if(L[id] || S.seen['meet_' + id]) continue; const ok = lv.career ? (S.track === lv.career && S.hired && S.hiredAt != null && S.m >= S.hiredAt + 2) : S.m >= lv.meet; if(ok) return meetEvent(S, id); }
   for(const id of LOVER_IDS){ const v = L[id]; if(!v) continue;
     if(v.stage >= 1 && v.fading && !S.seen['fade_' + id]) return breakupEvent(S, id);
-    if(v.stage === -1 && v.aff >= 45 && !S.partner && !S.seen['confess_' + id]) return confessEvent(S, id);
+    if(v.stage === -1 && v.aff >= 40 && !S.partner && !S.seen['confess_' + id]) return confessEvent(S, id);
     if(v.stage === 1 && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return null;
+  return romEvent(S);
 }

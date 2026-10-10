@@ -2,223 +2,257 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#0e1230"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="다시스무살"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
-<style>/* ───────────────────────── 디자인 토큰 ───────────────────────── */
-:root{--bg:#0e1230;--bg2:#171c47;--card:#1f2560;--card2:#2a3178;--ink:#f6f2ea;--mute:#b7bae0;--gold:#f4b94d;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff7a7a;--line:rgba(255,255,255,.14);--glass:rgba(18,22,58,.72);
-  --r:16px;--fs-s:13px;--fs-m:15px;--fs-l:17px;--fs-xl:22px}
-:root[data-theme="light"]{--bg:#f6f1e7;--bg2:#ece3d0;--card:#fffaf0;--card2:#f3ead6;--ink:#262338;--mute:#6c6a85;--gold:#c98410;--gold2:#a96a00;--rose:#d9506a;--mint:#16967a;--sky:#3a62b8;--bad:#c93a3a;--line:rgba(0,0,0,.12);--glass:rgba(255,250,240,.82)}
+<style>/* ───── 스테이지 제로 메이커(1편)와 같은 화면 구성: 풀블리드 장면 + 알약 HUD + 떠 있는 버튼 + 노란 탭바 + 흰 시트 ───── */
+:root{--paper:#E7ECEE;--paper-2:#D8DFE2;--glass:rgba(255,255,255,.7);--glass-solid:#F6F8F9;--line:rgba(21,25,28,.13);--ink:#14181B;--mute:#56636B;--serum:#2B44C0;--serum-soft:#DDE3FA;--gold:#E9C77A;--good:#1f9d55;--bad:#d23b3b;--rose:#e0507a;
+  --f-body:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;--f-display:"Noto Serif KR","Nanum Myeongjo","Apple SD Gothic Neo","Noto Sans KR",serif;--r:14px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
-html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:var(--fs-m);line-height:1.55;word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%;touch-action:manipulation}
-button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;touch-action:manipulation;transition:transform .08s ease,opacity .15s ease,background .15s ease}
-button:active:not(:disabled){transform:scale(.97)}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:#1d2350;color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55;word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;touch-action:manipulation}
+button:active:not(:disabled){transform:translateY(2px)}
+button:disabled{cursor:default}
 h1,h2,h3{margin:0}
-.txt,.sub,.ch span,.ch b,#title p{text-wrap:pretty}
-.sub{color:var(--mute);font-size:var(--fs-s)}
-/* 화면 틀: 보이는 영역 전체에 고정. 폰은 꽉 채우고 넓은 화면은 9:16 폭으로 가운데에 */
-#app{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:calc(100vh * 9 / 16);overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
+.txt,.sub,.ch span,.ch b{text-wrap:pretty}
+.sub{color:var(--mute);font-size:12px}
+.mono{font-variant-numeric:tabular-nums}
+/* 화면 틀: 폰은 꽉 채우고 넓은 화면은 9:16 폭으로 가운데 */
+#app{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:calc(100vh * 9 / 16);overflow:hidden;background:#1b2140;box-shadow:0 0 60px rgba(0,0,0,.5)}
 @supports (height:100dvh){#app{max-width:calc(100dvh * 9 / 16)}}
 .screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}.screen.on{display:block}
-/* ───────────────────────── 버튼·칩 ───────────────────────── */
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#ffcb62,var(--gold));color:#2a1d05;font-weight:800;min-height:54px;padding:0 18px;border-radius:var(--r);width:100%;font-size:var(--fs-l);box-shadow:0 6px 18px rgba(244,185,77,.28)}
-.btn.ghost{background:var(--glass);border:1px solid var(--line);color:var(--ink);font-weight:600;box-shadow:none;backdrop-filter:blur(8px)}
-.btn.sm{min-height:44px;font-size:var(--fs-m)}
-.btn:disabled{opacity:.38;box-shadow:none}
+/* ───── 버튼 ───── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--ink);background:var(--ink);color:#F4F6F7;min-height:50px;padding:0 22px;border-radius:999px;width:100%;font-weight:700;font-size:16px;letter-spacing:.02em}
+.btn.blue{background:linear-gradient(135deg,#2B44C0,#1c2a7a);border:0;color:#fff;box-shadow:0 8px 24px rgba(43,68,192,.35)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink);font-weight:600}
+.btn.sm{min-height:42px;font-size:14px}
+.btn:disabled{opacity:.38}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:var(--fs-s);font-weight:600;background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap;color:var(--ink)}
-.chip.up{color:var(--mint)}.chip.down{color:var(--bad)}
-.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:var(--fs-s);border:1px solid var(--gold);color:var(--gold)}
+.chip{font-size:12px;font-weight:700;background:#fff;border:1px solid var(--line);border-radius:99px;padding:2px 10px;white-space:nowrap}
+.chip.up{color:var(--good)}.chip.down{color:var(--bad)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;border:1px solid var(--serum);color:var(--serum)}
 .tag.ret{border-color:var(--bad);color:var(--bad)}
-.who{display:inline-block;font-size:var(--fs-s);background:var(--gold);color:#241a05;border-radius:99px;padding:2px 11px;font-weight:800;margin-bottom:6px}
-/* ───────────────────────── 타이틀 ───────────────────────── */
-#title{text-align:center;overflow:hidden}
-.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.1),rgba(14,18,48,.5) 55%,rgba(14,18,48,.94)),url(art/cover.webp) center top/cover no-repeat}
-.tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 24px calc(30px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
-.hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}
-@keyframes flip{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
-#title h1{font-size:40px;margin-top:6px;letter-spacing:-1.5px}
-#title p{color:#e7e4ff;margin:10px 0 24px;font-size:var(--fs-m)}
-.note{font-size:var(--fs-s);color:var(--mute);text-align:center;margin-top:16px}
-/* ───────────────────────── 시작 설정(마법사) ───────────────────────── */
-#setup{background:var(--bg)}
-.wizbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.78),rgba(14,18,48,.96)),url(art/cover.webp) center top/cover no-repeat;filter:saturate(.9)}
+.who{display:inline-block;font-size:12px;background:var(--serum);color:#fff;border-radius:99px;padding:1px 11px;font-weight:800;margin-bottom:4px}
+.eyebrow{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase}
+/* ───── 타이틀 ───── */
+#title{overflow:hidden;text-align:center;background:#1d2350}
+.coverart{position:absolute;inset:0;background:url(art/cover.webp) 50% 40%/cover no-repeat}
+#title::before{content:"";position:absolute;inset:0 0 auto;height:38%;z-index:1;background:linear-gradient(180deg,rgba(28,36,92,.6),rgba(28,36,92,.18) 60%,transparent)}
+#title::after{content:"";position:absolute;inset:auto 0 0;height:46%;z-index:1;background:linear-gradient(0deg,rgba(246,248,252,.97) 0%,rgba(246,248,252,.88) 50%,rgba(246,248,252,0) 100%)}
+.ctop{position:absolute;z-index:2;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 44px);padding:0 20px;color:#fff}
+.ctop .eyebrow{color:rgba(255,255,255,.85)}
+.wordmark{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,13.5vw,62px);line-height:1.05;letter-spacing:-.01em;margin:6px 0 0;color:#fff;text-shadow:0 2px 18px rgba(20,24,70,.55),0 0 2px rgba(20,24,70,.4)}
+.wordmark .colon{color:#9fb4ff}
+.wordmark small{display:block;font-size:.3em;letter-spacing:.5em;font-weight:700;margin-top:.5em;padding-left:.5em;color:rgba(255,255,255,.92)}
+.csub{margin:14px auto 0;display:inline-block;line-height:1.4;font-size:12px;letter-spacing:.14em;color:#fff;padding:5px 14px;border:1px solid rgba(255,255,255,.55);border-radius:99px;background:rgba(255,255,255,.12);backdrop-filter:blur(6px)}
+.cbot{position:absolute;z-index:2;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);padding:0 22px;display:grid;gap:12px;justify-items:center}
+.ccard{width:min(100%,340px);padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 6px 24px rgba(30,40,100,.12);backdrop-filter:blur(10px);font-size:13px;line-height:1.6;color:#27304d}
+.cbot .btn{width:min(100%,340px);min-height:54px}
+.note{font-size:11.5px;color:var(--mute)}
+/* ───── 시작 설정(종이 양식) ───── */
+#setup{background:var(--paper);background-image:radial-gradient(120% 80% at 15% 0%,#F7F9FA 0%,transparent 55%),radial-gradient(90% 70% at 100% 100%,#DCE2F5 0%,transparent 60%)}
 .wiz{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 16px 0}
 .wizhead{display:flex;align-items:center;gap:12px}
-.wizback{width:40px;height:40px;border-radius:50%;background:var(--glass);border:1px solid var(--line);font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
-.wizback[hidden]{visibility:hidden;display:flex}
+.wizback{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--line);font-size:17px;display:flex;align-items:center;justify-content:center;flex:none}
 .dots{display:flex;gap:6px;flex:1}
-.dots i{flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,.2)}
-.dots i.on{background:var(--gold)}
+.dots i{flex:1;height:4px;border-radius:99px;background:var(--paper-2)}
+.dots i.on{background:var(--serum)}
 .wizq{margin:18px 2px 12px}
-.wizq h2{font-size:var(--fs-xl);letter-spacing:-.5px}
+.wizq .eyebrow{color:var(--mute);font-size:10.5px}
+.wizq h2{font-family:var(--f-display);font-size:23px;letter-spacing:-.4px;margin-top:4px;line-height:1.35}
 .wizq p{margin:4px 0 0}
 .wizbody{flex:1;overflow-y:auto;margin:0 -16px;padding:2px 16px 12px;-webkit-overflow-scrolling:touch}
 .cards2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .cards1{display:grid;gap:10px}
-.opt{position:relative;text-align:left;background:var(--glass);border:1.5px solid var(--line);border-radius:var(--r);padding:14px 14px 12px;backdrop-filter:blur(8px);min-height:92px}
-.opt .ic{font-size:28px;line-height:1}
-.opt b{display:block;font-size:var(--fs-l);margin-top:6px;letter-spacing:-.3px}
-.opt .ds{display:block;font-size:var(--fs-s);color:var(--mute);margin-top:2px;line-height:1.4}
-.opt.sel{border-color:var(--gold);background:rgba(244,185,77,.16);box-shadow:0 0 0 3px rgba(244,185,77,.25)}
-.opt.sel::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--gold);font-weight:900}
+.opt{position:relative;text-align:left;background:var(--glass);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px 11px;min-height:88px}
+.opt .ic{font-size:26px;line-height:1}
+.opt b{display:block;font-size:15px;margin-top:5px;letter-spacing:-.3px}
+.opt .ds{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.4}
+.opt .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.opt.sel{border-color:var(--serum);box-shadow:inset 0 0 0 1px var(--serum);background:#fff}
+.opt.sel::after{content:'✓';position:absolute;top:8px;right:11px;color:var(--serum);font-weight:900}
 .cards1 .opt{display:flex;gap:12px;align-items:center;min-height:0}
 .cards1 .opt b{margin-top:0}
-.wizfoot{padding:12px 0 calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(14,18,48,.96) 30%)}
-input[type=text]{width:100%;padding:16px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--glass);color:var(--ink);font-size:20px;font-weight:700;text-align:center}
-input[type=text]:focus{outline:none;border-color:var(--gold)}
-/* ───────────────────────── 메인(풀스크린) ───────────────────────── */
-#game{overflow:hidden}
-.gbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat;transition:background-image .3s}
-.gshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.7) 0,rgba(10,12,34,0) 20%,rgba(10,12,34,0) 38%,rgba(10,12,34,.8) 64%,rgba(10,12,34,.96) 100%)}
-.ghud{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 0}
-.hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.hdate b{display:block;font-size:var(--fs-xl);letter-spacing:-.5px;text-shadow:0 2px 8px rgba(0,0,0,.6)}
-.hjob{font-size:var(--fs-s);color:#eceeff;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ibtns{display:flex;gap:8px}
-.ibtn{width:42px;height:42px;border-radius:50%;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);font-size:19px;display:flex;align-items:center;justify-content:center}
-.sandwrap{display:flex;align-items:center;gap:8px;margin:8px 0 6px}
-.sand{flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
-.sand i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose))}
-.left{font-size:var(--fs-s);font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
-.res{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:6px}
-.rc{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:12px;padding:6px 8px}
-.rc small{display:block;font-size:11px;color:var(--mute);line-height:1.2}
-.rc b{display:block;font-size:var(--fs-m);line-height:1.3}
-.rc .mini{height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:3px;overflow:hidden}
-.rc .mini i{display:block;height:100%;border-radius:99px;background:var(--mint)}
-.rc.warn .mini i{background:var(--bad)}
-.gbottom{position:absolute;left:0;right:0;bottom:0;padding:0 12px calc(12px + env(safe-area-inset-bottom))}
-.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}
-.pcard{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:14px;padding:8px 10px}
-.pcard .pt{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--fs-s);font-weight:700}
-.pcard .pt b{font-size:var(--fs-l)}
-.pcard .t{height:8px;border-radius:99px;background:rgba(255,255,255,.18);position:relative;margin-top:5px}
-.pcard .t i{display:block;height:100%;border-radius:99px;background:var(--gold)}
-.pcard .t u{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.55}
-.pcard.bond .t i{background:var(--rose)}.pcard.self .t i{background:var(--mint)}
-.pcard.low .pt b{color:var(--bad)}
-.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
-.slot{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:112px;padding:10px;text-align:left;background:var(--glass);border:1.5px dashed rgba(255,255,255,.28);border-radius:var(--r);backdrop-filter:blur(8px)}
-.slot.filled{border-style:solid;border-color:rgba(255,255,255,.22);background:linear-gradient(180deg,rgba(42,49,120,.82),rgba(26,31,84,.82))}
-.slot .lb{font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
-.slot .ic{font-size:28px;line-height:1.15;margin-top:2px}
-.slot .nm{font-size:var(--fs-m);font-weight:800;line-height:1.25;letter-spacing:-.3px}
-.slot .ds{font-size:12px;color:var(--mute)}
-.slot .tg{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}
-.slot .tg i{font-style:normal;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.12)}
-.slot.cont{opacity:.55}
-.plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-#b-run{margin-top:0}
-/* ───────────────────────── 활동 카드·이벤트(풀스크린) ───────────────────────── */
-.actcard,.evcard{position:absolute;inset:0;z-index:15;display:none;background:#0e1230 center top/cover no-repeat}
-.evcard{z-index:18;background-color:#14183f}
+.wizfoot{padding:12px 0 calc(14px + env(safe-area-inset-bottom))}
+input[type=text]{width:100%;padding:15px;border-radius:var(--r);border:1px solid var(--line);background:#fff;color:var(--ink);font-size:20px;font-weight:700;text-align:center;font-family:var(--f-display)}
+input[type=text]:focus{outline:2px solid var(--serum)}
+/* ───── 메인: 장면 + 떠 있는 UI ───── */
+#game{overflow:hidden;background:#1b2140}
+.scene{position:absolute;inset:0;overflow:hidden;background:#1b2140}
+.scene::before{content:'';position:absolute;inset:-30px;background:var(--scene-bg) center/cover no-repeat;filter:blur(18px) brightness(.75) saturate(1.1)}
+.scene .pimg{position:absolute;left:0;right:0;top:108px;bottom:0;width:100%;height:calc(100% - 108px);object-fit:cover;object-position:50% 0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 28px);mask-image:linear-gradient(180deg,transparent 0,#000 28px)}
+.scene-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(15,20,45,.5) 0%,rgba(15,20,45,0) 16%,rgba(15,20,45,0) 66%,rgba(15,20,45,.45) 100%)}
+.hud-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:6px;z-index:4}
+.avatar{width:52px;height:52px;flex:none;border-radius:16px;border:3px solid #fff;background:#ffe9b5 50% 9%/330% no-repeat;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
+.hud-center{flex:1;min-width:0;background:rgba(18,24,52,.62);color:#fff;border:2px solid rgba(255,255,255,.35);border-radius:16px;padding:5px 10px;backdrop-filter:blur(4px)}
+.hud-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hud-line b{font-family:var(--f-display);font-size:15px;font-weight:800;white-space:nowrap}
+.hud-line span{font-size:11px;opacity:.9;white-space:nowrap}
+.hud-bar{height:9px;margin-top:4px;background:rgba(255,255,255,.22);border-radius:99px;overflow:hidden}
+.hud-bar i{display:block;height:100%;background:linear-gradient(90deg,#7be35a,#c8f56b);border-radius:99px}
+.hud-sub{font-size:10.5px;opacity:.85;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gear{position:relative;width:40px;height:40px;flex:none;border-radius:50%;border:3px solid #fff;background:linear-gradient(180deg,#ffe07a,#ffb21f);color:#7a4a00;display:grid;place-items:center;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
+.hud-res{position:absolute;top:calc(76px + env(safe-area-inset-top));left:12px;right:12px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;z-index:4}
+.res{display:flex;align-items:center;gap:6px;background:rgba(18,24,52,.62);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:99px;padding:3px 10px 3px 4px;font-size:12px;backdrop-filter:blur(4px)}
+.res i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:900;background:linear-gradient(180deg,#ffe07a,#ffb21f);color:#5a3500}
+.res b.warn{color:#ffb4b4}
+.side-l,.side-r{position:absolute;top:calc(128px + env(safe-area-inset-top));display:grid;gap:12px;z-index:4}
+.side-l{left:8px}.side-r{right:8px}
+.fab{--c1:#ff9cc0;--c2:#ff5c8a;--c3:#c93a66;position:relative;width:68px;display:grid;justify-items:center;color:#fff}
+.fab.c-orange{--c1:#ffc46b;--c2:#ff9330;--c3:#c4621a}.fab.c-purple{--c1:#c3a2ff;--c2:#8f5cff;--c3:#5f34c2}.fab.c-green{--c1:#9be87a;--c2:#4cc25a;--c3:#2b8a3a}.fab.c-red{--c1:#ffa38a;--c2:#ff6a4d;--c3:#c23c24}.fab.c-teal{--c1:#7ff0dc;--c2:#22c3ac;--c3:#138a79}
+.fab .ic{width:54px;height:54px;border-radius:18px;background:linear-gradient(180deg,var(--c1),var(--c2));border:3px solid #fff;color:#fff;display:grid;place-items:center;box-shadow:0 4px 0 var(--c3),0 6px 12px rgba(0,0,0,.25)}
+.fab .ic.gauge{background:#fff;border-color:var(--c2)}
+.gauge svg{width:46px;height:46px}
+.fab .lb{margin-top:-9px;position:relative;font-size:11px;font-weight:800;background:linear-gradient(180deg,var(--c2),var(--c3));border:2px solid #fff;border-radius:99px;padding:1px 8px;white-space:nowrap;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.gear svg{width:22px;height:22px}
+.badge{position:absolute;top:-6px;right:-4px;min-width:20px;height:20px;padding:0 4px;border-radius:99px;background:#e23b3b;color:#fff;border:2px solid #fff;font-weight:900;font-size:11px;display:grid;place-items:center}
+.badge:empty{display:none}
+.bottom-area{position:absolute;left:0;right:0;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;display:grid;justify-items:center;gap:8px;padding-inline:12px}
+.slots3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}
+.slot3{border:2px dashed rgba(255,255,255,.75);background:rgba(18,24,52,.5);color:#fff;border-radius:12px;padding:5px 8px;text-align:left;min-height:48px;display:grid;align-content:start;backdrop-filter:blur(3px)}
+.slot3 small{font-size:10px;opacity:.8;letter-spacing:.1em}
+.slot3 b{font-size:12px;line-height:1.25}
+.slot3.filled{border-style:solid;border-color:#E9C77A;background:rgba(255,255,255,.92);color:var(--ink)}
+.slot3.active{box-shadow:0 0 0 2px var(--serum)}
+.slot3.cont{opacity:.7;border-style:solid;border-color:#E9C77A}
+.cta{width:min(80%,320px);padding:13px 10px;font-size:20px;font-weight:900;letter-spacing:.02em;border-radius:20px;border:3px solid #fff;background:linear-gradient(180deg,#ffd45c,#ff9f1c);color:#fff;text-shadow:0 2px 0 rgba(150,70,0,.55);box-shadow:0 5px 0 #c26a00,0 10px 20px rgba(0,0,0,.3)}
+.cta.ready{background:linear-gradient(180deg,#8ff06a,#3fbf45);text-shadow:0 2px 0 rgba(20,100,30,.6);box-shadow:0 5px 0 #23852f,0 10px 20px rgba(0,0,0,.3)}
+.cta:disabled{opacity:.6}
+.tabbar{position:absolute;left:0;right:0;bottom:0;z-index:6;height:calc(78px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(180deg,#fbf1dc,#ecd7ac);border-top:3px solid #d9b46a;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:end}
+.tb{display:grid;justify-items:center;gap:2px;padding:0 0 9px;font-size:11.5px;font-weight:800;color:#6b4e2a}
+.tb .ic{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:#fff;border:2px solid #d9b46a;color:var(--serum)}
+.tb.home .ic{width:64px;height:64px;margin-top:-30px;border-radius:22px;background:linear-gradient(180deg,#6c86f2,var(--serum));color:#fff;border:3px solid #fff;box-shadow:0 4px 0 #1c2e8a}
+.tb:active .ic{transform:translateY(2px)}
+/* 조언 말풍선(대화 카드) */
+.dialog{position:absolute;left:10px;right:10px;bottom:calc(218px + env(safe-area-inset-bottom));z-index:5;display:grid;grid-template-columns:44px minmax(0,1fr);gap:10px;background:rgba(246,248,249,.96);border:2px solid var(--gold);border-radius:16px;padding:10px 12px;box-shadow:0 6px 20px rgba(0,0,0,.3);max-height:30%;overflow:auto}
+.dialog[hidden]{display:none}
+.dialog .face{width:44px;height:44px;border-radius:50%;border:2px solid var(--gold);object-fit:cover;object-position:50% 10%;background:#ffe9b5}
+.dialog .head{font-size:11px;font-weight:800;color:var(--serum)}
+.dialog .body{font-size:13px;line-height:1.5}
+.dialog .nx{grid-column:2;justify-self:end;font-size:12px;font-weight:800;color:var(--serum)}
+/* ───── 시트(흰 바닥 시트, 금빛 윗선) ───── */
+.ov{position:absolute;inset:0;background:rgba(10,14,30,.45);display:none;align-items:flex-end;z-index:20}
+.ov.on{display:flex}
+.sheet{width:100%;max-height:82%;overflow:auto;background:var(--glass-solid);border-radius:22px 22px 0 0;border-top:3px solid #E9C77A;padding:12px 14px calc(18px + env(safe-area-inset-bottom));animation:up .25s ease both;-webkit-overflow-scrolling:touch}
+@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+.sh-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+.sh-head b{font-family:var(--f-display);font-size:18px;font-weight:800}
+.sh-x{background:var(--paper-2);width:34px;height:34px;border-radius:50%;font-size:20px;line-height:1}
+.sheet h3{margin:12px 0 6px;font-size:11px;letter-spacing:.18em;color:var(--mute);font-weight:600}
+.txt{white-space:pre-wrap;margin:6px 0 12px}
+.menu-list{display:grid;gap:10px;padding-top:6px}
+.tabs{display:flex;gap:4px;margin-bottom:8px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;position:sticky;top:-12px;background:var(--glass-solid);z-index:2;padding-top:4px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{white-space:nowrap;flex:1 0 auto;padding:7px 12px;font-weight:700;font-size:13px;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--ink);border-bottom-color:var(--serum)}
+.planbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.act{text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px;display:grid;gap:3px;align-content:start;min-height:104px}
+.act .top{display:flex;align-items:center;gap:6px}
+.act .top .ic{font-size:20px}
+.act .top b{font-size:14px;letter-spacing:-.3px;line-height:1.25}
+.act .em{font-size:11.5px;font-weight:800;color:var(--serum)}
+.act .d{font-size:11.5px;color:var(--mute);line-height:1.4}
+.act .why{font-size:11.5px;color:var(--bad);line-height:1.4}
+.act .tg,.opt .tg{display:flex;flex-wrap:wrap;gap:3px}
+.tg i{font-style:normal;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:99px;background:var(--paper)}
+.tg i.up{color:var(--good)}.tg i.down{color:var(--bad)}.tg i.pay{color:#a8730a}
+.act:disabled{opacity:.5}
+.act.on{border-color:var(--serum);box-shadow:inset 0 0 0 1px var(--serum)}
+.foot{margin-top:10px;font-size:12px;color:var(--mute);text-align:center}
+.meter{display:grid;grid-template-columns:70px 1fr 34px;gap:10px;align-items:center;margin:5px 0;font-size:13px}
+.meter .bar{height:8px;border-radius:99px;background:var(--paper-2);overflow:hidden}
+.meter .bar i{display:block;height:100%;border-radius:99px;background:var(--ink)}
+.meter.work .bar i{background:var(--serum)}.meter.bond .bar i{background:var(--rose)}.meter.self .bar i{background:var(--good)}
+.meter b{text-align:right;font-variant-numeric:tabular-nums}
+.kv{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:6px 0;font-size:13px}
+.kv b{color:var(--serum)}
+.lcard{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;margin-bottom:8px;text-align:left;width:100%}
+.lcard .av{width:54px;height:54px;border-radius:12px;object-fit:cover;object-position:50% 10%;background:var(--paper-2)}
+.lcard .av.sil{filter:brightness(0) opacity(.25)}
+.lcard b{display:block;font-size:14px}
+.lcard small{display:block;color:var(--mute);font-size:11.5px;line-height:1.4}
+.lcard .hb{height:5px;border-radius:99px;background:var(--paper-2);margin-top:4px;overflow:hidden}.lcard .hb i{display:block;height:100%;background:var(--rose)}
+.lcard .cb,.contact .cb{width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,#ffe07a,#ffb21f);display:grid;place-items:center;font-size:16px;box-shadow:0 2px 0 #b9780a}
+.lcard:disabled .cb,.contact:disabled .cb{background:var(--paper-2);box-shadow:none;opacity:.6}
+.contacts{display:grid;gap:8px;margin:8px 0 4px}
+.contact{display:grid;grid-template-columns:50px 1fr 36px;gap:12px;align-items:center;text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;width:100%}
+.contact .av{width:50px;height:50px;border-radius:50%;object-fit:cover;object-position:50% 10%;background:var(--paper-2);border:2px solid var(--gold)}
+.contact .ci b{display:block;font-size:15px}.contact .ci small{color:var(--mute);font-size:12px}
+.contact:disabled{opacity:.5}
+.dexrow{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:7px 0;font-size:13px}
+.dexrow .g{font-size:22px;text-align:center}.dexrow small{display:block;color:var(--mute);font-size:11.5px}.dexrow.lock{opacity:.45}
+.toast{position:absolute;left:50%;bottom:calc(190px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(18,24,52,.94);border:2px solid var(--gold);color:#fff;padding:8px 16px;border-radius:99px;font-size:12.5px;z-index:40;white-space:nowrap;animation:fade .2s}
+/* ───── 활동 카드·이벤트(풀스크린 일러스트 + 흰 대화 카드) ───── */
+.actcard,.evcard{position:absolute;inset:0;z-index:15;display:none;background:#1b2140 center top/cover no-repeat}
+.evcard{z-index:18}
 .actcard.on,.evcard.on{display:block;animation:fade .25s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.ashade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.6),rgba(10,12,34,0) 22%,rgba(10,12,34,0) 46%,rgba(10,12,34,.92) 80%)}
-.atop{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.abot{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(18px + env(safe-area-inset-bottom))}
-.abot h2{font-size:var(--fs-xl);margin:0 0 4px;letter-spacing:-.5px}
-.evcard.p-night{background-color:#0b0a20}.evcard.p-campus{background-color:#274c84}.evcard.p-cafe{background-color:#2f1b0d}.evcard.p-room{background-color:#1f1a3a}.evcard.p-rain{background-color:#0f1325}.evcard.p-shop{background-color:#2a1b07}
-.evshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.35) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 36%,rgba(10,12,34,.88) 60%,rgba(10,12,34,.97) 100%)}
+.ashade,.evshade{position:absolute;inset:0;background:linear-gradient(rgba(15,20,45,.45),rgba(15,20,45,0) 20%,rgba(15,20,45,0) 50%,rgba(15,20,45,.35) 100%)}
+.atop{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top))}
+.atop .who{background:rgba(18,24,52,.7);border:2px solid rgba(255,255,255,.4)}
+.abot,.evpanel{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));background:rgba(246,248,249,.97);border:2px solid var(--gold);border-radius:18px;padding:12px 14px 14px;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.evpanel{max-height:62%;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.abot h2,.evpanel h2{font-family:var(--f-display);font-size:19px;letter-spacing:-.4px;margin-bottom:2px}
+.evpanel .txt,.abot .txt{font-size:15px;line-height:1.65;margin:6px 0 12px;white-space:pre-wrap}
+.abot .btn,.evpanel .btn{background:linear-gradient(180deg,#6c86f2,var(--serum));border:2px solid #fff;box-shadow:0 3px 0 #1c2e8a;min-height:46px;font-size:15px}
+.ch{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:11px 14px;margin-top:8px}
+.ch b{display:block;font-size:15px;letter-spacing:-.3px}
+.ch span{display:block;font-size:12px;color:var(--serum);margin-top:1px}
+.ch:active{border-color:var(--serum)}
 .evicon{position:absolute;left:0;right:0;top:12%;text-align:center;font-size:92px;filter:drop-shadow(0 4px 18px rgba(0,0,0,.5))}
-.evpanel{position:absolute;left:0;right:0;bottom:0;max-height:68%;overflow-y:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
-.evpanel h2{font-size:var(--fs-xl);letter-spacing:-.5px;margin-bottom:2px}
-.evpanel .txt,.abot .txt{font-size:var(--fs-l);line-height:1.65;margin:6px 0 14px;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:pre-wrap}
-.ch{display:block;width:100%;text-align:left;background:var(--glass);border:1.5px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-top:10px;backdrop-filter:blur(8px)}
-.ch b{display:block;font-size:var(--fs-l);letter-spacing:-.3px}
-.ch span{display:block;font-size:var(--fs-s);color:var(--gold2);margin-top:2px}
-.ch:active{border-color:var(--gold)}
-.face{width:68px;height:92px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:1px solid var(--line)}
-/* ───────────────────────── 시트·활동 고르기 ───────────────────────── */
-.ov{position:absolute;inset:0;background:rgba(5,7,22,.72);display:none;align-items:flex-end;justify-content:center;z-index:20}
-.ov.on{display:flex}
-.sheet{width:100%;max-height:86%;overflow:auto;background:var(--bg2);border-radius:24px 24px 0 0;padding:6px 16px calc(22px + env(safe-area-inset-bottom));animation:up .22s ease-out;-webkit-overflow-scrolling:touch}
-.sheet::before{content:'';display:block;width:44px;height:5px;border-radius:99px;background:rgba(255,255,255,.25);margin:8px auto 12px}
-@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-.sheet h2{font-size:var(--fs-xl);margin-bottom:8px;letter-spacing:-.5px}
-.txt{white-space:pre-wrap;margin:6px 0 12px}
-.picker{padding-top:0}
-.phead{position:sticky;top:-6px;z-index:2;background:var(--bg2);padding:4px 0 8px;margin:0 -2px}
-.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:2px 0 4px}
-.tab{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);line-height:1.2}
-.tab span{font-size:18px}
-.tab.on{background:var(--gold);color:#2a1d05;border-color:var(--gold)}
-.acts{display:grid;gap:8px;margin-top:6px}
-.act{display:grid;grid-template-columns:44px 1fr;gap:12px;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;width:100%;align-items:center}
-.act .ic{font-size:30px;text-align:center}
-.act .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
-.act .top b{font-size:var(--fs-l);letter-spacing:-.3px}
-.act .top em{font-style:normal;font-size:var(--fs-s);font-weight:700;color:var(--gold2);white-space:nowrap}
-.act small{display:block;color:var(--mute);font-size:var(--fs-s);line-height:1.4;margin-top:1px}
-.act .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.tg i{font-style:normal;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.1)}
-.tg i.up{color:var(--mint)}.tg i.down{color:var(--bad)}.tg i.pay{color:var(--gold2)}
-.act:disabled{opacity:.42}
-.act:disabled small{color:var(--bad)}
-.cat{font-size:var(--fs-s);color:var(--gold);margin:14px 0 2px;letter-spacing:1px}
-/* 능력치 시트 */
-.statrows{display:grid;gap:8px;margin-top:8px}
-.srow{display:grid;grid-template-columns:62px 1fr 36px;gap:10px;align-items:center;font-size:var(--fs-m)}
-.srow .t{height:10px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
-.srow .t i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--sky),var(--mint))}
-.srow b{text-align:right}
-/* 엔딩 */
+.evcard.p-night{background-color:#0b0a20}.evcard.p-campus{background-color:#274c84}.evcard.p-cafe{background-color:#2f1b0d}.evcard.p-room{background-color:#1f1a3a}.evcard.p-rain{background-color:#0f1325}.evcard.p-shop{background-color:#2a1b07}
+.face{width:60px;height:80px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:2px solid var(--gold)}
+/* ───── 엔딩 ───── */
 #end{overflow:hidden}
-.endbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat}
+.endbg{position:absolute;inset:0;background:#1b2140 center top/cover no-repeat}
 .endscroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.endspacer{height:46%}
-.endcard{background:linear-gradient(rgba(10,12,34,0),rgba(10,12,34,.92) 40px);padding:48px 16px calc(24px + env(safe-area-inset-bottom));min-height:54%;text-align:center}
-.endcard .big{font-size:56px}.endcard h1{font-size:28px;margin:6px 0 10px;letter-spacing:-.8px}
+.endspacer{height:44%}
+.endcard{background:linear-gradient(rgba(246,248,249,0),rgba(246,248,249,.97) 44px);padding:52px 16px calc(24px + env(safe-area-inset-bottom));min-height:56%;text-align:center}
+.endcard .big{font-size:52px}.endcard h1{font-family:var(--f-display);font-size:27px;margin:6px 0 10px;letter-spacing:-.6px}
 .endcard .pillars{text-align:left;margin:12px 0}
-.letter{text-align:left;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);border-radius:var(--r);padding:16px;white-space:pre-wrap;margin:14px 0;font-size:var(--fs-m);line-height:1.7}
-
-/* 전화하기 */
-.ibtn{position:relative}
-.badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:99px;background:var(--rose);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;padding:0 4px}
-.badge:empty{display:none}
-.contacts{display:grid;gap:8px;margin:10px 0 4px}
-.contact{display:grid;grid-template-columns:52px 1fr 36px;gap:12px;align-items:center;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 12px;width:100%}
-.contact .av{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:50% 10%;background:var(--card2);border:2px solid rgba(255,255,255,.2)}
-.contact .ci b{display:block;font-size:var(--fs-l)}
-.contact .ci small{color:var(--mute);font-size:var(--fs-s)}
-.contact .cb{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:17px}
-.contact:disabled{opacity:.42}
-.contact:disabled .cb{background:rgba(255,255,255,.2)}
-.toast{position:absolute;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(10,12,34,.92);border:1px solid var(--line);color:#fff;padding:10px 16px;border-radius:99px;font-size:var(--fs-s);z-index:40;white-space:nowrap;animation:fade .2s}
+.letter{text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;white-space:pre-wrap;margin:14px 0;font-size:14px;line-height:1.75}
+@media (max-height:720px){.dialog{padding:7px 10px;grid-template-columns:36px minmax(0,1fr)}.dialog .face{width:36px;height:36px}.dialog .body{font-size:12px;line-height:1.4}.side-l,.side-r{gap:6px}.fab .ic{width:46px;height:46px}.gauge svg{width:40px;height:40px}}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
-  <div class="coverbg"></div>
-  <div class="tcontent"><div class="hourglass">⏳</div><h1>다시, 스무 살</h1>
-  <p>마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</p>
-  <button class="btn" id="b-new">새로 시작</button>
-  <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
-  <p class="note">저장은 이 기기에만 보관돼요.</p></div>
+  <div class="coverart"></div>
+  <div class="ctop"><div class="eyebrow">REWIND TEN · 2006 → 2016</div><h1 class="wordmark">다시,<br>스무 살<small>REWIND TEN</small></h1><div class="csub">십 년의 시간 · 자유 시계를 향해</div></div>
+  <div class="cbot">
+   <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
+   <button class="btn blue" id="b-new">새로 시작</button>
+   <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
+   <div class="note">저장은 이 기기에만 보관돼요.</div>
+  </div>
  </section>
  <section id="setup" class="screen">
-  <div class="wizbg"></div>
   <div class="wiz">
    <div class="wizhead"><button class="wizback" id="w-back" aria-label="이전">←</button><div class="dots" id="w-dots"></div></div>
    <div class="wizq" id="w-q"></div>
    <div class="wizbody" id="w-body"></div>
-   <div class="wizfoot"><button class="btn" id="w-next">다음</button></div>
+   <div class="wizfoot"><button class="btn blue" id="w-next">다음</button></div>
   </div>
  </section>
  <section id="game" class="screen">
-  <div class="gbg" id="g-bg"></div><div class="gshade"></div>
-  <div class="ghud">
-   <div class="hrow">
-    <div class="hdate"><b id="h-date"></b></div>
-    <div class="ibtns"><button class="ibtn" id="b-call" aria-label="전화하기">📞<span class="badge" id="call-badge"></span></button><button class="ibtn" id="b-stat" aria-label="능력치">📊</button><button class="ibtn" id="b-log" aria-label="기록">📖</button><button class="ibtn" id="b-menu" aria-label="메뉴">⚙️</button></div>
-   </div>
-   <div class="hjob" id="h-job"></div>
-   <div class="sandwrap"><div class="sand"><i id="h-sand"></i></div><span class="left" id="h-left"></span></div>
-   <div class="res" id="h-res"></div>
+  <div class="scene" id="scene"><img class="pimg" id="g-img" alt=""><div class="scene-shade"></div></div>
+  <div class="hud-top">
+   <div class="avatar" id="hud-avatar"></div>
+   <div class="hud-center"><div class="hud-line"><b id="tb-date"></b><span id="hud-age"></span></div><div class="hud-bar"><i id="hud-prog"></i></div><div class="hud-sub" id="tb-sub"></div></div>
+   <button class="gear" id="b-call" aria-label="전화하기"><span data-icon="phone"></span><span class="badge" id="call-badge"></span></button>
+   <button class="gear" id="b-menu" aria-label="메뉴"><span data-icon="gear"></span></button>
   </div>
-  <div class="gbottom">
-   <div class="pillars" id="pillars"></div>
-   <div class="slots" id="slots"></div>
-   <div class="plans"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev">↻ 지난달처럼</button></div>
-   <button class="btn" id="b-run">이번 달 시작</button>
+  <div class="hud-res" id="hud-res"></div>
+  <div class="side-l">
+   <button class="fab c-pink" data-sheet="stat"><span class="ic" data-icon="stats"></span><span class="lb">능력치</span></button>
+   <button class="fab c-orange" data-sheet="career"><span class="ic" data-icon="company"></span><span class="lb">진로</span></button>
+   <button class="fab c-pink" data-sheet="love"><span class="ic" data-icon="heart"></span><span class="lb">연애</span></button>
+   <button class="fab c-purple" data-sheet="dex"><span class="ic" data-icon="dex"></span><span class="lb">도감</span></button>
   </div>
+  <div class="side-r">
+   <button class="fab c-green" data-sheet="stat"><span class="ic gauge" id="g-hp"></span><span class="lb">체력</span></button>
+   <button class="fab c-red" data-sheet="stat"><span class="ic gauge" id="g-st"></span><span class="lb">스트레스</span></button>
+   <button class="fab c-teal" id="btn-advice"><span class="ic" data-icon="chat"></span><span class="lb">조언</span></button>
+  </div>
+  <div class="dialog" id="dialog" hidden><img class="face" id="dlg-face" src="art/grandma.webp" alt=""><div><div class="head" id="dlg-head"></div><div class="body" id="dlg-body"></div></div><button class="nx" id="dlg-x">닫기</button></div>
+  <div class="bottom-area"><div class="slots3" id="slots3"></div><button class="cta" id="btn-go">스케줄 정하기</button></div>
+  <nav class="tabbar" id="tabbar"></nav>
  </section>
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
@@ -332,7 +366,7 @@ function addAff(S, id, d, ch){
 }
 function dateTarget(S){
   if(S.partner) return S.partner;
-  const c = Object.keys(S.love).filter(i => S.love[i].stage === -1 && S.love[i].aff >= 18).sort((a, b) => S.love[b].aff - S.love[a].aff);
+  const c = Object.keys(S.love).filter(i => S.love[i].stage === -1 && S.love[i].aff >= 3).sort((a, b) => S.love[b].aff - S.love[a].aff);
   return c[0] || null;
 }
 
@@ -369,7 +403,7 @@ const ACTS = {
   friends: {cat:'관계', icon:'🥂', name:'친구 만나기', desc:'수다 한 번이 이렇게 비싼 시간이었다니.', cost:8, hp:0, stress:-7, eff:{bond:2.4, charm:0.7}},
   club:    {cat:'관계', icon:'🎪', name:'동아리·모임', desc:'새로운 얼굴들. 인연은 여기서 시작되기도 한다.', cost:5, hp:-3, stress:-2, eff:{charm:1.6, neg:1.0, dare:0.6, bond:1.4}},
   date:    {cat:'관계', icon:'💞', name:'데이트', desc:'마음 가는 사람과 보내는 시간.', cost:12, hp:-1, stress:-6, eff:{bond:2.2}, req:S => dateTarget(S) ? null : '호감 가는 사람이 아직 없어요', run(S, ch, out){
-    const id = dateTarget(S), lv = LOVERS[id], v = S.love[id]; out.lover = id; v.lastDate = S.m; v.dates = (v.dates || 0) + 1; addAff(S, id, 5 + (S.st[lv.like] || 0) / 28 + (S.st.charm / 60), ch); out.note = pick(lv.dateLines); }},
+    const id = dateTarget(S), lv = LOVERS[id], v = S.love[id]; out.lover = id; v.lastDate = S.m; v.dates = (v.dates || 0) + 1; addAff(S, id, 5 + (S.st[lv.like] || 0) / 28 + (S.st.charm / 60), ch); out.note = (v.dates === 1 ? '처음으로 둘만의 약속이었다. ' : '') + pick(lv.dateLines); }},
   travel:  {cat:'휴식', icon:'🧳', name:'여행', desc:'두 칸을 쓰는 긴 호흡. 낯선 곳에서 나를 만난다.', cost:60, slots:2, hp:6, stress:-24, eff:{self:3.2, sense:1.6, ins:1.2, dare:0.8}},
   rest:    {cat:'휴식', icon:'🛌', name:'휴식', desc:'아무것도 하지 않을 권리.', cost:0, hp:18, stress:-12, eff:{}},
 };
@@ -628,11 +662,102 @@ function loveEvent(S){
   for(const id of LOVER_IDS){ const lv = LOVERS[id]; if(L[id] || S.seen['meet_' + id]) continue; const ok = lv.career ? (S.track === lv.career && S.hired && S.hiredAt != null && S.m >= S.hiredAt + 2) : S.m >= lv.meet; if(ok) return meetEvent(S, id); }
   for(const id of LOVER_IDS){ const v = L[id]; if(!v) continue;
     if(v.stage >= 1 && v.fading && !S.seen['fade_' + id]) return breakupEvent(S, id);
-    if(v.stage === -1 && v.aff >= 45 && !S.partner && !S.seen['confess_' + id]) return confessEvent(S, id);
+    if(v.stage === -1 && v.aff >= 40 && !S.partner && !S.seen['confess_' + id]) return confessEvent(S, id);
     if(v.stage === 1 && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return null;
+  return romEvent(S);
+}
+
+// 썸 스토리: 만난 사람과 접점을 만들어 가는 장면들 (고백 전까지). 장면 4개 × 11명. ENGINE 구간(DOM 금지)
+// [제목, 상황, 다가간다(라벨, 결과), 조심스럽게(라벨, 결과), 장소]
+const ROM = {
+  jaewoo: [
+    ['동아리방의 불 켜진 창', '동아리방에 혼자 남아 정리하던 밤, 재우 선배가 커피 두 잔을 들고 들어온다. “아직 있었네. 이거 마셔.” 내가 아는 그 사람의 손은 이때도 따뜻했다.', ['“선배도 같이 정리해요”', '둘이서 한 시간 만에 일을 끝냈다. 그는 “너랑 하면 이상하게 빨리 끝나네” 하며 웃었다.'], ['“괜찮아요, 선배 먼저 들어가세요”', '그는 한참 문 앞에 서 있다가 “그래, 조심히 가” 하고 돌아섰다. 커피는 아직 따뜻했다.'], 'night'],
+    ['학식당의 빈자리', '붐비는 학식당. 재우가 손을 흔들며 옆자리를 가리킨다. “여기 앉아! 내가 새로 짠 사업 계획 좀 들어 줘.” 그의 눈은 반짝이고, 접시의 반찬은 식어 간다.', ['끝까지 듣고 질문을 던진다', '“그 부분은 이렇게 하면 어때요?” 그는 숟가락을 내려놓고 나를 쳐다봤다. “너… 되게 정확하다.”'], ['웃으며 듣기만 한다', '그는 신나게 이야기했고, 나는 고개만 끄덕였다. 밥은 거의 먹지 못했다.'], 'campus'],
+    ['비 오는 날의 우산', '갑작스러운 소나기. 도서관 앞에서 발을 동동 구르는데 재우가 우산을 기울인다. “같이 쓰자. 방향 같잖아.” 어깨가 반쯤 젖었다.', ['“선배가 젖잖아요, 더 붙어요”', '우산 아래 거리가 확 좁아졌다. 그는 귀가 빨개져서 괜히 하늘만 올려다봤다.'], ['“제가 뛰어갈게요”', '그는 우산을 내 손에 쥐여 주고 비를 맞으며 뛰어갔다. 이상한 사람이다. 다정한 건지 무심한 건지.'], 'rain'],
+    ['첫 약속', '“이번 주말에 시간 돼? 보여 주고 싶은 데가 있어.” 재우의 목소리가 평소보다 조금 낮다. 거절할 이유가 없는 제안이다. 문제는, 내가 이 사람이 어떻게 변하는지 안다는 것.', ['“좋아요, 어디든 가요”', '그가 데려간 곳은 작은 옥상이었다. 노을이 번지는 동안 그는 처음으로 아무 말도 하지 않았다.'], ['“생각해 보고 알려 줄게요”', '그는 “응, 기다릴게” 하고 웃었다. 그 웃음이 너무 선해서 오히려 마음이 복잡해졌다.'], 'campus'],
+  ],
+  minjun: [
+    ['도시락 두 개', '민준이 쭈뼛거리며 도시락 가방을 내민다. “엄마가 너 줄 거까지 쌌어. 난 아무 말도 안 했는데.” 귀 끝이 빨갛다. 나는 그 마음을 알아챈 지 오래다.', ['“고마워, 같이 먹자”', '벤치에 나란히 앉아 도시락을 나눠 먹었다. 그는 계란말이를 내 쪽으로 슬쩍 밀었다.'], ['“어머님께 고맙다고 전해 줘”', '그는 고개를 끄덕였다. 도시락 뚜껑을 닫는 손이 조금 아쉬워 보였다.'], 'campus'],
+    ['건축학과 야작', '건축학과 작업실에 야식을 들고 갔다. 민준은 모형 앞에서 눈을 비비다가 나를 보고 벌떡 일어난다. “네가 왜 여기 있어?” 책상 위엔 종이 눈금 자국이 가득하다.', ['“네 도면 구경하러 왔어”', '그는 서툴지만 신나서 설명을 이어 갔다. 선 하나에도 고집이 보였다. 나는 한참 그 고집이 좋았다.'], ['야식만 두고 돌아선다', '“잠깐만!” 그가 쫓아 나와 컵라면을 건넸다. “이거라도 같이…” 우린 계단에서 후루룩 먹었다.'], 'night'],
+    ['한강 자전거', '“일요일에 자전거 탈래? 나 빌려 둘게.” 민준이 뜬금없이 말한다. 한강 바람과 그의 어색한 용기.', ['“좋아, 대신 내가 앞서 갈래”', '그는 나를 따라잡으려 페달을 세게 밟다가 넘어질 뻔했다. 우리는 둘 다 한참 웃었다.'], ['“조금 걷자, 자전거는 다음에”', '둘이 천천히 강변을 걸었다. 그는 말없이 내 걸음에 맞췄다.'], 'campus'],
+    ['입대 이야기', '“나… 곧 입대 영장 나올 것 같아.” 민준이 신발 끝만 본다. “그 전에 너랑 하고 싶은 게 많은데.” 마흔의 나는 이런 말을 한 번도 들어 본 적이 없다.', ['“남은 시간 같이 보내자”', '그는 놀란 얼굴로 나를 보다가 천천히 웃었다. “…고마워. 진짜.”'], ['“몸 건강히 다녀와”', '그는 “응” 하고 짧게 대답했다. 아쉬움이 가득한 응이었다.'], 'campus'],
+  ],
+  hajin: [
+    ['특강이 끝난 뒤', '강의실이 비고 하진이 칠판을 지우고 있다. 눈이 마주치자 그가 웃는다. “아까 질문, 날카롭던데요. 어디서 그런 생각을 했어요?” 나는 마흔의 경험이라고 말할 수 없다.', ['“현실이 그렇게 흘러가는 걸 봤어요”', '그는 흥미롭다는 듯 한참 나를 봤다. “저랑 커피 한 잔 어때요? 더 듣고 싶어요.”'], ['“그냥 생각이 났어요”', '그는 “다음엔 그 생각을 더 들려줘요” 하고 명함을 건넸다.'], 'campus'],
+    ['라면 야식', '하진의 사무실이라기엔 좁은 방. 끓는 라면 냄새와 모니터 불빛. “제대로 된 걸 사 주고 싶은데, 아직은 이게 최선이에요.”', ['“저는 이게 더 좋아요”', '그는 웃음을 터뜨렸다. “그런 말 해 주는 사람 처음이에요.”'], ['“다음엔 제가 살게요”', '그는 “약속한 겁니다” 하고 손가락을 걸었다.'], 'night'],
+    ['투자자 미팅 전날', '하진이 말없이 창밖만 본다. 내일 미팅이 회사의 운명을 가른다. 나는 이 회사가 어떻게 될지 알지만, 지금 그는 한낱 불안한 청년이다.', ['“당신이라면 해낼 거예요”', '그는 숨을 크게 쉬고 고개를 끄덕였다. “그 말, 내일까지 들고 갈게요.”'], ['말없이 옆에 앉아 준다', '한 시간 동안 아무 말도 없었다. 그는 “고마워요, 이게 제일 큰 도움이었어요”라고 했다.'], 'night'],
+    ['첫 휴일', '“일 안 하는 날도 있어요. 오늘은 한 번 해 보려고요.” 하진이 어색하게 쉬는 법을 연습 중이다. 공원 벤치에서 우린 샌드위치를 나눠 먹었다.', ['“다음 휴일도 같이 보내요”', '그는 달력을 열어 보며 말했다. “…진짜 비워 둘게요.”'], ['“쉬는 날은 나를 위해 써요”', '그는 웃었다. “그럼 나를 위해 쓰는 시간에 당신이 들어와도 되죠?”'], 'campus'],
+  ],
+  taeoh: [
+    ['여행길의 카메라', '낯선 골목에서 길을 잃었다. 카메라를 든 남자가 불쑥 말을 건넨다. “여기 사진 잘 나오는 시간이에요. 십 분만 기다려 볼래요?” 그의 이름은 태오였다.', ['십 분을 같이 기다린다', '빛이 골목 끝에서 금빛으로 번졌다. 셔터 소리가 한 번 울렸다. “좋은 사진은 기다리는 사람이 찍어요.”'], ['고맙다며 길만 묻는다', '그는 약도를 그려 주었다. 서툰 약도 구석에 작은 별이 하나 그려져 있었다.'], 'campus'],
+    ['현상한 사진', '택배가 왔다. 열어 보니 골목에서 찍힌 내 뒷모습. 뒤에 메모가 있다. “허락 없이 찍어서 미안해요. 웃고 있는 걸 보고 놓칠 수 없었어요.”', ['“잘 나왔네요, 하나 더 찍어 줘요”', '그는 답장 대신 다음 사진을 보내왔다. 이번엔 정면이었다.'], ['“다음엔 허락 먼저 받아 주세요”', '그는 짧게 답했다. “약속할게요. 그 대신, 다음 허락을 받으러 갈게요.”'], 'room'],
+    ['새벽 기차', '새벽 첫 기차. 태오가 창가에 앉아 있다. 마주친 우연이 필연 같다. “어디 가요?” “저는 풍경 쫓는 중이에요.”', ['“저도 같이 가도 돼요?”', '그는 어이없다는 듯 웃더니 옆자리의 가방을 치웠다. 창밖으로 해가 떴다.'], ['“좋은 풍경 찍으세요”', '그는 손을 흔들었다. 기차가 멀어지는 동안 나는 이상하게 그를 한참 떠올렸다.'], 'night'],
+    ['전시회 초대', '“작은 전시를 열어요. 와 줄래요?” 초대장 한가운데 낯익은 뒷모습이 있다. 나다.', ['“제일 먼저 보러 갈게요”', '전시장 한쪽 벽이 통째로 내 사진이었다. 그는 “주인공이라 불렀어요” 하며 얼굴을 붉혔다.'], ['“시간 되면 들를게요”', '그는 괜찮다는 듯 웃었다. 하지만 그날 전시회 입구에 자꾸 시선이 갔다.'], 'campus'],
+  ],
+  jihu: [
+    ['회의 후 복도', '뷰티 팀 회의가 끝나고, 선배 지후가 서류를 건넨다. “기획안 방향 좋았어요. 다만 두 번째 장은 숫자를 더 보여 줘요.” 말투는 차갑지만 눈은 따뜻하다.', ['“그 부분 같이 봐 주실래요?”', '그는 시계를 보더니 “십오 분 줄게요” 하고 자리를 비켜 앉았다. 십오 분은 사십 분이 되었다.'], ['“수정해서 다시 올릴게요”', '그는 고개를 끄덕였다. “기대할게요.” 짧았지만 오래 남았다.'], 'cafe'],
+    ['야근 간식', '야근하는 팀에 지후가 간식 봉지를 두고 간다. 내 책상 위에는 메모가 붙은 따뜻한 차. “무리하지 말아요.”', ['메모에 답장을 붙여 둔다', '다음 날 내 책상엔 같은 필체의 두 번째 메모가 있었다. “답장 잘 받았어요.”'], ['조용히 차를 마신다', '차는 오래 따뜻했다. 말하지 않아도 전해지는 게 있다.'], 'night'],
+    ['론칭 전날', '신제품 론칭 전날. 지후가 처음으로 흔들리는 얼굴을 보인다. “내일 망치면 어쩌죠.” 완벽해 보이던 사람의 약한 면이다.', ['“저희가 같이 있잖아요”', '그는 짧게 웃었다. “…당신이 있어서 다행이에요.”'], ['“준비한 건 거짓말하지 않아요”', '그는 고개를 끄덕였다. 한결 가벼운 표정이었다.'], 'night'],
+    ['퇴근길 약속', '“저녁 먹고 가요. 오늘은 일 얘기 안 할게요.” 지후가 엘리베이터에서 말한다. 문이 열리고 닫힐 때까지 우린 서로를 쳐다보지 못했다.', ['“좋아요, 제가 맛집 알아요”', '식당에서 그는 처음으로 일 얘기가 아닌 어릴 적 이야기를 했다.'], ['“다음에 가요, 오늘은 피곤해서”', '그는 “그럼 다음에” 하고 웃었다. 엘리베이터가 내려가는 동안 마음도 따라 내려갔다.'], 'cafe'],
+  ],
+  dohyun: [
+    ['새벽 촬영장', '새벽 현장. 스태프 사이로 도현이 뛰어다니다 나를 발견한다. “추워요? 이거 입어요.” 낡은 점퍼가 어깨에 얹힌다. 담배 냄새가 아니라 커피 냄새가 났다.', ['“고마워요, 도현 씨도 입어요”', '그는 “전 추위 몰라요” 하며 웃었지만 입술이 새파랬다. 우린 점퍼 한 벌을 나눠 입었다.'], ['“괜찮아요, 일해야죠”', '그는 어깨를 으쓱하고 다시 뛰어갔다. 점퍼는 의자 위에 놓였다. 마음은 따뜻했다.'], 'night'],
+    ['컷 사인', '리허설에서 NG가 연달아 난다. 도현이 “컷! 다시 가자”를 외치고는 내게 속삭인다. “오늘 이 장면, 당신이라면 어떻게 찍겠어요?”', ['내 생각을 솔직히 말한다', '그는 메모를 하다가 고개를 들었다. “그거 쓸게요. 크레디트에 이름 올려 줄까요?”'], ['“저는 감독님을 믿어요”', '그는 웃었다. “겸손한 척은. 다음엔 꼭 대답해 줘요.”'], 'campus'],
+    ['촬영 후 포장마차', '촬영 끝, 새벽 두 시. 도현이 소주 대신 어묵 국물을 건넨다. “이 일, 후회하는 날도 있어요. 그래도 컷 소리 들으면 살아요.”', ['“그런 사람이 멋있어요”', '그는 웃으며 어묵 꼬치를 내밀었다. “그럼 오래 보세요.”'], ['“저도 그래요”', '우린 말없이 국물을 마셨다. 같은 감정을 가졌다는 게 위로가 됐다.'], 'night'],
+    ['휴일 데이트 제안', '“다음 주 일요일, 현장 없는 날이에요. 같이 영화 보러 가요. 남이 만든 걸 보는 날이죠.” 도현이 어색하게 말한다.', ['“좋아요, 제가 고를게요”', '극장 어둠 속에서 그는 영화보다 내 얼굴을 더 많이 본 것 같았다.'], ['“다음에 시간 맞춰 봐요”', '그는 “알겠어요, 기다릴게요” 하고 웃었다. 일정표에 작은 표시가 생겼다.'], 'campus'],
+  ],
+  sian: [
+    ['대본 읽기', '작가실. 시안이 내가 쓴 장면을 읽고 있다. 한참 말이 없더니 이렇게 말한다. “이 대사, 누구 얘기예요? 이상하게 실제 같아서요.” 마흔의 상처가 문장에 묻어 있었나 보다.', ['“어떤 사람의 후회예요”', '그는 오래 나를 봤다. “…그 사람, 괜찮은 사람이었으면 좋겠어요.”'], ['“그냥 상상이에요”', '그는 웃었다. “그럼 상상력이 대단하네요.” 하지만 눈은 믿지 않는 눈이었다.'], 'cafe'],
+    ['마감 전날 밤', '새벽 세 시. 시안이 커피를 내밀며 말한다. “한 줄만 더 써 보죠. 그다음엔 자요.” 한 줄은 한 장이 되고, 한 장은 한 편이 되었다.', ['“한 줄만 더요”', '다 쓰고 나니 창밖이 푸르렀다. 그는 “고마워요, 오늘 같은 밤은 처음이에요” 했다.'], ['“이제 자야겠어요”', '그는 “그래요, 푹 자요” 하고 불을 꺼 주었다. 문 닫히는 소리가 조심스러웠다.'], 'night'],
+    ['시청률 날', '첫 방송이 끝났다. 시안이 폰을 뒤집어 놓고 숨을 고른다. “확인할 용기가 없어요. 같이 봐 줄래요?”', ['“같이 봐요, 몇이든 우리 거예요”', '숫자는 평범했지만 그는 웃었다. “…같이 보니까 괜찮네요.”'], ['“먼저 보고 알려 줘요”', '그는 잠깐 서운한 얼굴이었다가 이내 고개를 끄덕였다.'], 'room'],
+    ['편지 같은 문자', '시안에게서 긴 문자가 온다. “내일 약속 있어요? 제가 쓴 문장 말고, 제 말로 하고 싶은 이야기가 있어서요.”', ['“없어요, 내일 만나요”', '그는 짧게 답했다. “…그럼 내일 쓸 문장은 제 마음대로 할게요.”'], ['“무슨 이야기인지 궁금하네요”', '그는 “그럼 더 궁금하게 둘게요” 하고 웃는 이모티콘을 보냈다.'], 'room'],
+  ],
+  seunghyun: [
+    ['대기실의 인사', '대기실 복도. 같은 소속사의 승현이 마스크를 내리고 인사한다. “처음 봤을 때부터 궁금했어요. 카메라가 없을 땐 어떤 사람이에요?”', ['“지금 이 모습이 전부예요”', '그는 웃음을 참지 못했다. “카메라 없는 얼굴이 훨씬 낫네요.”'], ['“그냥 평범해요”', '그는 “평범한 게 제일 어려운 건데” 하고 고개를 끄덕였다.'], 'cafe'],
+    ['대본 맞춰 보기', '“이 장면 상대역 좀 해 줘요. 연인 대사인데…” 승현이 대본을 내민다. 읽는 동안 대사가 진짜인지 연기인지 헷갈렸다.', ['끝까지 진지하게 받아 준다', '그는 마지막 줄에서 대본을 내려놓았다. “…이건 대본에 없던 표정인데요.”'], ['웃음으로 넘긴다', '“진지하게 해 줘요!” 그는 투덜댔지만 같이 웃었다.'], 'room'],
+    ['심야 연습실', '연습실 불이 켜져 있다. 승현이 거울 앞에서 혼자 안무를 반복한다. 땀이 턱에서 뚝뚝 떨어진다. “아직 멀었어요. 더 해야 해요.”', ['“같이 박자 세어 줄게요”', '카운트 소리에 맞춰 그는 한 번도 틀리지 않고 춤췄다. “…이 박자, 당신 목소리 맞네요.”'], ['물 한 병만 두고 간다', '다음 날 그는 빈 병을 돌려주며 말했다. “어제 그 물이 제일 큰 응원이었어요.”'], 'night'],
+    ['스캔들 소문', '“요즘 같이 다닌다는 소문이 돌아요.” 승현이 조심스럽게 말한다. “난 괜찮은데, 당신이 불편할까 봐.”', ['“소문보다 중요한 건 우리잖아요”', '그는 놀란 눈으로 나를 보다가 마스크를 올려 웃음을 숨겼다.'], ['“조금만 조심해요”', '그는 고개를 끄덕였다. “알겠어요. 그래도 연락은 계속해도 되죠?”'], 'cafe'],
+  ],
+  geonwoo: [
+    ['야근하는 로펌', '자정의 로펌 복도. 건우가 서류를 정리하다가 내 쪽을 본다. “아직 안 갔어요? 의뢰인 때문에요?” 눈 밑의 그늘이 깊다.', ['“같이 검토할까요?”', '그는 잠시 고민하다가 서류 절반을 내게 넘겼다. 그날 우리는 새벽 두 시까지 같이 있었다.'], ['“곧 갈 거예요”', '그는 “무리하지 말아요”라는 말을 남기고 방으로 들어갔다.'], 'night'],
+    ['점심 한 끼', '“오늘 점심, 같이 해요. 판례 얘기 안 할게요.” 건우의 말투는 딱딱하지만 약속은 지켜졌다. 그는 처음으로 자기 이야기를 했다.', ['“어릴 적 이야기 더 들려줘요”', '그는 의외로 말이 많았다. 변호사를 꿈꾼 이유는 아버지의 한마디였다고.'], ['“저도 제 얘기 할게요”', '우리는 서로의 회사 이야기를 나눴다. 이상하게 마음이 편했다.'], 'cafe'],
+    ['패소한 날', '재판에서 졌다. 건우가 복도에 서서 말이 없다. “이 사건, 이겨야 했는데.” 그의 어깨가 아주 작아 보인다.', ['“오늘 졌어도 당신은 최선이었어요”', '그는 눈을 감고 숨을 길게 내쉬었다. “…그 말을 듣고 싶었나 봐요.”'], ['말없이 커피를 건넨다', '그는 한 모금 마시고 쓴웃음을 지었다. “이건 설탕이 너무 많네요.” 하지만 다 마셨다.'], 'night'],
+    ['주말 산책', '“주말에 한강 걸을래요? 법전 없이.” 건우의 제안이 어색하게 따뜻하다.', ['“좋아요, 천천히 걸어요”', '그는 노을 앞에서 걸음을 멈췄다. “이렇게 하늘 본 게 몇 년 만이죠.”'], ['“다음 주에 시간 되면요”', '그는 “알겠습니다” 하고 정중하게 답했다. 거절당한 사람 같지 않게 웃었다.'], 'campus'],
+  ],
+  yuchan: [
+    ['장애 대응', '서비스가 멈췄다. 팀이 비명을 지르는 와중에 유찬은 묵묵히 코드를 본다. 이마에 땀이 맺혔다. 그가 문득 나를 본다. “이 로그 좀 같이 봐 줄래요?”', ['“같이 볼게요, 어디부터 볼까요”', '삼십 분 뒤 서비스가 복구됐다. 그는 모니터를 닫고 말했다. “…덕분이에요.”'], ['“저는 문서 정리 맡을게요”', '그는 고개를 끄덕였다. 역할을 나눈 덕에 우린 같은 편이 되었다.'], 'night'],
+    ['야식 주문', '야근 시간, 유찬이 슬그머니 치킨 앱을 내민다. “메뉴 골라요. 법카 쓸 수 있는 날이에요.” 어색하게 장난치는 표정이 귀엽다.', ['“제일 맵게 시켜요”', '그는 매워서 눈물을 흘리면서도 웃었다. “이런 건 처음이에요.”'], ['“순한 맛으로요”', '그는 “안 매운 걸로 시킬게요, 사실 저도 못 먹어요” 하고 고백했다.'], 'night'],
+    ['오픈소스 후드', '유찬이 노트북을 열어 보여 준다. “주말에 만든 거예요. 별 거 아닌데.” 화면 속엔 우리가 같이 만든 기능의 작은 아이콘이 있다.', ['“진짜 멋있어요, 이름 붙여요”', '그는 한참 고민하다 이름을 정했다. 내 이름 이니셜이 들어가 있었다.'], ['“흥미롭네요”', '그는 “아직 부끄러워서…” 하고 화면을 닫았다.'], 'room'],
+    ['휴일 카페', '“휴일엔 코드를 안 보려고요. 대신 카페 가요.” 유찬이 수줍게 말한다. 알림을 끈 폰이 테이블 위에 엎어져 있다.', ['“오늘은 저한테만 집중해요”', '그는 폰을 가방에 넣고 웃었다. “이런 하루는 처음이에요.”'], ['“저도 오늘은 쉬어요”', '둘이서 말없이 라테를 마셨다. 편안한 침묵이 오래 이어졌다.'], 'cafe'],
+  ],
+  ujin: [
+    ['작업실의 원단', '디자인실. 우진이 원단 샘플을 내 어깨에 대본다. “이 색, 당신한테 어울려요. 가만 있어 봐요.” 가까운 거리가 어색하게 느껴졌다.', ['“저한테 맞는 색을 골라 줘요”', '그는 한참 고르다가 연한 라벤더를 집었다. “이 색이 제일 당신 같아요.”'], ['“디자인 쪽이 먼저죠”', '그는 웃으며 샘플을 접었다. “그래도 이 색은 기억해 둘게요.”'], 'room'],
+    ['밤샘 샘플실', '컬렉션 마감 전날 새벽. 우진의 손끝은 바늘에 찔려 빨갛다. 나는 말없이 반창고를 붙여 준다.', ['“무리하지 말아요, 같이 마무리해요”', '그는 처음으로 도움을 청하는 얼굴이었다. “…그럼 부탁해요.”'], ['반창고만 두고 간다', '그는 반창고를 한참 쳐다보다가 소중하게 주머니에 넣었다.'], 'night'],
+    ['쇼룸의 질문', '완성된 룩 앞에서 우진이 묻는다. “솔직히 어때요? 당신의 눈은 믿을 수 있어서요.”', ['솔직한 감상을 말한다', '그는 진지하게 메모했다. “역시 당신 말이 맞아요. 한 군데 고칠게요.”'], ['“멋져요”라고만 말한다', '그는 “그 말도 좋지만 다음엔 더 구체적인 말도 들려줘요” 하고 웃었다.'], 'campus'],
+    ['쉬는 날의 산책', '“오늘은 옷 안 보고 길만 걸어요.” 우진이 이상하게 쑥스러워한다. 우리는 그늘진 길을 걸으며 오래 이야기했다.', ['“다음에도 같이 걸어요”', '그는 걸음을 멈췄다. “…그 말, 기억할게요.”'], ['“오늘 즐거웠어요”', '그는 “저도요” 하고 짧게 답했지만, 목소리가 따뜻했다.'], 'campus'],
+  ],
+};
+const ROM_GAP = 2;
+function romEligible(S, id){
+  const v = S.love[id]; if(!v || v.stage !== -1 || S.partner || !ROM[id]) return null;
+  const n = v.rom || 0; if(n >= ROM[id].length) return null;
+  if(S.m - (v.lastRom == null ? -9 : v.lastRom) < ROM_GAP) return null;
+  if(v.aff < [0, 5, 14, 24][n]) return null;
+  return n;
+}
+function romEvent(S){
+  let best = null;
+  for(const id of Object.keys(ROM)){ const n = romEligible(S, id); if(n == null) continue; if(!best || S.love[id].aff > S.love[best.id].aff) best = {id, n}; }
+  if(!best) return null;
+  const {id, n} = best, lv = LOVERS[id], sc = ROM[id][n];
+  return {id:`rom_${id}_${n + 1}`, lover:id, speaker:lv.name, title:sc[0], place:sc[4], img:`art/lv_${id}.webp`,
+    text:S => sc[1],
+    choices:[
+      {label:sc[2][0], sub:'다가간다 · 호감 크게 ↑', run(S){ const v = S.love[id], ch = []; v.rom = n + 1; v.lastRom = S.m; addAff(S, id, 7 + (S.st[lv.like] || 0) / 22, ch); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc[2][1], chips:ch}; }},
+      {label:sc[3][0], sub:'조심스럽게 · 호감 ↑', run(S){ const v = S.love[id], ch = []; v.rom = n + 1; v.lastRom = S.m; addAff(S, id, 4, ch); fx(S, {self:1, stress:-1}, ch); return {text:sc[3][1], chips:ch}; }},
+    ]};
 }
 
 // 이벤트 데이터 (ENGINE 구간 안, DOM 금지)
@@ -1681,7 +1806,7 @@ function initTitle(){
 function renderWiz(){
   const st = WIZ[wizStep];
   $('w-dots').innerHTML = WIZ.map((_, i) => `<i class="${i <= wizStep ? 'on' : ''}"></i>`).join('');
-  $('w-q').innerHTML = `<h2>${esc(st.q)}</h2><p class="sub">${esc(st.p)}</p>`;
+  $('w-q').innerHTML = `<div class="eyebrow">STEP ${wizStep + 1} / ${WIZ.length}</div><h2>${esc(st.q)}</h2><p class="sub">${esc(st.p)}</p>`;
   if(st.key === 'name'){
     $('w-body').innerHTML = `<input type="text" id="in-name" maxlength="6" value="${esc(wizName)}" autocomplete="off" aria-label="이름"><p class="sub" style="text-align:center;margin-top:12px">여섯 글자까지 쓸 수 있어요.</p>`;
   } else {
@@ -1727,29 +1852,64 @@ function autoPlan(){
   while(i <= 2){ plan[i++] = 'rest'; }
   return plan;
 }
-function resCard(label, v, bad){ return `<div class="rc ${bad ? 'warn' : ''}"><small>${label}</small><b>${Math.round(v)}</b><div class="mini"><i style="width:${clamp(v, 0, 100)}%"></i></div></div>`; }
+const ICONS = {
+  gear:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
+  phone:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></svg>',
+  stats:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg>',
+  company:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 21V9l6-3v15M9 21V3l12 4v14M3 21h18"/><path d="M13 9h4M13 13h4M13 17h4"/></svg>',
+  dex:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-3a3 3 0 0 0-3 3"/><path d="M17 4v9l1.5-1.2L20 13V4"/></svg>',
+  chat:'<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><circle cx="10" cy="10.5" r="1" fill="currentColor"/><circle cx="10" cy="13.5" r="1" fill="currentColor"/></svg>',
+  edu:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>',
+  work:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V4h8v3M3 12h18"/></svg>',
+  home:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
+  money:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1.2 1.2-2 2.5-2s2.5.8 2.5 2-1.2 1.7-2.5 2-2.5.8-2.5 2 1.2 2 2.5 2 2.5-.8 2.5-2"/></svg>',
+  rest:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>',
+  self:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>',
+  heart:'<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.7 4.5c2.1 0 3.5 1.1 4.3 2.4h2c.8-1.3 2.2-2.4 4.3-2.4 3.7 0 5.8 3.9 4.3 7.3C19.5 16.4 12 21 12 21z"/></svg>',
+};
+function paintIcons(){ document.querySelectorAll('[data-icon]').forEach(el => { if(!el.dataset.painted){ el.innerHTML = ICONS[el.dataset.icon] || ''; el.dataset.painted = '1'; } }); }
+function ring(v, color, label){ const r = 17, c = 2 * Math.PI * r, f = clamp(v, 0, 100) / 100; return `<svg viewBox="0 0 46 46" aria-label="${label} ${Math.round(v)}"><circle cx="23" cy="23" r="${r}" fill="none" stroke="#dde3f2" stroke-width="5"/><circle cx="23" cy="23" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(c * f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 23 23)"/><text x="23" y="27.5" text-anchor="middle" font-size="12.5" font-weight="800" fill="#14181B">${Math.round(v)}</text></svg>`; }
+// 하단 탭 → 활동 분류. 가운데 '홈'은 스케줄 시트를 연다
+const TABS = [{cat:'공부', ic:'edu'}, {cat:'일', ic:'work'}, {cat:'돈', ic:'money'}, {cat:'홈', ic:'home', home:true}, {cat:'휴식', ic:'rest'}, {cat:'나', ic:'self'}, {cat:'관계', ic:'heart'}];
+let pickCat = null, activeSlot = 0;
+function firstEmpty(){ const i = S.plan.findIndex(x => !x); return i < 0 ? 0 : i; }
+function weakest(){ const P = {work:S.work, bond:S.bond, self:S.self}; return Object.keys(P).sort((a, b) => P[a] - P[b])[0]; }
+function adviceText(){
+  if(S.m === 0 && !S.seen.advice0) return {t:'스무 살의 3월이야. 한 달에 활동 세 칸. 일·관계·나, 세 기둥을 모두 50 위로 올려야 \'자유 시계\'가 열려. 아래 탭에서 활동을 골라 봐.'};
+  if(S.hp < 30) return {t:'몸이 먼저야. 체력이 바닥이면 번아웃이 와. 이번 달엔 휴식 한 칸을 꼭 넣어.'};
+  if(S.stress > 75) return {t:'스트레스가 너무 높아. 쉬거나 취미로 풀지 않으면 한 달을 통째로 날릴 수 있어.'};
+  if(S.cash < 60) return {t:'통장이 비어 간다. 알바나 일로 자금을 먼저 채워 둬.'};
+  const w = weakest(), msg = {work:'일 기둥이 가장 약해. ' + (S.hired ? '회사 업무와 프로젝트에 칸을 더 써 보자.' : S.m < 48 ? '공부와 인턴으로 진로를 준비하자.' : '구직 활동을 서두르자.'), bond:'관계 기둥이 약해. 친구, 가족, 마음에 둔 사람과 시간을 보내 봐. 전화도 좋아.', self:'나 기둥이 약해. 운동, 일기, 취미로 나를 돌보는 시간이 필요해.'};
+  return {t:msg[w]};
+}
+function showDialog(){ const a = adviceText(); $('dlg-head').textContent = '일흔의 나'; $('dlg-body').textContent = a.t; $('dialog').hidden = false; if(S.m === 0) S.seen.advice0 = true; }
 function render(){
   if(!S) return;
-  const left = TOTAL_MONTHS - S.m;
-  $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
+  const left = TOTAL_MONTHS - S.m, img = `art/${heroKey(S)}.webp`;
+  $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
+  $('hud-avatar').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
+  $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
+  $('hud-age').textContent = `${ageOf(S)}세 · ${left}개월 남음`;
+  $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
-  $('h-job').textContent = `${S.name} ${ageOf(S)}세 · ${jobLine}`;
-  $('h-left').textContent = `${left}개월 남음`;
-  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
-  $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
-  $('h-res').innerHTML = `<div class="rc"><small>💰 자금</small><b>${fmtMoney(S.cash)}</b></div>` + resCard('❤️ 체력', S.hp, S.hp < 30) + resCard('😮‍💨 스트레스', S.stress, S.stress > 70) + resCard('🔮 선명도', S.clarity, false);
-  $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="pcard ${k} ${S[k] < 30 ? 'low' : ''}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(S[k])}</b></div><div class="t"><i style="width:${S[k]}%"></i><u></u></div></div>`).join('');
-  $('slots').innerHTML = [0, 1, 2].map(i => {
-    const id = S.plan[i];
-    if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">⏩</span><span class="ds">이어지는 칸</span></button>`;
-    if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">＋</span><span class="ds">활동 고르기</span></button>`;
-    const a = ACTS[id];
-    return `<button class="slot filled" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span><span class="tg">${actTags(S, id, 2).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span></button>`;
-  }).join('');
-  document.querySelectorAll('.slot[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
-  $('b-run').disabled = S.plan.some(x => !x);
-  $('b-prev').disabled = !S.lastPlan;
+  $('tb-sub').textContent = `${S.name} · ${jobLine}`;
+  const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
+  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false);
+  $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
+  const full = !S.plan.some(x => !x);
+  $('slots3').innerHTML = [0, 1, 2].map(i => {
+    const id = S.plan[i];
+    if(id === '>') return `<button class="slot3 cont" disabled><small>${SLOT_NAMES[i]}</small><b>↳ 이어서</b></button>`;
+    if(!id) return `<button class="slot3 ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>＋ 비어 있음</b></button>`;
+    return `<button class="slot3 filled ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>${ACTS[id].icon} ${actName(S, id)}</b></button>`;
+  }).join('');
+  document.querySelectorAll('.slot3[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
+  const go = $('btn-go'); go.textContent = full ? '이번 달 시작' : '스케줄 정하기'; go.classList.toggle('ready', full);
+  $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${t.cat}</span></button>`).join('');
+  document.querySelectorAll('.tb').forEach(b => b.onclick = () => openPicker(firstEmpty(), b.dataset.cat === '홈' ? null : b.dataset.cat));
+  paintIcons();
+  if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; showDialog(); }
 }
 function setPlan(i, id){
   const p = S.plan;
@@ -1757,25 +1917,32 @@ function setPlan(i, id){
   clear(i); const a = ACTS[id];
   if(a.slots === 2){ clear(i + 1); p[i] = id; p[i + 1] = '>'; } else p[i] = id;
 }
-const CAT_ICON = {'공부':'📖', '일':'💼', '돈':'💰', '관계':'💞', '나':'🌿', '휴식':'🛌'};
-let pickCat = null;
-function openPicker(i){
-  const P = {work:S.work, bond:S.bond, self:S.self}, lowK = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
-  if(!pickCat) pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK];
+const sheetHead = (t, sub) => `<div class="sh-head"><b>${t}</b><button class="sh-x" id="x" aria-label="닫기">×</button></div>${sub ? `<div class="sub" style="margin-bottom:8px">${sub}</div>` : ''}`;
+function openPicker(i, cat){
+  activeSlot = i;
+  if(S.plan[i] === '>') i = activeSlot = i - 1;
+  if(cat) pickCat = cat; else if(!pickCat || !cat){ const lowK = weakest(); pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK]; }
   const cats = ACTS_ORDER_CATS.filter(c => Object.values(ACTS).some(a => a.cat === c));
   const draw = () => {
     const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === pickCat).map(id => {
-      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - i) why = '이 칸에서는 못 해요 (2칸 필요)';
+      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - activeSlot) why = '이 칸에서는 못 해요 (2칸 필요)';
       return {id, a, why};
     }).sort((x, y) => (x.why ? 1 : 0) - (y.why ? 1 : 0));
-    openSheet(`<div class="picker"><div class="phead"><h2>${SLOT_NAMES[i]}에 무엇을 할까요?</h2><div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}"><span>${CAT_ICON[c] || ''}</span>${c}</button>`).join('')}</div></div><div class="acts">` + ids.map(({id, a, why}) => {
+    const spend = S.plan.reduce((t, id) => t + (id && id !== '>' && ACTS[id].cost || 0), 0);
+    openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${pickCat}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${c}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act" data-id="${id}" ${why ? 'disabled' : ''}><span class="ic">${a.icon}</span><span><span class="top"><b>${actName(S, id)}</b><em>${em}</em></span><small>${why || a.desc}</small>${why ? '' : `<span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</span></button>`;
-    }).join('') + `</div><button class="btn ghost sm" style="margin-top:14px" id="x">닫기</button></div>`);
-    $('x').onclick = closeSheet;
+      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
+    }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
+    $('x').onclick = () => { closeSheet(); render(); };
+    $('b-auto').onclick = () => { S.plan = autoPlan(); save(); closeSheet(); render(); };
+    $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
-    document.querySelectorAll('.act').forEach(b => b.onclick = () => { setPlan(i, b.dataset.id); closeSheet(); render(); save(); });
+    document.querySelectorAll('.act').forEach(b => b.onclick = () => {
+      setPlan(activeSlot, b.dataset.id); save();
+      const nx = S.plan.findIndex(x => !x);
+      if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); }
+    });
   };
   draw();
 }
@@ -1786,16 +1953,38 @@ function openPhone(){
   const left = callsLeft(S);
   const rows = contactsOf(S).map(c => { const done = calledThisMonth(S, c.id), dis = done || left <= 0;
     return `<button class="contact" data-id="${c.id}" ${dis ? 'disabled' : ''}><img class="av" src="${c.img}" alt="" onerror="this.style.visibility='hidden'"><span class="ci"><b>${esc(c.name)}</b><small>${esc(c.sub)}${done ? ' · 이번 달 통화함' : ''}</small></span><span class="cb">📞</span></button>`; }).join('');
-  openSheet(`<h2>전화하기</h2><p class="sub">이번 달 통화 ${left}회 남음 · 활동 칸은 쓰지 않아요</p><div class="contacts">${rows}</div><button class="btn ghost sm" id="x" style="margin-top:12px">닫기</button>`);
+  openSheet(sheetHead('전화하기', `이번 달 통화 ${left}회 남음 · 활동 칸은 쓰지 않아요`) + `<div class="contacts">${rows}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('.contact').forEach(b => b.onclick = async () => {
     const r = tryCall(S, b.dataset.id); if(typeof r === 'string'){ toast(r); return; }
     closeSheet(); await playEvent(r); save(); render();
   });
 }
+const meter = (cls, label, v) => `<div class="meter ${cls || ''}"><span>${label}</span><div class="bar"><i style="width:${clamp(v, 0, 100)}%"></i></div><b>${Math.round(v)}</b></div>`;
 function showStats(){
-  const rows = STAT_KEYS.map(k => `<div class="srow"><span>${STAT[k]}</span><div class="t"><i style="width:${S.st[k]}%"></i></div><b>${Math.round(S.st[k])}</b></div>`).join('');
-  openSheet(`<h2>능력치</h2><p class="sub">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="statrows">${rows}</div><p class="sub" style="margin-top:12px">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`);
+  openSheet(sheetHead('능력치', `${S.name} · ${ageOf(S)}세`) + '<h3>컨디션</h3>' + meter('', '체력', S.hp) + meter('', '스트레스', S.stress) + meter('', '선명도', S.clarity) + '<h3>세 기둥 (각 50 이상, 합 190 이상이면 자유)</h3>' + Object.keys(PILLAR).map(k => meter(k, PILLAR[k], S[k])).join('') + '<h3>능력치</h3>' + STAT_KEYS.map(k => meter('', STAT[k], S.st[k])).join('') + `<div class="foot">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
+  $('x').onclick = closeSheet;
+}
+function showCareer(){
+  const m = majorOf(S);
+  const list = CAREER_IDS.map(id => { const c = CAREERS[id], p = fitP(S, id), cur = S.track === id;
+    return `<div class="kv"><span>${c.icon} ${c.name}${cur ? ' ✔' : ''}${m.fav.includes(id) ? ' ★' : ''}<br><small class="sub">${c.company}</small></span><b>${cur && S.hired ? rankName(S) : fitLabel(p)}</b></div>`; }).join('');
+  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${jobOf(S).pay}만</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
+  $('x').onclick = closeSheet;
+}
+function showLove(){
+  const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]);
+  const row = id => { const lv = LOVERS[id], v = S.love[id];
+    if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
+    const callable = contactsOf(S).some(c => c.id === id);
+    return `<button class="lcard" data-call="${id}" ${callable ? '' : 'disabled'}><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">${callable ? '📞' : '·'}</span></button>`; };
+  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화해요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
+  $('x').onclick = closeSheet;
+  document.querySelectorAll('[data-call]').forEach(b => b.onclick = async () => { const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+}
+function showDex(){
+  const seen = store(ENDINGS_KEY) || [];
+  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? '' : 'lock'}"><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span></div>`; }).join('') + `<h3>이번 생의 기록</h3><div class="txt" style="font-size:13px">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div>`);
   $('x').onclick = closeSheet;
 }
 
@@ -1828,7 +2017,7 @@ function playEvent(ev){
     nextBeat();
   });
 }
-const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`<h2>${esc(title)}</h2><div class="txt">${body}</div><div class="chips">${chipHTML(chips)}</div><button class="btn" id="nx" style="margin-top:14px">${btn || '계속'}</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
+const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`<div class="sh-head"><b>${esc(title)}</b></div><div class="txt">${body}</div><div class="chips">${chipHTML(chips)}</div><button class="btn blue" id="nx" style="margin-top:14px">${btn || '계속'}</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
 
 // ── 한 달 진행 ────────────────────────────────────────────────
 const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
@@ -1884,20 +2073,17 @@ function showEnding(){
 
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
-  $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
-  $('b-auto').onclick = () => { S.plan = autoPlan(); render(); save(); };
-  $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); render(); save(); } };
+  $('btn-go').onclick = () => { if(S.plan.some(x => !x)){ openPicker(firstEmpty()); return; } $('btn-go').disabled = true; $('dialog').hidden = true; runMonth().finally(() => { $('btn-go').disabled = false; }); };
   $('b-call').onclick = openPhone;
-  $('b-stat').onclick = showStats;
-  $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><p class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
-  $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><div style="display:grid;gap:10px"><button class="btn ghost sm" id="m-theme">🌗 밝은/어두운 화면</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button><button class="btn ghost sm" id="x">닫기</button></div>`);
+  $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
+  $('dlg-x').onclick = () => { $('dialog').hidden = true; };
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex}[b.dataset.sheet])());
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div>`);
     $('x').onclick = closeSheet;
-    $('m-theme').onclick = () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'light' ? 'dark' : 'light'; try{ localStorage.setItem('rewind-ten-theme', d.dataset.theme); }catch(e){} closeSheet(); };
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
-  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')) closeSheet(); });
+  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
 }
-try{ const t = localStorage.getItem('rewind-ten-theme'); if(t) document.documentElement.dataset.theme = t; }catch(e){}
-initTitle(); initGame();
+initTitle(); initGame(); paintIcons();
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}

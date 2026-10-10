@@ -318,7 +318,7 @@ EVENTS.push(
      {label:'미소로 응원하며 이야기를 들어 준다', sub:'관계 +3', run:S => R_(S, {bond:3, stress:-2}, '소연의 이야기를 들으며 따뜻함이 번졌다. 누군가의 시작을 지켜보는 건 이렇게 좋은 일이다.')},
      {label:'아는 미래를 은근히 귀띔한다', sub:'선명도 -4 · 관계 +2', run:S => { S.borrowed++; return R_(S, {clarity:-4, bond:2}, '“그 사람, 분명 좋은 사람일 거야.” 말해 놓고 입을 다물었다. 소연은 의아한 듯 웃었다.'); }},
    ]},
-  {id:'f_soyeon_wedding', once:true, w:60, cond:S => S.m >= 98, speaker:'소연', img:'art/soyeon.webp', place:'night', title:'소연의 결혼',
+  {id:'f_soyeon_wedding', once:true, w:60, cond:S => S.m >= 98 && SF(S).soyeonWedding === undefined, speaker:'소연', img:'art/soyeon.webp', place:'night', title:'소연의 결혼',
    beats:['소연이 결혼한다. 청첩장을 건네는 소연의 손이 조금 떨렸다.', '“네가 제일 먼저 와 줬으면 좋겠어. 부케도 받아 줘.” 마흔의 나는 이 결혼식에서 혼자 앉아 있었다는 기억이 있다.'],
    text:S => '소연의 결혼식 날. 신부 대기실 문 앞에서 숨을 한 번 들이쉬었다.',
    choices:[

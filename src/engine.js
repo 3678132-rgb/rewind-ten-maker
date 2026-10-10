@@ -127,7 +127,7 @@ const ACTS = {
   jobhunt: {cat:'일',   icon:'📮', name:'구직 활동', desc:'자소서, 포트폴리오, 면접. 졸업 후에도 일이 없다면 이것부터.', cost:10, hp:-5, stress:8, eff:{neg:1.5, work:0.8}, req:S => S.hired ? (inLawSchool(S) ? '로스쿨 재학 중에는 못 해요' : S.m < (S.hiredAt || 0) + 3 ? '입사한 지 얼마 안 됐어요' : null) : (S.m < 36 ? '구직 대상이 아니에요' : null), run(S, ch, out){
     if(S.hired){ // 이직: 지금 직장에 다니면서 다른 회사에 도전한다
       const alt = CAREER_IDS.filter(i => i !== S.track && i !== 'lawyer').sort((a, b) => fitP(S, b) - fitP(S, a))[0], c2 = CAREERS[alt]; S.tries = (S.tries || 0) + 1;
-      if(R() < fitP(S, alt) * 0.85){ S.track = alt; S.hiredAt = S.m; S.rank = 0; S.promoAt = null; out.note = `${c2.company} 이직 성공! 새 회사로 출근하게 됐다.`; gauge(S, 'work', 2, ch); bump(S, 'stress', 4, ch); } else out.note = `${c2.company} 면접에서 아쉽게 떨어졌다. 현재 직장은 그대로 다니기로 했다.`;
+      if(R() < fitP(S, alt) * 0.85){ S.track = alt; S.hiredAt = S.m; S.rank = 0; S.promoAt = null; S.switched = (S.switched || 0) + 1; out.note = `${c2.company} 이직 성공! 새 회사로 출근하게 됐다.`; gauge(S, 'work', 2, ch); bump(S, 'stress', 4, ch); } else out.note = `${c2.company} 면접에서 아쉽게 떨어졌다. 현재 직장은 그대로 다니기로 했다.`;
       return; }
     if(!S.track) S.track = CAREER_IDS.slice().sort((a, b) => fitP(S, b) - fitP(S, a))[0];
     const c = CAREERS[S.track]; S.tries = (S.tries || 0) + 1;

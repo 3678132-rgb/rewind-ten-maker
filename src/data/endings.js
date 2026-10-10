@@ -10,18 +10,44 @@ function finalPillars(S){
 }
 function isFree(P){ return P.work >= FREE_MIN && P.bond >= FREE_MIN && P.self >= FREE_MIN && (P.work + P.bond + P.self) >= FREE_SUM; }
 
+const loverOf = S => S.partner && S.love[S.partner] && S.love[S.partner].stage >= 1 && !(S.secret && S.secret[S.partner]) ? S.partner : null;
+const exLovers = S => Object.keys(S.love).filter(i => S.love[i].stage === -9).length;
 function computeEnding(S){
   if(S.ending) return S.ending;
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};
+  const lov = loverOf(S), secretNow = Object.keys(S.secret || {}).some(i => S.secret[i] && S.love[i] && S.love[i].stage >= 1);
   if(isFree(P)){
+    if(S.divorced && !S.married) return 'free_divorced';
+    if(S.married && P.bond >= 62) return 'free_wedding';
+    if(lov && P.bond >= 58) return 'free_love_' + lov;
+    if(secretNow) return 'free_secret';
+    if(S.hired && (S.rank || 0) >= 3 && !inLawSchool(S)) return 'free_exec';
+    if((S.switched || 0) >= 1 && S.hired) return 'free_hopper';
+    if(S.cash >= 1500) return 'free_rich';
     if(CAREERS[S.track] && S.hired && P.work >= 62 && !inLawSchool(S)) return 'free_' + S.track;
     if((S.engaged || S.married) && P.bond >= 70) return 'free_home';
+    if(Object.keys(S.love).filter(i => S.love[i].aff >= 40 && S.love[i].stage !== -9).length >= 3) return 'free_many';
+    if(!S.partner && !S.married && P.self >= 60) return 'free_single';
+    if(S.st.know >= 68) return 'free_scholar';
+    if(S.st.charm >= 62) return 'free_charm';
+    if(S.st.dare >= 55) return 'free_dare';
+    if(S.st.ins >= 62) return 'free_ins';
     if(P.self >= 75) return 'free_soul';
     return 'free_balance';
   }
   if(isFree(raw)) return 'ret_borrowed'; // 겉보기엔 통과했지만 빌린 인생이었다
   const lowest = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
   if(P.work < 35 && P.bond < 35 && P.self < 35) return 'ret_all';
+  if(S.lastDisc != null && P.bond < 50) return 'ret_exposed';
+  if(S.divorced) return 'ret_divorce';
+  if(exLovers(S) >= 3 && P.bond < 55) return 'ret_breakups';
+  if(S.married && P.bond < 50) return 'ret_cold';
+  if(S.stress >= 85) return 'ret_burnout';
+  if(S.cash >= 1500) return 'ret_rich';
+  if(!S.hired && S.m >= 60) return 'ret_nojob';
+  if((S.switched || 0) >= 2) return 'ret_hopper';
+  if(P.work >= 68 && P.bond < 50 && P.self < 50) return 'ret_workaholic';
+  if(S.st.know >= 68) return 'ret_bookish';
   return 'ret_' + lowest;
 }
 
@@ -59,5 +85,47 @@ const ENDINGS = {
   ret_all: {free:false, icon:'🌧️', title:'다시, 비 오는 골목', sub:'회귀 · 모든 것의 부족',
     letter:`돌아온 ${'{name}'}에게.\n\n십 년은 짧고, 나는 너무 많이 헤맸지. 그래도 괜찮아. 스무 살로 돌아간 용기를 가진 사람은 한 번 더 돌아갈 용기도 있으니까.\n\n한 번 더 해 볼래?`},
 };
+// ── 확장 엔딩 ─────────────────────────────────────────────────
+const L_ = (name, body) => `${'{name}'}에게.\n\n${body}`;
+const LOVE_END = {
+  jaewoo:   ['변한 사람 옆에서', '서재우', '“네 꿈도 내 꿈만큼 소중해.” 그가 이 문장을 입 밖에 내기까지 오래 걸렸지. 마흔의 우리가 끝내 하지 못한 말을 서른의 너희는 해냈어. 사람은 바뀔 수 있다는 걸, 너는 증명했단다.'],
+  minjun:   ['오래된 친구의 어깨', '한민준', '입대하던 날 그가 쥐여 준 도시락이 서른의 식탁까지 이어졌구나. 말이 서툴러도 마음은 가장 먼저 도착하는 사람. 천천히 쌓인 믿음이 얼마나 단단한지 너희가 보여 줬어.'],
+  hajin:    ['꿈이 소리 나는 사람과', '윤하진', '라면으로 끼니를 때우던 그가 이제 투자자 앞에서 네 이름을 먼저 말하는구나. 큰 꿈을 가진 사람 곁에서도 네 꿈이 지워지지 않았다는 게 가장 큰 성공이야.'],
+  taeoh:    ['셔터 소리가 닿은 곳', '은태오', '길을 잃은 골목에서 시작된 인연이 서른의 전시장까지 이어졌네. 누군가 너를 가장 아름답게 기억해 준다는 건 꽤 오래 버티게 하는 힘이야.'],
+  jihu:     ['엘리베이터 속 비밀이 공식이 되다', '한지후', '일 얘기를 안 하겠다던 약속은 어느새 퇴근 후의 식탁이 되었구나. 차분한 사람의 다정함은 오래 남아. 서로의 속도를 존중하는 연애를 해낸 걸 축하해.'],
+  dohyun:   ['컷 소리 없는 일상', '차도현', '현장의 불이 꺼져도 둘이 나란히 걷는 길이 환하구나. 일과 사랑을 같은 속도로 달리는 법을 너희는 배웠어. 가끔은 NG가 나도 괜찮다는 것도.'],
+  sian:     ['함께 쓰는 결말', '유시안', '그가 첫 줄을 쓰면 네가 마지막 줄을 완성하는 날들이네. 마흔의 너는 네 이야기를 쓸 사람이 없다고 믿었지만, 이제 이야기의 공동 저자가 생겼구나.'],
+  seunghyun:['카메라 밖의 사람', '백승현', '스포트라이트가 꺼진 뒤에도 곁에 남는 사람. 연예계의 소란 속에서 서로를 지켜 낸 너희가 자랑스러워. 대본에 없는 해피엔딩이야.'],
+  geonwoo:  ['이의 없음, 평생 약속', '최건우', '원칙만 따지던 사람이 네 앞에서만은 한 번도 반론하지 않는구나. 단단한 사람의 다정함은 한 번 믿으면 끝까지 가. 서른에 얻은 단단한 편이야.'],
+  yuchan:   ['에러도 귀여운 사람', '이유찬', '서비스가 멈춰도, 마음이 멈춰도 같이 로그를 읽어 주는 사람이네. 밤샘 코드 사이로 네가 건넨 따뜻한 차가 그의 가장 좋은 업데이트였을 거야.'],
+  ujin:     ['한 벌의 옷처럼 맞는 사람', '정우진', '네 손끝의 색이 좋다고 말하던 그가 서른의 네 옆에서 새 컬렉션을 준비하는구나. 서로의 취향을 존중하며 짜낸 시간이 가장 오래가는 옷이 되었어.'],
+  raon:     ['무대 밖의 별', '강라온', '세상은 그를 아이돌이라 부르지만 너만은 라일락빛 머리의 청년으로 기억하지. 숨어서 만나던 시간이 공개된 날, 네가 얼마나 용기를 냈는지 알아. 별은 곁에 있을 때 가장 환해.'],
+};
+const EXT_ENDINGS = {
+  free_divorced:{free:true, icon:'🕊️', title:'두 번째 자유', sub:'자유 시계 · 이혼 후의 서른', letter:L_('', '결혼도, 이혼도 겪은 서른이 되었구나. 마흔의 너는 끝내 도장을 찍지 못했는데, 이번엔 네가 먼저 선택했어. 실패가 아니라 정리였다는 걸 시계가 인정했단다. 이제는 누구의 꿈도 아닌 네 길을 걸어가렴.')},
+  free_wedding:{free:true, icon:'💍', title:'함께 맞는 서른', sub:'자유 시계 · 결혼', letter:L_('', '서른의 너는 식탁 위에 두 사람의 달력을 올려놓았더구나. 서로의 꿈을 번갈아 세워 준 결혼이야. 마흔의 너는 희생이 사랑인 줄 알았지만, 이번엔 약속이 선택이었어. 행복하렴.')},
+  free_secret:{free:true, icon:'🗝️', title:'비밀을 안은 시계', sub:'자유 시계 · 끝나지 않은 이야기', letter:L_('', '시계는 열렸지만 네 마음 한구석에는 아직 열지 못한 서랍이 있구나. 누군가에게 말하지 못한 관계가 서른의 너를 조금 외롭게 만들었어. 언젠가 그 서랍을 열 용기를 내길 바란다.')},
+  free_exec:{free:true, icon:'🏆', title:'정상의 서른', sub:'자유 시계 · 최고 직급', letter:L_('', '십 년 만에 가장 높은 직급의 명찰을 달았구나. 승진 발표 날 떨리던 손을 기억하니. 마흔의 너는 늘 “다음에 하죠”라고 말했는데, 이번엔 “제가 하겠습니다”라고 말했지. 그 한마디가 너를 여기까지 데려왔어.')},
+  free_hopper:{free:true, icon:'🧭', title:'내가 고른 두 번째 길', sub:'자유 시계 · 이직', letter:L_('', '첫 직장에서 멈추지 않고 다른 길로 걸어간 용기를 칭찬한다. 한 번의 선택이 평생을 결정하지 않는다는 걸 몸으로 배웠구나. 서른의 이름표는 네가 직접 고른 것이야.')},
+  free_rich:{free:true, icon:'💰', title:'통장보다 시계', sub:'자유 시계 · 넉넉한 서른', letter:L_('', '넉넉한 통장을 가지고도 시간을 더 값지게 쓰는 사람이 되었구나. 돈은 도구일 뿐이라는 걸 아는 서른은 드물어. 이제는 그 풍요를 누군가와 나누는 법을 배우렴.')},
+  free_scholar:{free:true, icon:'📚', title:'끝나지 않는 공부', sub:'자유 시계 · 학식의 서른', letter:L_('', '장학금을 받던 도서관의 밤이 서른의 단단한 지식이 되었구나. 아는 것이 많다는 건 선택지가 많다는 뜻이야. 마흔의 너는 늘 아는 것이 부족해서 겁냈는데, 이제는 아는 것으로 두려움을 넘는구나.')},
+  free_charm:{free:true, icon:'✨', title:'모두가 건네는 인사', sub:'자유 시계 · 매력의 서른', letter:L_('', '사람들이 먼저 인사를 건네는 서른이 되었구나. 웃음과 말투가 어느새 너의 자산이 되었어. 매력은 만들어지는 것이 아니라 쌓이는 것이라는 걸 너는 알게 되었단다.')},
+  free_dare:{free:true, icon:'🔥', title:'망설임을 이긴 사람', sub:'자유 시계 · 도전의 서른', letter:L_('', '망설이다 놓친 기회들을 마흔의 너는 얼마나 후회했니. 이번에는 먼저 손을 들었어. 실패한 도전도 많았지만 도전하지 않은 후회보다는 훨씬 가벼웠지. 앞으로도 계속 뛰어들렴.')},
+  free_ins:{free:true, icon:'🔭', title:'먼저 보는 눈', sub:'자유 시계 · 통찰의 서른', letter:L_('', '남보다 멀리 보는 눈이 생겼구나. 미래를 알고 있어서가 아니라 사람과 일을 깊이 들여다본 덕분이야. 마흔의 너가 갖지 못한 단단한 시선이란다.')},
+  free_many:{free:true, icon:'🎠', title:'여러 갈래의 마음', sub:'자유 시계 · 많은 인연', letter:L_('', '서른의 너는 여러 사람의 마음에 닿아 본 사람이 되었구나. 누구에게도 성급하게 선을 긋지 않고 각자의 속도를 존중했어. 그 마음의 지도가 네 인생의 폭이 되었단다.')},
+  free_single:{free:true, icon:'🌙', title:'혼자서도 온전한', sub:'자유 시계 · 나를 먼저', letter:L_('', '곁에 누구도 없어도 네 시계는 정확하게 흘렀구나. 사랑이 필요 없다는 뜻이 아니라, 사랑이 오기 전에 이미 충분했다는 뜻이야. 이제 누가 오든 천천히 맞이해도 돼.')},
+  ret_cold:{free:false, icon:'🍽️', title:'식어 가는 식탁', sub:'회귀 · 결혼은 했지만', letter:L_('', '결혼은 했지만 서로의 이야기가 점점 줄었구나. 같은 집, 다른 방. 마흔의 그 밤과 겹쳐 보였겠지. 약속보다 대화가 먼저라는 걸 다음엔 잊지 말자.')},
+  ret_bookish:{free:false, icon:'📖', title:'책 속에 머문 서른', sub:'회귀 · 아는 것만 많은', letter:L_('', '아는 것은 누구보다 많았지만 그것을 쓸 사람과 장소가 부족했구나. 지식은 나누어야 힘이 된단다. 다음 생에는 책을 덮고 사람을 먼저 만나 보렴.')},
+  ret_exposed:{free:false, icon:'📱', title:'열려 버린 휴대폰', sub:'회귀 · 들통난 비밀', letter:L_('', '들킨 비밀 하나가 많은 것을 무너뜨렸구나. 거짓말은 늘 이자를 붙여 돌아와. 다음에는 숨기는 법보다 솔직하게 선택하는 법을 먼저 연습해 보렴.')},
+  ret_divorce:{free:false, icon:'📄', title:'다시 한 장의 서류', sub:'회귀 · 이혼', letter:L_('', '또 한 번 서류 앞에 서게 되었구나. 마흔의 그날과 닮아서 숨이 막혔을 거야. 그래도 이번엔 이유를 알고 걸어 나왔다는 게 달라. 다음 생에서는 서로의 꿈이 같은 식탁에 오르길.')},
+  ret_breakups:{free:false, icon:'💔', title:'이별을 수집한 시계', sub:'회귀 · 반복된 이별', letter:L_('', '여러 번의 이별이 너를 지치게 했구나. 사람을 믿는 법을 배우기 전에 사람을 떠나는 법을 먼저 배웠어. 천천히, 한 사람에게 오래 머무는 연습부터 해 보자.')},
+  ret_burnout:{free:false, icon:'🪫', title:'꺼진 배터리', sub:'회귀 · 번아웃', letter:L_('', '끝까지 달렸지만 너 자신이 먼저 방전되었구나. 쉬는 것도 계획의 일부라는 걸 잊었어. 다음에는 한 달에 한 번은 아무것도 하지 않는 날을 꼭 넣으렴.')},
+  ret_rich:{free:false, icon:'🏦', title:'가득한 통장, 빈 시계', sub:'회귀 · 돈만 남다', letter:L_('', '통장은 넉넉했지만 시계는 채워지지 않았어. 돈이 모든 걸 해결하지는 못한다는 걸 서른이 되어서야 알았구나. 다음엔 숫자보다 사람과 나를 먼저 채워 보자.')},
+  ret_nojob:{free:false, icon:'📮', title:'아직 답 없는 이력서', sub:'회귀 · 구직 중인 서른', letter:L_('', '서른이 되도록 출근할 곳을 찾지 못했구나. 면접에서 떨어진 날들이 쌓여 너를 흔들었겠지. 하지만 끝까지 지원서를 낸 용기는 사라지지 않아. 다음 생에서는 더 일찍 시작해 보자.')},
+  ret_hopper:{free:false, icon:'🧳', title:'짐을 풀지 못한 책상', sub:'회귀 · 잦은 이직', letter:L_('', '여러 회사를 거치며 짐을 풀 틈이 없었구나. 옮겨 다니는 게 용기일 때도 있지만 한곳에서 뿌리내리는 것도 용기야. 다음에는 한 번쯤 오래 머물러 보렴.')},
+  ret_workaholic:{free:false, icon:'🏢', title:'일만 남은 서른', sub:'회귀 · 일 중독', letter:L_('', '일은 눈부셨지만 곁에는 아무도 없고 네 마음은 비어 있었구나. 성공한 사무실 불빛이 외로울 수 있다는 걸 이제는 알지. 다음엔 퇴근 후의 삶도 같이 키워 보자.')},
+};
+for(const id in LOVE_END){ const [t, nm, body] = LOVE_END[id]; EXT_ENDINGS['free_love_' + id] = {free:true, icon:'💞', title:t, sub:`자유 시계 · ${nm}와 함께`, letter:L_('', body)}; }
+Object.assign(ENDINGS, EXT_ENDINGS);
 const ENDING_IDS = Object.keys(ENDINGS);
 // ==/ENGINE==

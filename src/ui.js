@@ -1,5 +1,5 @@
 // ── UI (ENGINE 밖) ─────────────────────────────────────────────
-const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1';
+const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_KEY = 'rewind-ten-slots-v1', SLOT_N = 5;
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
@@ -33,7 +33,8 @@ const WIZ = [
 let wizStep = 0, wizName = '서윤';
 const fxTags = fx => Object.keys(fx).map(k => `<i class="up">${LABEL[k] || k} +${fx[k]}</i>`).join('');
 function initTitle(){
-  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'flex' : 'none';
+  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'flex' : 'none'; $('b-slots').style.display = getSlots().some(Boolean) ? 'flex' : 'none';
+  $('b-slots').onclick = () => showSlots(false);
   $('b-new').onclick = () => { wizStep = 0; renderWiz(); show('setup'); };
   $('b-cont').onclick = () => { S = store(SAVE_KEY); if(S){ show('game'); render(); } };
   $('w-back').onclick = () => { if(wizStep > 0){ wizStep--; renderWiz(); } else show('title'); };
@@ -199,6 +200,22 @@ function openPicker(i, cat){
   draw();
 }
 
+// ── 저장 슬롯 5개 (자동 저장과 별개로 직접 저장·불러오기) ─────────────
+const getSlots = () => { const a = store(SLOTS_KEY); return Array.from({length:SLOT_N}, (_, i) => a && a[i] || null); };
+const putSlots = a => store(SLOTS_KEY, a);
+function slotSummary(sv){ const job = sv.hired && CAREERS[sv.track] ? CAREERS[sv.track].name : '대학생'; return `${esc(sv.name)} · ${yearOf(sv)}년 ${monthOf(sv)}월 · ${ageOf(sv)}세 · ${job}`; }
+function showSlots(canSave){
+  const slots = getSlots();
+  const rows = slots.map((sl, i) => {
+    const when = sl ? new Date(sl.at).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+    return `<div class="slotrow ${sl ? '' : 'empty'}"><div class="si"><b>슬롯 ${i + 1}</b>${sl ? `<small>${slotSummary(sl.S)}</small><small class="when">${when} 저장</small>` : '<small>비어 있음</small>'}</div><div class="sb">${canSave ? `<button class="mini save" data-i="${i}">저장</button>` : ''}${sl ? `<button class="mini load" data-i="${i}">불러오기</button><button class="mini del" data-i="${i}" aria-label="삭제">🗑</button>` : ''}</div></div>`;
+  }).join('');
+  openSheet(sheetHead('저장 · 불러오기', canSave ? '지금 상태를 슬롯에 저장하거나, 저장한 곳에서 이어 해요.' : '저장해 둔 슬롯에서 이어 해요.') + `<div class="slotlist">${rows}</div>`);
+  $('x').onclick = closeSheet;
+  document.querySelectorAll('#sheet .save').forEach(b => b.onclick = () => { const i = +b.dataset.i, a = getSlots(); if(a[i] && !confirm(`슬롯 ${i + 1}에 덮어쓸까요?`)) return; a[i] = {at:Date.now(), S:JSON.parse(JSON.stringify(S))}; putSlots(a); toast(`슬롯 ${i + 1}에 저장했어요`); showSlots(canSave); });
+  document.querySelectorAll('#sheet .load').forEach(b => b.onclick = () => { const i = +b.dataset.i, sl = getSlots()[i]; if(!sl) return; if(S && !confirm(`슬롯 ${i + 1}을 불러올까요? 지금 진행 중인 게임은 자동 저장 데이터로 남아요.`)) return; if(S) save(); S = JSON.parse(JSON.stringify(sl.S)); save(); closeSheet(); show('game'); $('dialog').dataset.m = ''; render(); toast(`슬롯 ${i + 1}을 불러왔어요`); });
+  document.querySelectorAll('#sheet .del').forEach(b => b.onclick = () => { const i = +b.dataset.i; if(!confirm(`슬롯 ${i + 1}을 지울까요?`)) return; const a = getSlots(); a[i] = null; putSlots(a); showSlots(canSave); });
+}
 // ── 전화하기: 친구·엄마·썸·연인 (한 달 2회, 활동 칸 소모 없음) ─────────────
 function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('app').appendChild(t); setTimeout(() => t.remove(), 1800); }
 function openPhone(){
@@ -352,8 +369,9 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__</div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__</div>`);
     $('x').onclick = closeSheet;
+    $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
 }

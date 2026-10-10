@@ -16,7 +16,7 @@ const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
 // 아이폰은 화면 맨 아래(홈 인디케이터 뒤)를 페이지 배경색으로 칠한다. 화면마다 그 색을 아래쪽 색과 맞춘다
-const EDGE = {title:'#f6f8fc', setup:'#e7ecee', game:'#ecd7ac', end:'#f6f8f9'};
+const EDGE = {title:'#f6f8fc', setup:'#e7ecee', game:'#ffffff', card:'#f6f8f9', end:'#f6f8f9'};
 function paintEdge(id){ const c = EDGE[id] || '#1d2350'; document.documentElement.style.background = c; document.body.style.background = c; const m = document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content', c); }
 function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); paintEdge(id); }
 function openSheet(html){ $('sheet').innerHTML = html; $('ov').classList.add('on'); $('sheet').scrollTop = 0; }
@@ -271,12 +271,12 @@ const PLACE_FULL = {rain:'art/cover.webp', shop:'art/bg_shop.webp'};
 const seasonPlace = ev => ev.place === 'campus' ? 'campus' : ev.place === 'room' ? 'room' : null;
 function evOpen(ev, inner){
   const el = $('ev'), sp = seasonPlace(ev), img = ev.img || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
-  el.className = 'evcard on p-' + (ev.place || 'room');
+  el.className = 'evcard on p-' + (ev.place || 'room'); paintEdge('card');
   el.style.backgroundImage = img ? `url(${img})` : 'none';
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }
-function evClose(){ $('ev').classList.remove('on'); }
+function evClose(){ $('ev').classList.remove('on'); paintEdge('game'); }
 function playEvent(ev){
   return new Promise(resolve => {
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
@@ -322,7 +322,7 @@ function showAct(slotName, id, out){
       el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
       el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div>` + body;
     }
-    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
+    el.classList.add('on'); paintEdge('card'); $('anx').onclick = () => { el.classList.remove('on'); paintEdge('game'); res(); };
   });
 }
 async function runMonth(){

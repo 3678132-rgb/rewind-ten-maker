@@ -290,7 +290,13 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .mini.save{background:var(--indigo);color:#fff}.mini.load{background:#e3f6ec;color:#0f9d58}.mini.del{background:#fdeded}
 
 /* 사파리(브라우저): 화면은 맨 아래까지 채우고, 버튼·탭은 접힌 하단 바 위로 올린다 */
-html.browser{--sb:calc(env(safe-area-inset-bottom,0px) + 26px)}
+html.browser{--sb:env(safe-area-inset-bottom,0px)}
 
 #upbar{position:absolute;left:12px;right:12px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#161a2b;color:#fff;border-radius:14px;padding:10px 12px;font-size:13.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #upbar button{background:linear-gradient(135deg,#ff7b54,#f0507c);color:#fff;border-radius:10px;padding:7px 12px;font-weight:800;font-size:13px}
+
+#buildtag{position:absolute;left:8px;bottom:calc(2px + env(safe-area-inset-bottom,0px));z-index:70;font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.6);pointer-events:none}
+
+/* 이벤트·활동 카드는 화면 맨 아래에 붙여서, 아이폰 하단 영역(페이지 배경색)과 끊김 없이 이어지게 한다 */
+.abot,.evpanel{left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border-left:0;border-right:0;border-bottom:0;padding-bottom:calc(16px + var(--sb))}
+.tabbar{background:#fff}

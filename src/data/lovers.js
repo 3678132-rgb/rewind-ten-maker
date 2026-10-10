@@ -219,5 +219,5 @@ function loveEvent(S){
     if(v.stage === 1 && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return romEvent(S);
+  return romEvent(S) || rom2Event(S);
 }

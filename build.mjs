@@ -1,7 +1,7 @@
 // 빌드: src/* → 저장소 루트 index.html (단일 파일) + sw.js(서비스워커, 그림 목록·캐시 버전 자동 생성)
 import fs from 'fs'; import crypto from 'crypto';
 const r = f => fs.readFileSync(f, 'utf8');
-const js = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/calls.js', 'src/data/endings.js', 'src/ui.js'].map(r).join('\n');
+const js = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/calls.js', 'src/data/endings.js', 'src/ui.js'].map(r).join('\n');
 const html = r('src/shell.html').replace('/*CSS*/', () => r('src/style.css')).replace('/*JS*/', () => js);
 fs.writeFileSync('index.html', html);
 const art = fs.readdirSync('art').filter(f => /\.(webp|png|jpg)$/.test(f)).sort();

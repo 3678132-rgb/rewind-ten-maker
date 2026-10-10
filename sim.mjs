@@ -1,6 +1,6 @@
 // 자동 플레이 테스트: node sim.mjs  → errors {} 이어야 한다
 import fs from 'fs'; import vm from 'vm';
-const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/calls.js', 'src/data/endings.js'];
+const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/calls.js', 'src/data/endings.js'];
 const src = files.map(f => fs.readFileSync(f, 'utf8')).join('\n');
 const ctx = {console, Math}; vm.createContext(ctx);
 vm.runInContext(src + '\n;globalThis.E={newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,MAJORS,CAREERS,inLawSchool,LOVERS,contactsOf,callEvent,tryCall,callsLeft,EVENTS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);

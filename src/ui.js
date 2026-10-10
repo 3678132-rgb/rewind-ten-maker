@@ -380,3 +380,7 @@ initTitle(); initGame(); paintIcons(); paintEdge('title');
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
+
+// 사파리(브라우저)에서는 viewport-fit=cover를 쓰지 않는다(하단 바 뒤로 화면이 늘어나 아래가 잘림).
+// 홈 화면에 추가해 전체 화면으로 열었을 때만 상태바 뒤까지 꽉 채운다.
+try{ const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; if(standalone){ const m = document.querySelector('meta[name=viewport]'); if(m && !/viewport-fit/.test(m.content)) m.setAttribute('content', m.content + ',viewport-fit=cover'); } }catch(e){}

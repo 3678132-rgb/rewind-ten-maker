@@ -1,5 +1,5 @@
 // ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
-const TOTAL_MONTHS = 120, START_YEAR = 2006, START_MONTH = 3; // 2006년 3월 입학 → 2016년 2월
+const TOTAL_MONTHS = 120, START_YEAR = 2016, START_MONTH = 3; // 2016년 3월 입학 → 2026년 2월
 const STAT = {know:'학식', skill:'실무', neg:'협상', ins:'통찰', sense:'감각', dare:'도전', charm:'매력'};
 const STAT_KEYS = Object.keys(STAT);
 const PILLAR = {work:'일', bond:'관계', self:'나'};

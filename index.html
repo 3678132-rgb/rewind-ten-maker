@@ -226,12 +226,12 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 <div id="app">
  <section id="title" class="screen on">
   <div class="coverart"></div>
-  <div class="ctop"><div class="eyebrow">REWIND TEN · 2006 → 2016</div><h1 class="wordmark">다시,<br>스무 살<small>REWIND TEN</small></h1><div class="csub">십 년의 시간 · 자유 시계를 향해</div></div>
+  <div class="ctop"><div class="eyebrow">REWIND TEN · 2016 → 2026</div><h1 class="wordmark">다시,<br>스무 살<small>REWIND TEN</small></h1><div class="csub">십 년의 시간 · 자유 시계를 향해</div></div>
   <div class="cbot">
    <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #20 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #21 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -272,7 +272,7 @@ input[type=text]:focus{outline:2px solid var(--serum)}
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
-const TOTAL_MONTHS = 120, START_YEAR = 2006, START_MONTH = 3; // 2006년 3월 입학 → 2016년 2월
+const TOTAL_MONTHS = 120, START_YEAR = 2016, START_MONTH = 3; // 2016년 3월 입학 → 2026년 2월
 const STAT = {know:'학식', skill:'실무', neg:'협상', ins:'통찰', sense:'감각', dare:'도전', charm:'매력'};
 const STAT_KEYS = Object.keys(STAT);
 const PILLAR = {work:'일', bond:'관계', self:'나'};
@@ -638,7 +638,7 @@ const JW_REMOTE = ['writer', 'dev', 'designer'];
 function jaewooEvent(S){
   const v = S.love.jaewoo; if(!v || v.stage === -9) return null;
   const lv = LOVERS.jaewoo, img = 'art/lv_jaewoo_work.webp';
-  // 1) 입사 소식 (2008년 3월)
+  // 1) 입사 소식 (2018년 3월)
   if(S.m >= 24 && !S.seen.jaewoo_hire) return {id:'jaewoo_hire', lover:'jaewoo', once:true, speaker:lv.name, title:'취업 소식', place:'cafe', img:'art/lv_jaewoo_work.webp',
     text:S => `${lv.name}가 졸업했다. 마흔의 내가 기억하는 대로 그는 한성상사에 입사했다. 종합상사 영업, 해외 거래처를 상대하는 자리다. “여기서 배워서 언젠가 내 회사를 세울 거야. 그때까지만 네가 좀 도와줘.” 그가 어색한 넥타이를 만지며 웃었다. ‘그때까지만’이라는 말을 나는 이십 년 동안 들었다.`,
     choices:[
@@ -1094,7 +1094,7 @@ const PROLOGUE = {id:'prologue', once:true, speaker:'', title:'마흔 살, 비 �
     '“스무 살로 되감아 줄게요. 대신 시간은 딱 십 년. 서른 살이 되던 날, 그동안 새 인생을 만들어 냈다면 시계는 온전히 당신 것이 됩니다. 어느 나이에서든 살 수 있어요.”',
     '“못 만들었다면요?” “오늘의 이 골목으로 돌아와야죠. 마흔 살의 그 인생으로.”',
     '나는 병을 땄다. 목이 타서였는지, 더 잃을 게 없어서였는지는 지금도 모르겠다.',
-    '눈을 뜨자 천장의 얼룩이 낯익었다. 신입생 환영회 현수막, 삐걱대는 자취방 침대, 2006년 3월. 거울 속에는 스무 살의 내가 있었다.',
+    '눈을 뜨자 천장의 얼룩이 낯익었다. 신입생 환영회 현수막, 삐걱대는 자취방 침대, 2016년 3월. 거울 속에는 스무 살의 내가 있었다.',
   ],
   text:S => `${S.name}, 스무 살. ${UNIVERSITY} ${majorOf(S).name} 신입생. 몸은 가볍고 머릿속은 마흔의 기억으로 가득하다. 이번에는 다르게 살 수 있다. 가장 먼저 무엇을 할까?`,
   choices:[
@@ -1123,7 +1123,7 @@ function checkEvent(S, c){
 
 const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.webp',
   beats:[
-    '2016년 2월. 십 년의 마지막 날, 나는 다시 그 골목에 서 있었다.',
+    '2026년 2월. 십 년의 마지막 날, 나는 다시 그 골목에 서 있었다.',
     '약방의 문은 처음처럼 열려 있었다. 카운터의 할머니는 모래시계를 쓰다듬고 있었다.',
     '“마지막 모래가 떨어졌어요.” 할머니가 천천히 안경을 벗었다. 눈가의 주름 사이로 내 눈이 보였다.',
     '“…나는 일흔 살의 당신이에요. 먼저 십 년을 살아 봤고, 한 가지를 놓쳤어요. 그래서 이 가게를 열었죠. 같은 후회를 가진 사람에게 기회를 건네려고.”',
@@ -1134,36 +1134,36 @@ const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약�
 
 // ── 시대 이벤트 (실제 연·월 기준) ───────────────────────────────
 const ERA = [
-  {m:monthIndex(2008, 9), id:'era_crisis', title:'2008년 9월, 리먼 브라더스', place:'cafe',
-   text:S => '뉴스 속보가 나왔다. 미국의 투자은행이 무너졌다. 앞으로 몇 달 동안 세상이 어떻게 흔들릴지 나는 알고 있다.',
+  {m:monthIndex(2017, 12), id:'era_crypto', title:'2017년 12월, 코인 광풍', place:'cafe',
+   text:S => '카페마다 비트코인 이야기뿐이다. 하루에도 몇 배가 오르내리는 화면을 사람들이 홀린 듯 본다. 이 열기가 어떻게 식는지, 나는 알고 있다.',
    choices:[
-     {label:'기억을 이용해 베팅한다', sub:'자금 대폭 + · 선명도 -10', run:S => { S.borrowed++; return R_(S, {cash:380, clarity:-10, stress:5}, '손이 떨렸지만 망설임은 없었다. 시장이 곤두박질칠 때 통장은 불어났다. 이상하게 하나도 기쁘지 않았다.'); }},
-     {label:'현금을 지키며 버틴다', sub:'안정 · 통찰 +2', run:S => R_(S, {ins:2, stress:-3, cash:30}, '나는 불안한 친구들에게 생활비를 아끼라고만 말했다. 큰돈은 못 벌었지만 흔들리지도 않았다.')},
-     {label:'친구들에게 미리 알려 준다', sub:'관계 +4 · 선명도 -4', run:S => R_(S, {bond:4, clarity:-4, stress:3}, '“무슨 소리야?” 의아해하던 친구들은 몇 주 뒤 전화를 걸어 왔다. “너 어떻게 알았어?” 나는 웃어넘겼다.')},
+     {label:'기억을 이용해 베팅한다', sub:'자금 대폭 + · 선명도 -10', run:S => { S.borrowed++; return R_(S, {cash:380, clarity:-10, stress:5}, '손이 떨렸지만 망설임은 없었다. 가장 높을 때 빠져나왔고 통장은 불어났다. 이상하게 하나도 기쁘지 않았다.'); }},
+     {label:'휩쓸리지 않고 버틴다', sub:'안정 · 통찰 +2', run:S => R_(S, {ins:2, stress:-3, cash:30}, '주변이 들뜰 때 나는 월급 통장만 들여다보았다. 큰돈은 못 벌었지만 흔들리지도 않았다.')},
+     {label:'친구들에게 미리 조심하라고 알려 준다', sub:'관계 +4 · 선명도 -4', run:S => R_(S, {bond:4, clarity:-4, stress:3}, '“무슨 소리야?” 의아해하던 친구들은 몇 달 뒤 전화를 걸어 왔다. “너 어떻게 알았어?” 나는 웃어넘겼다.')},
    ]},
-  {m:monthIndex(2009, 11), id:'era_iphone', title:'2009년 11월, 아이폰', place:'cafe',
-   text:S => '아이폰이 한국에 들어왔다. 이 작은 기계가 앞으로의 십 년을 통째로 바꿀 것이다. 나는 그 변화의 중심에서 어디에 서 있을까.',
+  {m:monthIndex(2020, 3), id:'era_covid', title:'2020년 3월, 마스크와 거리두기', place:'room',
+   text:S => '졸업식도, 입학식도 사라졌다. 마스크 가게 앞에는 긴 줄이 늘어서 있다. 이 시간이 얼마나 길어질지 나는 알고 있다. 사람들은 앞으로 몇 해를 화면 너머로 만나게 될 것이다.',
    choices:[
-     {label:'앱 개발 공부에 뛰어든다', sub:'실무·도전 + · 일 +3', run:S => R_(S, {skill:5, dare:3, work:3, stress:6}, '밤새 코드를 쳤다. 마흔의 나는 한 번도 직접 만들어 보지 못한 사람이었다. 이번엔 만드는 쪽이다.')},
-     {label:'가볍게 구경만 한다', sub:'감각 +2', run:S => R_(S, {sense:2, stress:-2}, '신기해서 만져 보았다. 그뿐이었다. 기회는 어떤 날은 그냥 지나간다.')},
+     {label:'집에서 새로운 기술을 배운다', sub:'실무·학식 + · 일 +2', run:S => R_(S, {skill:3, know:2, work:2, stress:4}, '강의와 영상으로 낮밤을 채웠다. 사람을 못 만나는 시간이 나를 한 겹 두껍게 만들었다.')},
+     {label:'친구·가족에게 영상통화로 안부를 묻는다', sub:'관계 +4', run:S => R_(S, {bond:4, stress:-4}, '화면 속 엄마는 마스크를 벗고 오래 웃었다. 멀어진 시간을 메우는 데 화면은 의외로 충분했다.')},
    ]},
-  {m:monthIndex(2010, 3), id:'era_kakao', title:'2010년 3월, 카카오톡', place:'cafe',
-   text:S => '친구들이 하나둘 새 메신저를 깔고 있다. 곧 문자 요금이라는 말이 사라질 것이다. 사람들은 이제 더 쉽게 연결되고, 더 쉽게 외로워진다.',
+  {m:monthIndex(2021, 9), id:'era_squid', title:'2021년 9월, 모두가 같은 드라마', place:'cafe',
+   text:S => '어디를 가도 같은 드라마 이야기다. 초록 체육복이 핼러윈 의상이 되고, 달고나를 뽑는 영상이 세계로 퍼진다. 사람들이 웃는 걸 보니 마음이 풀렸다.',
    choices:[
-     {label:'오래 연락 못 한 사람들에게 먼저 말을 건다', sub:'관계 +4', run:S => R_(S, {bond:4, charm:1}, '“야, 나 기억나?” 몇 년 만의 메시지에 답이 쏟아졌다. 마흔의 나는 이 한 줄을 못 보냈다.')},
-     {label:'무시한다', sub:'변화 없음', run:S => R_(S, {}, '아직은 문자로 충분하다고 생각했다.')},
+     {label:'친구들과 밤새 정주행한다', sub:'관계 +3 · 스트레스 -10', run:S => R_(S, {bond:3, stress:-10, cash:-8}, '오랜만에 아무 계산 없이 웃었다. 이런 밤이 인생을 지탱한다.')},
+     {label:'일을 한다', sub:'일 +2', run:S => R_(S, {work:2, stress:5}, '모두가 열광할 때 책상 앞에 앉았다. 뭔가를 얻었고 뭔가를 놓쳤다.')},
    ]},
-  {m:monthIndex(2012, 7), id:'era_psy', title:'2012년 여름', place:'cafe',
-   text:S => '어디를 가도 말춤 노래가 나온다. 나는 이 노래가 세계로 퍼지는 걸 알고 있었다. 사람들이 웃는 걸 보니 마음이 풀렸다.',
+  {m:monthIndex(2022, 12), id:'era_ai', title:'2022년 12월, 대화하는 인공지능', place:'cafe',
+   text:S => '대화하는 인공지능이 공개됐다. 질문하면 문장으로 답하고, 코드도 쓰고, 이력서도 고친다. 이 작은 창이 앞으로의 십 년을 통째로 바꿀 것이다. 나는 그 변화의 어디에 서 있을까.',
    choices:[
-     {label:'친구들과 신나게 논다', sub:'관계 +3 · 스트레스 -10', run:S => R_(S, {bond:3, stress:-10, cash:-8}, '오랜만에 아무 계산 없이 웃었다. 이런 날이 인생을 지탱한다.')},
-     {label:'일을 한다', sub:'일 +2', run:S => R_(S, {work:2, stress:5}, '모두가 놀 때 책상 앞에 앉았다. 뭔가를 얻었고 뭔가를 놓쳤다.')},
+     {label:'적극적으로 배워 일에 써 본다', sub:'실무·도전 + · 일 +3', run:S => R_(S, {skill:5, dare:3, work:3, stress:6}, '밤새 질문을 던지고 결과를 고쳤다. 마흔의 나는 새로운 도구가 나올 때마다 늘 한 박자 늦었다. 이번엔 먼저 올라탔다.')},
+     {label:'가볍게 구경만 한다', sub:'감각 +2', run:S => R_(S, {sense:2, stress:-2}, '신기해서 몇 번 말을 걸어 보았다. 그뿐이었다. 기회는 어떤 날은 그냥 지나간다.')},
    ]},
 ];
 
-// ── 진로 탐색(3학년 봄)과 졸업 취업(2010년 2월) ─────────────────
-const INTEREST_M = monthIndex(2008, 3);
-const GRAD_M = monthIndex(2010, 2);
+// ── 진로 탐색(3학년 봄)과 졸업 취업(2020년 2월) ─────────────────
+const INTEREST_M = monthIndex(2018, 3);
+const GRAD_M = monthIndex(2020, 2);
 const careerSub = (S, id) => `${CAREERS[id].company} · ${fitLabel(fitP(S, id))}`;
 function interestEvent(S){
   return {id:'interest', once:true, speaker:'', title:'3학년, 진로 탐색', place:'campus',
@@ -1183,7 +1183,7 @@ function graduationEvent(S){
 }
 const BAR_EXAM = {id:'bar_exam', once:true, speaker:'', title:'변호사시험', place:'campus',
   cond:S => S.track === 'lawyer' && S.hired,
-  text:S => '2013년 2월, 로스쿨 3년의 마지막 관문인 변호사시험이다. 마흔의 나는 이 시험장 앞에 서 본 적이 없다.',
+  text:S => '2023년 2월, 로스쿨 3년의 마지막 관문인 변호사시험이다. 마흔의 나는 이 시험장 앞에 서 본 적이 없다.',
   choices:[{label:'온 힘을 다해 본다', sub:'학식과 협상이 높을수록 합격', run(S){ const ch = []; const p = clamp(0.35 + (S.st.know + S.st.neg) / 190, 0.3, 0.93); if(R() < p){ S.hiredAt = S.m; gauge(S, 'work', 8, ch); fx(S, {stress:-6}, ch); return {text:'합격자 명단에서 내 수험번호를 찾았다. 태성 법무법인에서 첫 출근이다.', chips:ch}; } S.hiredAt = S.m + 8; fx(S, {stress:10, work:-3}, ch); return {text:'불합격. 마흔의 내가 포기했던 순간들이 스쳤지만 이번엔 주저앉지 않았다. 일 년 뒤 재시험에서 합격해, 한 해 늦게 법무법인에 출근한다.', chips:ch}; }}]};
 
 // ── 랜덤 이벤트 ───────────────────────────────────────────────
@@ -1334,7 +1334,7 @@ EVENTS.push(
      {label:'로그를 뒤져 직접 복구한다', sub:'실무 · 일 + · 체력 -', run:S => R_(S, {skill:3, work:3, hp:-10, stress:6}, '원인은 한 줄의 설정 오류였다. 복구 후 동이 트는 창밖을 멍하니 봤다.')},
      {label:'팀을 소집해 역할을 나눈다', sub:'협상 · 일 +', run:S => R_(S, {neg:2, work:2.5, stress:4}, '복구는 빠르게 끝났다. 사후 보고서에 팀원들 이름을 먼저 적었다.')},
    ]},
-  {id:'dev_side', w:3, cd:18, cond:onJob('dev'), title:'사이드 서비스 제안', place:'cafe', text:S => '아이폰 앱 시장이 열리던 때를 나는 안다. 이번에 만들 서비스의 이름도 기억한다. 지금 만들면 선점할 수 있다.',
+  {id:'dev_side', w:3, cd:18, cond:onJob('dev'), title:'사이드 서비스 제안', place:'cafe', text:S => '새 서비스 시장이 열리던 때를 나는 안다. 이번에 만들 서비스의 이름도 기억한다. 지금 만들면 선점할 수 있다.',
    choices:[
      {label:'미래 지식으로 선점한다', sub:'자금 ++ · 선명도 -8', run:S => { S.borrowed++; return R_(S, {cash:260, clarity:-8, work:1}, '빠르게 만들어 시장에 냈다. 순식간에 이용자가 모였다. 이상하게 뿌듯하지 않았다.'); }},
      {label:'내 아이디어로 처음부터 만든다', sub:'실무 · 도전 · 일 +', run:S => R_(S, {skill:3, dare:2.5, work:3, stress:8, cash:-30}, '느리고 서툴렀지만 이건 온전히 내 것이었다. 첫 사용자 한 명의 후기가 눈물이 났다.')},
@@ -1648,25 +1648,25 @@ EVENTS.push(
      {label:'올해 가장 좋았던 순간을 이야기한다', sub:'관계 +3 · 나 +1.5', run:S => R_(S, {bond:3, self:1.5, stress:-5}, '이야기를 꺼내다 보니 올해가 생각보다 괜찮았다는 걸 알았다. 마흔의 연말과는 전혀 다른 기분이었다.')},
      {label:'내년의 목표를 적어 보는 시간을 갖는다', sub:'일 +2 · 통찰 +1', run:S => R_(S, {work:2, ins:1, stress:1}, '수첩 첫 장에 내년의 목표를 적었다. 몇 개는 실현될 것이고 몇 개는 바뀔 것이다.')},
    ]},
-  {id:'era_wc2006', once:true, w:100, cond:S => S.m >= 3 && S.m <= 5, place:'night', title:'2006년 6월, 월드컵', text:S => '독일 월드컵이 한창이다. 새벽 경기를 보려고 기숙사 앞 잔디밭에 사람들이 모였다. 마흔의 나는 이 장면을 사진으로만 기억한다.',
+  {id:'era_pokemon', once:true, w:100, cond:S => S.m >= 3 && S.m <= 6, place:'campus', title:'2016년 여름, 포켓몬을 잡으러', text:S => '캠퍼스 곳곳에서 휴대폰을 든 사람들이 서성인다. 전국의 공원이 한꺼번에 북적이고, 모르는 사람끼리 “거기 뭐 나왔어요?” 하고 말을 건다. 마흔의 나는 이런 들뜬 여름을 거의 기억하지 못한다.',
    choices:[
-     {label:'친구들과 응원전에 참가한다', sub:'관계 +4 · 체력 -5', run:S => R_(S, {bond:4, stress:-8, hp:-5, charm:1}, '새벽 세 시, 모르는 사람과 어깨동무를 하고 소리를 질렀다. 이기든 지든 상관없이 모두가 웃었다.')},
-     {label:'방에서 조용히 보며 공부한다', sub:'학식 +1', run:S => R_(S, {know:1, stress:-1}, '창밖에서 환호가 터지는 걸 들으며 공부를 이어 갔다. 이번 여름의 기억에는 환호가 소리로만 남았다.')},
+     {label:'친구들과 밤새 돌아다닌다', sub:'관계 +4 · 체력 -5', run:S => R_(S, {bond:4, stress:-8, hp:-5, charm:1}, '새벽 두 시, 공원 한복판에서 모르는 사람과 하이파이브를 했다. 이기든 지든 상관없이 모두가 웃었다.')},
+     {label:'방에서 조용히 공부한다', sub:'학식 +1', run:S => R_(S, {know:1, stress:-1}, '창밖에서 환호가 터지는 걸 들으며 공부를 이어 갔다. 이번 여름의 기억에는 환호가 소리로만 남았다.')},
    ]},
-  {id:'era_wondergirls', once:true, w:80, cond:S => S.m >= 18 && S.m <= 22, place:'campus', title:'2007년 가을, 텔미', text:S => '어디를 가도 “텔미 텔미 테테테텔미”가 들린다. 과 동기들이 단체로 춤을 따라 하고, 축제 무대에서도 모두가 같은 안무를 한다.',
+  {id:'era_pyeongchang', once:true, w:100, cond:S => S.m >= 22 && S.m <= 24, place:'night', title:'2018년 2월, 겨울 올림픽', text:S => '전국이 같은 경기를 보고 있다. 캠퍼스 식당 TV 앞에도, 과방 노트북 앞에도 사람들이 모여 있다. 응원 구호가 복도에서 들린다.',
    choices:[
-     {label:'함께 춤을 추며 놀아 본다', sub:'관계 +3 · 스트레스 -8', run:S => R_(S, {bond:3, stress:-8, charm:1.5}, '쑥스러움도 잠깐, 어느새 두 손을 흔들고 있었다. 마흔의 나는 이런 순간을 일부러 외면해 왔다.')},
+     {label:'친구들과 응원전에 참가한다', sub:'관계 +3 · 스트레스 -8', run:S => R_(S, {bond:3, stress:-8, charm:1.5}, '쑥스러움도 잠깐, 어느새 두 손을 흔들고 있었다. 마흔의 나는 이런 순간을 일부러 외면해 왔다.')},
      {label:'멀찍이서 웃으며 구경한다', sub:'스트레스 -3', run:S => R_(S, {stress:-3, bond:1}, '박수를 치며 구경했다. 구경하는 것도 즐거운 일이다.')},
    ]},
-  {id:'era_london', once:true, w:80, cond:S => S.m >= 76 && S.m <= 78, place:'night', title:'2012년 여름, 올림픽 응원', text:S => '런던 올림픽 새벽 경기가 중계되고 있다. 회사 동료들, 친구들, 온 나라가 같은 화면을 보고 있다.',
+  {id:'era_worldcup', once:true, w:80, cond:S => S.m >= 80 && S.m <= 82, place:'night', title:'2022년 겨울, 새벽 월드컵', text:S => '새벽 경기가 중계되고 있다. 회사 동료들, 친구들, 온 나라가 같은 화면을 보고 있다.',
    choices:[
-     {label:'새벽까지 친구들과 응원한다', sub:'관계 +3 · 체력 -6', run:S => R_(S, {bond:3, stress:-8, hp:-6}, '금메달이 확정되던 순간, 거실이 환호로 터져 나갔다. 이런 순간이 일상을 버티게 한다.')},
+     {label:'새벽까지 친구들과 응원한다', sub:'관계 +3 · 체력 -6', run:S => R_(S, {bond:3, stress:-8, hp:-6}, '결승골이 터지던 순간, 거실이 환호로 터져 나갔다. 이런 순간이 일상을 버티게 한다.')},
      {label:'결과만 확인하고 일찍 잔다', sub:'체력 +', run:S => R_(S, {hp:5, stress:-2}, '아침에 일어나 뉴스를 보며 어젯밤의 열기를 확인했다. 잠이 최고의 응원이었다.')},
    ]},
-  {id:'era_frozen', once:true, w:80, cond:S => S.m >= 94 && S.m <= 96, place:'night', title:'2014년 겨울, 겨울왕국', text:S => '극장마다 만석이다. “Let it go”가 어디서나 들린다. 마흔의 나는 이 노래를 아이들에게서 처음 들었다.',
+  {id:'era_paris', once:true, w:80, cond:S => S.m >= 100 && S.m <= 102, place:'night', title:'2024년 여름, 새벽 올림픽 응원', text:S => '한여름 밤, 올림픽 중계를 보며 치킨을 시켜 먹는 사람들. 마흔의 나는 이런 한여름을 혼자 사무실에서 보냈던 것 같다.',
    choices:[
-     {label:'소중한 사람과 함께 극장에 간다', sub:'관계/호감 +', run(S){ if(hasP(S)) return LV(S, 6, {stress:-6}, `${PN(S)}와 나란히 앉아 영화를 봤다. 노래가 흘러나올 때 그가 몰래 내 손을 잡았다.`); return R_(S, {bond:3, stress:-6}, '소연과 극장에 갔다. 마지막 장면에서 둘이 같은 대목에서 울어 버렸다.'); }},
-     {label:'혼자 조용히 보러 간다', sub:'나 +2 · 스트레스 -5', run:S => R_(S, {self:2, stress:-5}, '불 꺼진 객석에서 혼자 노래를 들었다. 오래 눌러 둔 감정이 한 줄 흘러나왔다.')},
+     {label:'소중한 사람과 함께 응원한다', sub:'관계/호감 +', run(S){ if(hasP(S)) return LV(S, 6, {stress:-6}, `${PN(S)}와 나란히 앉아 경기를 봤다. 마지막 순간에 그가 몰래 내 손을 잡았다.`); return R_(S, {bond:3, stress:-6}, '소연과 치킨을 시켜 먹으며 응원했다. 결정적인 장면에서 둘이 동시에 소리를 질렀다.'); }},
+     {label:'혼자 조용히 본다', sub:'나 +2 · 스트레스 -5', run:S => R_(S, {self:2, stress:-5}, '불 끄고 혼자 경기를 봤다. 오래 눌러 둔 감정이 한 줄 흘러나왔다.')},
    ]},
 );
 
@@ -2436,7 +2436,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #20 · 2026.10.11</div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #21 · 2026.10.11</div>`);
     $('x').onclick = closeSheet;
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });

@@ -171,7 +171,7 @@ const JW_REMOTE = ['writer', 'dev', 'designer'];
 function jaewooEvent(S){
   const v = S.love.jaewoo; if(!v || v.stage === -9) return null;
   const lv = LOVERS.jaewoo, img = 'art/lv_jaewoo_work.webp';
-  // 1) 입사 소식 (2008년 3월)
+  // 1) 입사 소식 (2018년 3월)
   if(S.m >= 24 && !S.seen.jaewoo_hire) return {id:'jaewoo_hire', lover:'jaewoo', once:true, speaker:lv.name, title:'취업 소식', place:'cafe', img:'art/lv_jaewoo_work.webp',
     text:S => `${lv.name}가 졸업했다. 마흔의 내가 기억하는 대로 그는 한성상사에 입사했다. 종합상사 영업, 해외 거래처를 상대하는 자리다. “여기서 배워서 언젠가 내 회사를 세울 거야. 그때까지만 네가 좀 도와줘.” 그가 어색한 넥타이를 만지며 웃었다. ‘그때까지만’이라는 말을 나는 이십 년 동안 들었다.`,
     choices:[

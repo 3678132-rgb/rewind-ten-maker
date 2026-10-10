@@ -9,7 +9,10 @@ const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
-const faceImg = ch => `<img class="face" src="art/face_${faceFor(ch)}.jpg" alt="" onerror="this.style.display='none'">`;
+// 연애 인물의 표정: 이번 선택으로 바뀐 호감도에 따라 (happy·shy·tender·surprised·serious·sad)
+function loverFace(id, ch){ const lv = LOVERS[id]; const c = (ch || []).find(x => lv && x.label === lv.name + ' 호감'); const d = c ? c.d : 0;
+  return d >= 8 ? 'happy' : d >= 3 ? 'shy' : d > 0 ? 'tender' : d <= -6 ? 'sad' : d < 0 ? 'serious' : 'surprised'; }
+const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.jpg" alt="" onerror="this.src='art/lv_${lover}.jpg'">` : `<img class="face" src="art/face_${faceFor(ch)}.jpg" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
 function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
@@ -83,7 +86,7 @@ function playEvent(ev){
       document.querySelectorAll('.ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ closeSheet(); render(); return resolve(); }
-        openSheet(head + faceImg(out.chips) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="nx" style="margin-top:14px">계속</button>`);
+        openSheet(head + faceImg(out.chips, ev.lover) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="nx" style="margin-top:14px">계속</button>`);
         $('nx').onclick = () => { closeSheet(); render(); resolve(); };
       });
     };
@@ -94,12 +97,15 @@ const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`
 
 // ── 한 달 진행 ────────────────────────────────────────────────
 const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
+// 직업 그림은 나이대별: 25살(기본)·27살·30살 (인턴은 항상 기본)
+function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.jpg`; }
 function showAct(slotName, id, out){
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.jpg' : (CAREERS[S.track] ? `art/job_${S.track}.jpg` : null)) : null;
-    const internArt = id === 'intern' && CAREERS[S.interest] ? `art/job_${S.interest}.jpg` : null;
-    el.style.backgroundImage = jobArt ? `url(${jobArt}), url(art/act_job.jpg)` : internArt ? `url(${internArt}), url(art/act_intern.jpg)` : ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.jpg' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
+    const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
+    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.jpg` : null;
+    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.jpg'}), url(art/act_job.jpg)` : jobArt ? `url(${jobArt}), url(art/act_job.jpg)` : internArt ? `url(${internArt}), url(art/act_intern.jpg)` : ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
     el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });

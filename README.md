@@ -34,4 +34,4 @@ node sim.mjs 1500     # 오류 {} 이고 smart 자유율 ≈ 70%, random ≈ 0% 
 
 ## 그림 (art/)
 Higgsfield `gpt_image_2_5`로 생성. 주인공 일관성은 확정 시안(age20)을 레퍼런스로 걸어 나이대별로 다시 그리게 해서 유지한다.
-`age20/22/25/27/30.jpg`(주인공 나이대별), `cover.jpg`(타이틀·회귀 엔딩), `face_*.jpg`(표정 6종), `bg_shop.jpg`·`bg_alley.jpg`(배경), `lv_*.jpg`(서재우·민준·하진·태오), `mom.jpg`, `soyeon.jpg`, `grandma.jpg`.
+`age20/22/25/27/30.jpg`(주인공 나이대별), `cover.jpg`(타이틀·회귀 엔딩), `face_*.jpg`(주인공 표정 6종), `face_<인물>_<표정>.jpg`(연애 인물 11명 × 6종), `job_<직업>[_27|_30].jpg`(직업별·나이대별 근무), `duo_<인물>.jpg`(연인과 함께 일하는 장면), `bg_shop.jpg`·`bg_alley.jpg`(배경), `lv_*.jpg`(서재우·민준·하진·태오), `mom.jpg`, `soyeon.jpg`, `grandma.jpg`.

@@ -97,7 +97,9 @@ const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhu
 function showAct(slotName, id, out){
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    el.style.backgroundImage = ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.jpg' : (CAREERS[S.track] ? `art/job_${S.track}.jpg` : null)) : null;
+    const internArt = id === 'intern' && CAREERS[S.interest] ? `art/job_${S.interest}.jpg` : null;
+    el.style.backgroundImage = jobArt ? `url(${jobArt}), url(art/act_job.jpg)` : internArt ? `url(${internArt}), url(art/act_intern.jpg)` : ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
     el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });

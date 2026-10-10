@@ -136,7 +136,7 @@ function render(){
   const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
   const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
-  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false);
+  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false); + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
   const full = !S.plan.some(x => !x);
@@ -282,17 +282,19 @@ function playEvent(ev){
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
     const head = (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
     const beats = (ev.beats || []).slice();
+    const mc = /^st_(\d+)_1$/.exec(ev.id);
     const nextBeat = () => {
       if(beats.length){ const t = beats.shift(); evOpen(ev, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
       const cs = ev.choices; evOpen(ev, head + `<div class="txt">${esc(ev.text(S))}</div>` + cs.map((c, k) => `<button class="ch" data-k="${k}"><b>${esc(c.label)}</b><span>${esc(c.sub || '')}</span></button>`).join(''));
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(ev, head + faceImg(out.chips, ev.lover) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
-    nextBeat();
+    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = 'none'; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
+    else nextBeat();
   });
 }
 const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`<div class="sh-head"><b>${esc(title)}</b></div><div class="txt">${body}</div><div class="chips">${chipHTML(chips)}</div><button class="btn blue" id="nx" style="margin-top:14px">${btn || '계속'}</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
@@ -382,8 +384,19 @@ initTitle(); initGame(); paintIcons(); paintEdge('title');
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
 
-// 사파리(브라우저)에서는 하단 바가 화면 위에 떠 있으므로 아래 여백을 더 준다. 홈 화면 앱은 안전 영역만큼만.
-try{ const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); if(ios && !standalone) document.documentElement.classList.add('browser'); }catch(e){}
+// 아이폰 사파리: 화면 아래에 접힌 하단 바 자리가 따로 생긴다. 그림은 그 자리까지 채우고(앱 높이 = 기기 화면 높이),
+// 버튼·탭은 바 위에 오도록 아래 여백(--sb)을 그만큼 준다.
+function fitFull(){
+  try{
+    const root = document.documentElement, app = $('app');
+    const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const sh = Math.max(screen.height, screen.width), gap = Math.round(sh - window.innerHeight);
+    if(ios && Math.min(screen.width, screen.height) < 600 && gap > 4 && gap < 140 && window.innerHeight > window.innerWidth){
+      app.style.bottom = 'auto'; app.style.height = sh + 'px'; root.style.setProperty('--sb', gap + 'px');
+    } else { app.style.bottom = ''; app.style.height = ''; root.style.removeProperty('--sb'); }
+  }catch(e){}
+}
+fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
 const BUILD_NO = parseInt(('__BUILD__'.match(/#(\d+)/) || [0, 0])[1], 10);

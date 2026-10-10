@@ -73,7 +73,7 @@ function newGame(name, originId, regretId, majorId){
     hp:80, stress:30, cash:200, clarity:100, borrowed:0,
     st:{know:20, skill:8, neg:30, ins:40, sense:15, dare:10, charm:22},
     work:5, bond:10, self:15,
-    track:null, hired:false, love:{}, partner:null, engaged:false, rank:0, promoAt:null, items:{}, gifts:0, semStudy:0, secret:{}, susp:0, married:null, divorced:false, dateTo:[], dateOther:null,
+    track:null, hired:false, love:{}, partner:null, engaged:false, story:{pieces:0, rival:0, momStage:0, truth:0, f:{}}, rank:0, promoAt:null, items:{}, gifts:0, semStudy:0, secret:{}, susp:0, married:null, divorced:false, dateTo:[], dateOther:null,
     seen:{}, cd:{}, uses:{}, last:{work:0, bond:0, self:0}, album:[], ending:null, seed:null, collapse:false, picks:{}};
   for(const k in o.fx) S.st[k] += o.fx[k];
   for(const k in mj.fx) S.st[k] += mj.fx[k];

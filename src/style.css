@@ -290,7 +290,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .mini.save{background:var(--indigo);color:#fff}.mini.load{background:#e3f6ec;color:#0f9d58}.mini.del{background:#fdeded}
 
 /* 사파리(브라우저): 화면은 맨 아래까지 채우고, 버튼·탭은 접힌 하단 바 위로 올린다 */
-html.browser{--sb:env(safe-area-inset-bottom,0px)}
+
 
 #upbar{position:absolute;left:12px;right:12px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#161a2b;color:#fff;border-radius:14px;padding:10px 12px;font-size:13.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 #upbar button{background:linear-gradient(135deg,#ff7b54,#f0507c);color:#fff;border-radius:10px;padding:7px 12px;font-weight:800;font-size:13px}
@@ -304,3 +304,15 @@ html.browser{--sb:env(safe-area-inset-bottom,0px)}
 /* 위·아래 여백 없이: 그림은 화면 맨 위(상태바 뒤)부터 맨 아래(탭바 뒤)까지, 탭바는 반투명 유리로 */
 .scene{background:#1b2140}
 .tabbar{background:rgba(255,255,255,.84);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+
+/* 장 시작 카드 */
+.evcard.chapter{background:radial-gradient(circle at 50% 30%,#2b3a8c,#12162e 70%)}
+.chapcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#fff;padding:0 28px}
+.chapcard small{letter-spacing:.3em;opacity:.8;font-weight:700}.chapcard b{font-size:20px;letter-spacing:.2em;color:#ffd98a}.chapcard h1{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.2}.chapcard p{opacity:.8;margin:6px 0 22px;font-weight:600}
+.chapcard .btn{width:180px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);box-shadow:none;color:#fff}
+
+/* 상태창을 작게: 얼굴(가운데 위쪽)을 가리지 않도록 왼쪽 작은 알약만 둔다 */
+.hud-center{flex:0 1 auto;width:auto;max-width:150px;padding:3px 10px 4px}
+.hud-line{display:block}.hud-line b{display:block;font-size:14px;white-space:nowrap}.hud-line span{display:block;font-size:11px;white-space:nowrap;opacity:.9}
+.hud-bar,.hud-sub{display:none}
+.hud-top{justify-content:flex-start}.hud-top .gear:nth-of-type(1){margin-left:auto}

@@ -33,17 +33,50 @@ const REGRETS = [
   {id:'bond', name:'사람', icon:'🫂', desc:'곁에 있던 사람들을 제대로 붙잡지 못했다.',   fx:{bond:10, charm:4}},
   {id:'self', name:'나', icon:'🪞', desc:'나를 돌본 기억이 하나도 없다.',             fx:{self:10, ins:4}},
 ];
+// ── 한국대학교 학과 / 직업(회사) ────────────────────────────────
+const UNIVERSITY = '한국대학교';
+const MAJORS = [
+  {id:'biz',     name:'경영학과',               icon:'📊', desc:'조직과 시장을 읽는 법. 협상과 실무에 강하다.',   fx:{neg:8, know:4, skill:3}, fav:['beauty', 'pd']},
+  {id:'media',   name:'미디어커뮤니케이션학과', icon:'📺', desc:'방송·광고·콘텐츠. 감각과 사람 다루기.',          fx:{sense:6, charm:4, neg:4}, fav:['beauty', 'pd', 'writer']},
+  {id:'korean',  name:'국어국문학과',           icon:'🖋️', desc:'문장과 이야기의 힘. 통찰이 깊어진다.',          fx:{know:4, sense:4, ins:6}, fav:['writer']},
+  {id:'cs',      name:'컴퓨터공학과',           icon:'💻', desc:'만드는 사람들. 실무 능력이 압도적이다.',          fx:{skill:10, know:6}, fav:['dev']},
+  {id:'law',     name:'법학과',                 icon:'⚖️', desc:'논리와 암기와 끈기. 로스쿨로 가는 길.',          fx:{know:8, neg:6}, fav:['lawyer']},
+  {id:'vdesign', name:'시각디자인학과',         icon:'🎨', desc:'눈으로 말하는 사람들. 감각이 뛰어나다.',          fx:{sense:10, skill:4}, fav:['designer', 'beauty']},
+  {id:'theater', name:'연극영화학과',           icon:'🎭', desc:'무대와 카메라 앞. 매력과 도전이 자란다.',        fx:{charm:8, sense:4, dare:4}, fav:['actor', 'pd', 'writer']},
+  {id:'psych',   name:'심리학과',               icon:'🧠', desc:'사람 마음의 지도. 통찰과 공감.',                  fx:{ins:8, charm:3, know:3}, fav:['beauty', 'writer']},
+  {id:'fashion', name:'의류학과',               icon:'🧵', desc:'소재와 패턴, 트렌드. 감각과 손기술.',            fx:{sense:8, skill:4, charm:2}, fav:['designer', 'beauty']},
+  {id:'polisci', name:'정치외교학과',           icon:'🌐', desc:'세상과 협상하는 법. 논쟁에 강하다.',              fx:{neg:8, ins:4, know:4}, fav:['lawyer', 'pd']},
+];
+// key: 합격에 중요한 능력 가중치 / need: 이 점수면 합격률 약 65%
+const CAREERS = {
+  beauty:  {name:'뷰티 마케터',    company:'루미에르 코스메틱',   icon:'💄', desc:'신제품 캠페인으로 브랜드의 얼굴을 만든다.',     key:{sense:.35, neg:.3, charm:.2, know:.15}, need:50, pay:100, eff:{skill:2.0, sense:1.4, neg:1.0, work:2.4}, stress:8,  hp:6, ranks:['사원', '대리', '과장', '브랜드 매니저']},
+  pd:      {name:'프로덕션 PD',    company:'아크 스튜디오',        icon:'🎥', desc:'촬영장 전체를 움직이는 사람. 체력과 배짱의 직업.', key:{neg:.35, dare:.25, sense:.2, ins:.2},  need:52, pay:80,  eff:{neg:2.0, dare:1.4, sense:1.0, work:2.8}, stress:8, hp:8, ranks:['조연출', '연출', '메인 PD', '책임 프로듀서']},
+  writer:  {name:'드라마 작가',    company:'KBC 방송국',           icon:'✍️', desc:'한 줄의 대사로 시청자를 울리는 직업.',           key:{sense:.3, know:.25, ins:.3, dare:.15}, need:52, pay:70,  eff:{sense:2.0, ins:1.6, skill:1.0, work:2.6}, stress:9,  hp:5, ranks:['보조작가', '막내 작가', '메인 작가', '스타 작가']},
+  actor:   {name:'연예인',         company:'스타라이트 엔터테인먼트', icon:'🌟', desc:'카메라 앞에서 빛나는 일. 수입은 들쭉날쭉하다.',   key:{charm:.4, sense:.25, dare:.2, neg:.15}, need:56, pay:55,  eff:{charm:2.0, sense:1.4, dare:1.4, work:2.3}, stress:10, hp:7, ranks:['연습생', '신인', '조연 배우', '주연 배우'], gamble:true},
+  lawyer:  {name:'로펌 변호사',    company:'태성 법무법인',        icon:'⚖️', desc:'로스쿨 3년을 거쳐 변호사로. 높은 연봉과 높은 압박.', key:{know:.4, neg:.3, ins:.2, skill:.1},  need:55, pay:130, eff:{know:2.0, neg:1.6, skill:1.4, work:3.2}, stress:8,  hp:7, ranks:['수습', '주니어 변호사', '시니어 변호사', '파트너'], school:84},
+  dev:     {name:'IT 플랫폼 개발자', company:'네오플랫',          icon:'🖥️', desc:'서비스를 만들고 지키는 사람들.',                  key:{skill:.4, know:.3, ins:.15, dare:.15}, need:50, pay:120, eff:{skill:3.0, know:1.0, ins:0.6, work:2.0}, stress:8,  hp:7, ranks:['주니어', '미들', '시니어', '테크 리드']},
+  designer:{name:'패션 디자이너',  company:'메종 오름',            icon:'👗', desc:'옷으로 계절을 먼저 말하는 직업.',                key:{sense:.4, skill:.3, charm:.15, dare:.15}, need:50, pay:80,  eff:{sense:2.4, skill:1.8, dare:0.8, work:2.4}, stress:7,  hp:6, ranks:['어시스턴트', '주니어 디자이너', '디자이너', '디렉터']},
+};
+const CAREER_IDS = Object.keys(CAREERS);
+const majorOf = S => MAJORS.find(x => x.id === S.major) || MAJORS[0];
+function fitScore(S, id){ const c = CAREERS[id]; let t = 0; for(const k in c.key) t += c.key[k] * S.st[k]; return t; }
+function fitP(S, id){ const c = CAREERS[id]; let p = 0.1 + 0.55 * (fitScore(S, id) / c.need); if(majorOf(S).fav.includes(id)) p += 0.15; if(S.interest === id) p += 0.1; p += 0.04 * (S.tries || 0); return clamp(p, 0.1, 0.92); }
+const fitLabel = p => p >= 0.7 ? '합격 가능성 높음' : p >= 0.45 ? '합격 가능성 보통' : '합격 가능성 낮음';
+const rankIdx = S => S.work >= 78 ? 3 : S.work >= 55 ? 2 : S.work >= 30 ? 1 : 0;
+const rankName = S => S.hired && CAREERS[S.track] ? CAREERS[S.track].ranks[rankIdx(S)] : '';
+
 const ACTS_ORDER_CATS = ['공부', '일', '돈', '관계', '나', '휴식'];
 
-function newGame(name, originId, regretId){
-  const o = ORIGINS.find(x => x.id === originId) || ORIGINS[0], rg = REGRETS.find(x => x.id === regretId) || REGRETS[0];
-  const S = {v:1, name:name || '서윤', origin:o.id, regret:rg.id, m:0, phase:'plan', plan:[null, null, null],
+function newGame(name, originId, regretId, majorId){
+  const o = ORIGINS.find(x => x.id === originId) || ORIGINS[0], rg = REGRETS.find(x => x.id === regretId) || REGRETS[0], mj = MAJORS.find(x => x.id === majorId) || MAJORS[0];
+  const S = {v:2, name:name || '서윤', origin:o.id, regret:rg.id, major:mj.id, interest:null, tries:0, hiredAt:null, m:0, phase:'plan', plan:[null, null, null],
     hp:80, stress:30, cash:200, clarity:100, borrowed:0,
     st:{know:20, skill:8, neg:30, ins:40, sense:15, dare:10, charm:22},
     work:5, bond:10, self:15,
     track:null, hired:false, love:{}, partner:null, engaged:false,
     seen:{}, cd:{}, uses:{}, last:{work:0, bond:0, self:0}, album:[], ending:null, seed:null, collapse:false, picks:{}};
   for(const k in o.fx) S.st[k] += o.fx[k];
+  for(const k in mj.fx) S.st[k] += mj.fx[k];
   for(const k in rg.fx){ if(S[k] != null && typeof S[k] === 'number') S[k] += rg.fx[k]; else if(S.st[k] != null) S.st[k] += rg.fx[k]; }
   return S;
 }
@@ -78,25 +111,25 @@ function dateTarget(S){
 
 // ── 활동 ──────────────────────────────────────────────────────
 // {cat,name,icon,desc,cost,slots,hp,stress,eff:{통계/게이지}, pay, req(S)→이유문자열|null, run(S,ch,out)}
-const JOBS = { // 졸업 후 직장 트랙
-  corp:     {name:'회사 근무',   pay:105, pwr:1.3, eff:{skill:2.6, neg:1.0, work:2.2}, stress:8,  hp:7},
-  startup:  {name:'스타트업 근무', pay:70,  pwr:0.9, eff:{skill:3.0, dare:1.6, work:3.0}, stress:9,  hp:9},
-  freelance:{name:'프리랜서 작업', pay:80,  pwr:1.1, eff:{skill:2.4, sense:1.6, work:2.4}, stress:6,  hp:6},
-  grad:     {name:'연구실 생활',  pay:40,  pwr:0.4, eff:{know:3.0, ins:1.0, work:2.2}, stress:7,  hp:6},
-};
-const jobOf = S => JOBS[S.track] || JOBS.corp;
+const LAW_SCHOOL = {name:'로스쿨', pay:0, eff:{know:3.2, neg:0.8, work:3.0}, stress:8, hp:6};
+const inLawSchool = S => S.track === 'lawyer' && S.hired && S.m < CAREERS.lawyer.school;
+function jobOf(S){ if(inLawSchool(S)) return LAW_SCHOOL; const c = CAREERS[S.track]; return c || CAREERS.beauty; }
 const earnedMult = S => 1 + (S.st.skill + S.st.neg) / 220;
 
 const ACTS = {
-  study:   {cat:'공부', icon:'📖', name:'수업·공부', desc:'학점과 기초 체력. 몸은 20살, 머리는 40살이라 이해가 빠르다.', cost:0, hp:-5, stress:4, eff:{know:5, work:1.2}, req:S => S.m >= 48 && S.track !== 'grad' ? '졸업했어요' : null},
+  study:   {cat:'공부', icon:'📖', name:'수업·공부', desc:'학점과 기초 체력. 몸은 20살, 머리는 40살이라 이해가 빠르다.', cost:0, hp:-5, stress:4, eff:{know:5, work:1.2}, req:S => S.m >= 48 ? '졸업했어요' : null},
   cert:    {cat:'공부', icon:'🏷️', name:'자격증·어학', desc:'눈에 보이는 이력 한 줄.', cost:15, hp:-4, stress:5, eff:{know:3, skill:2.5, work:1.6}},
   tutor:   {cat:'돈',   icon:'✏️', name:'과외',    desc:'아는 걸 가르쳐 돈을 번다. 가르치다 보면 내가 정리된다.', cost:0, hp:-5, stress:3, pay:100, eff:{know:1, neg:0.8, work:0.8}, req:S => S.st.know < 30 ? '학식 30 필요' : null},
   cafe:    {cat:'돈',   icon:'☕', name:'카페 알바', desc:'시급은 낮아도 사람과 부딪히며 감각이 돌아온다.', cost:0, hp:-8, stress:5, pay:70, eff:{skill:1.2, neg:1.2, charm:0.8, work:0.5}},
-  intern:  {cat:'일',   icon:'🧑‍💼', name:'인턴·현장 경험', desc:'이력서에 쓸 경험. 2학년부터 지원할 수 있다.', cost:0, hp:-8, stress:7, pay:55, eff:{skill:4, neg:2, work:2.2}, req:S => S.m < 12 ? '2학년부터 가능' : (S.m >= 48 && S.hired ? '이미 취업했어요' : null)},
+  intern:  {cat:'일',   icon:'🧑‍💼', name:'인턴·현장 경험', desc:'이력서에 쓸 경험. 2학년부터 지원할 수 있다. 진로를 정했다면 그 회사에서.', cost:0, hp:-8, stress:7, pay:55, eff:{skill:3, neg:2, work:2.0}, req:S => S.m < 12 ? '2학년부터 가능' : (S.m >= 48 || S.hired ? '이미 졸업·취업했어요' : null), run(S, ch, out){ const c = CAREERS[S.interest]; if(c){ fx(S, c.eff, ch); S.internDone = (S.internDone || 0) + 1; out.note = `${c.company}에서 인턴으로 일했다. ${c.name}의 하루를 미리 살아 본다.`; } }},
   project: {cat:'일',   icon:'🛠️', name:'사이드 프로젝트', desc:'블로그·창작·서비스 만들기. 대박은 드물고 경험은 확실하다.', cost:10, hp:-6, stress:5, eff:{skill:3, sense:2, dare:2.2, work:2.4}, run(S, ch, out){ S.projects = (S.projects || 0) + 1; if(R() < 0.07 + S.st.dare / 900){ const g = Math.round(rand(80, 220)); bump(S, 'cash', g, ch); out.note = '올려둔 작업물이 입소문을 탔다.'; gauge(S, 'work', 2, ch); } }},
   jobhunt: {cat:'일',   icon:'📮', name:'구직 활동', desc:'자소서, 포트폴리오, 면접. 졸업 후에도 일이 없다면 이것부터.', cost:10, hp:-5, stress:8, eff:{neg:1.5, work:0.8}, req:S => (S.m < 36 || S.hired) ? '구직 대상이 아니에요' : null, run(S, ch, out){
-    const p = clamp(0.18 + (S.st.skill + S.st.know + S.st.neg) / 330, 0.15, 0.75); if(R() < p){ S.hired = true; S.track = S.track || 'corp'; out.note = '합격 통보! 출근할 곳이 생겼다.'; gauge(S, 'work', 4, ch); } else out.note = '이번에도 불합격 메일이 왔다.'; }},
-  job:     {cat:'일',   icon:'🏢', name:'직장 근무', desc:'정식 직장. 월급과 경력이 쌓인다.', cost:0, hp:-7, stress:8, req:S => S.hired ? null : '취업 후 가능', run(S, ch, out){ const j = jobOf(S); const pay = Math.round(j.pay * earnedMult(S) * (0.85 + S.work / 300)); bump(S, 'cash', pay, ch); fx(S, j.eff, ch); bump(S, 'hp', -j.hp, ch); bump(S, 'stress', j.stress, ch); out.skipBase = true; }},
+    if(!S.track) S.track = CAREER_IDS.slice().sort((a, b) => fitP(S, b) - fitP(S, a))[0];
+    const c = CAREERS[S.track]; S.tries = (S.tries || 0) + 1;
+    if(R() < fitP(S, S.track)){ S.hired = true; S.hiredAt = S.track === 'lawyer' ? CAREERS.lawyer.school : S.m; out.note = `${c.company} 합격 통보! 출근할 곳이 생겼다.`; gauge(S, 'work', 4, ch); } else out.note = `${c.company}에서 불합격 메일이 왔다. 그래도 경험치는 쌓였다.`; }},
+  job:     {cat:'일',   icon:'🏢', name:'직장 근무', desc:'정식 직장. 월급과 경력이 쌓인다.', cost:0, hp:-7, stress:8, req:S => S.hired ? null : '취업 후 가능', run(S, ch, out){ const j = jobOf(S); let pay = Math.round(j.pay * earnedMult(S) * (0.85 + S.work / 300)); if(j.gamble) pay = Math.round(pay * (0.3 + R() * 1.9)); if(pay) bump(S, 'cash', pay, ch); fx(S, j.eff, ch); bump(S, 'hp', -j.hp, ch); bump(S, 'stress', j.stress, ch);
+    const L = S.love || {}; for(const id in L){ const lv = LOVERS[id], v = L[id]; if(lv && lv.career && lv.career === S.track && v.stage !== -9){ addAff(S, id, 1.4, ch); out.lover = id; out.note = `${lv.name}와 같은 현장에서 일하며 조금 더 가까워졌다.`; break; } }
+    out.skipBase = true; }},
   future:  {cat:'돈',   icon:'🔮', name:'미래 지식 활용', desc:'20년 뒤를 아는 사람의 반칙. 큰돈이 되지만 기억이 닳고, 이 돈은 내 것이 아니다.', cost:0, hp:-2, stress:3, req:S => S.clarity < 12 ? '기억이 너무 흐려요' : null, run(S, ch, out){
     const g = Math.round(rand(120, 380) * (0.35 + S.clarity / 130)); bump(S, 'cash', g, ch); bump(S, 'clarity', -(5 + R() * 3), ch); S.borrowed++; out.note = '아는 대로 움직였을 뿐인데 통장이 불어난다. 어쩐지 손이 시리다.'; }},
   exercise:{cat:'나',   icon:'🏃', name:'운동', desc:'스무 살의 몸은 쓰면 쓸수록 돌아온다.', cost:5, hp:5, stress:-6, eff:{dare:1.2, self:1.6}},
@@ -112,7 +145,7 @@ const ACTS = {
   rest:    {cat:'휴식', icon:'🛌', name:'휴식', desc:'아무것도 하지 않을 권리.', cost:0, hp:18, stress:-12, eff:{}},
 };
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
-const actName = (S, id) => id === 'job' && S.hired ? jobOf(S).name : ACTS[id].name;
+const actName = (S, id) => id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
 
 function doAction(S, id){
   const a = ACTS[id], ch = [], out = {id, ch, note:''};
@@ -130,8 +163,8 @@ function doAction(S, id){
 }
 
 // ── 한 달 정산 ────────────────────────────────────────────────
-const livingCost = S => S.m < 48 ? 55 : 95;
-const allowance = S => S.m < 48 ? 45 : 0;
+const livingCost = S => (S.m < 48 || inLawSchool(S)) ? 55 : 95;
+const allowance = S => S.m < 48 ? 45 : inLawSchool(S) ? 80 : 0;
 function settle(S){
   const ch = [];
   bump(S, 'cash', -livingCost(S), ch); if(allowance(S)) bump(S, 'cash', allowance(S), ch);

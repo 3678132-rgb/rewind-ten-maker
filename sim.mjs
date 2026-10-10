@@ -3,7 +3,7 @@ import fs from 'fs'; import vm from 'vm';
 const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/events.js', 'src/data/endings.js'];
 const src = files.map(f => fs.readFileSync(f, 'utf8')).join('\n');
 const ctx = {console, Math}; vm.createContext(ctx);
-vm.runInContext(src + '\n;globalThis.E={newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,LOVERS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);
+vm.runInContext(src + '\n;globalThis.E={newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,MAJORS,CAREERS,inLawSchool,LOVERS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);
 const E = ctx.E;
 const games = +process.argv[2] || 1500, strat = process.argv[3] || 'mix';
 const errs = {}, ends = {}, seenEv = {}; let bad = 0;
@@ -19,7 +19,7 @@ function chooseAct(S, i, mode){
   if(mode === 'random'){ const ids = Object.keys(E.ACTS).filter(ok); return rnd(ids); }
   // smart: 가장 낮은 축을 올리되, 체력·돈을 챙긴다
   if(S.hp < 30 || S.stress > 75) return 'rest';
-  if(S.cash < 80 && ok('job') && S.hired) return 'job';
+  if(S.cash < 80 && ok('job') && S.hired && !E.inLawSchool(S)) return 'job';
   if(S.cash < 80) return ok('tutor') ? 'tutor' : 'cafe';
   if(!S.hired && S.m >= 36 && ok('jobhunt') && Math.random() < 0.6) return 'jobhunt';
   const P = {work:S.work, bond:S.bond, self:S.self}; const low = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
@@ -31,7 +31,7 @@ function chooseAct(S, i, mode){
   const pool = pools[low].filter(ok); return pool.length ? rnd(pool) : (ok('rest') ? 'rest' : 'rest');
 }
 for(let g = 0; g < games; g++){
-  const S = E.newGame('테스트', rnd(E.ORIGINS).id, rnd(E.REGRETS).id); const mode = strat === 'mix' ? (g % 3 === 0 ? 'random' : 'smart') : strat;
+  const S = E.newGame('테스트', rnd(E.ORIGINS).id, rnd(E.REGRETS).id, rnd(E.MAJORS).id); const mode = strat === 'mix' ? (g % 3 === 0 ? 'random' : 'smart') : strat;
   try{
     while(S.m < E.TOTAL_MONTHS && !S.ending){
       for(let i = 0; i < 3; i++){ const id = chooseAct(S, i, mode); if(!id || !E.ACTS[id]) throw new Error("noact cash=" + S.cash + " hp=" + S.hp + " mode=" + mode + " i=" + i); const a = E.ACTS[id]; const res = E.doAction(S, id); i += a.slots - 1; if(res.burnout) break; }
@@ -42,10 +42,12 @@ for(let g = 0; g < games; g++){
       S.m++;
     }
     const e = E.computeEnding(S); if(!E.ENDINGS[e]) throw new Error('ending ' + e);
-    const key = mode + ':' + e; (globalThis.stat ||= {})[mode] ||= {n:0,w:0,b:0,s:0,cash:0,clar:0}; const st_=globalThis.stat[mode]; st_.n++; st_.w+=S.work; st_.b+=S.bond; st_.s+=S.self; st_.cash+=S.cash; st_.clar+=S.clarity; ends[key] = (ends[key] || 0) + 1;
+    (globalThis.byTrack ||= {}); if(mode==='smart'){ const k=(S.track||'none'); const o=globalThis.byTrack[k] ||= {n:0,free:0,debt:0,cash:0,work:0}; o.n++; if(e.startsWith('free_')) o.free++; if(e==='ret_debt') o.debt++; o.cash+=S.cash; o.work+=S.work; } if(mode==='smart' && S.track==='lawyer'){ (globalThis.lawEnds ||= {})[e]=(globalThis.lawEnds[e]||0)+1; (globalThis.lawStat ||= []).push([Math.round(S.work),Math.round(S.bond),Math.round(S.self),Math.round(S.cash),S.borrowed]); } const key = mode + ':' + e; (globalThis.stat ||= {})[mode] ||= {n:0,w:0,b:0,s:0,cash:0,clar:0}; const st_=globalThis.stat[mode]; st_.n++; st_.w+=S.work; st_.b+=S.bond; st_.s+=S.self; st_.cash+=S.cash; st_.clar+=S.clarity; ends[key] = (ends[key] || 0) + 1;
   }catch(e){ const k = e.message.split('\n')[0]; errs[k] = (errs[k] || 0) + 1; if(errs[k] === 1) console.log('ERR', e.stack.split('\n').slice(0, 3).join(' | ')); }
 }
 const free = {}; for(const k in ends){ const [m, e] = k.split(':'); free[m] = free[m] || {t: 0, f: 0}; free[m].t += ends[k]; if(e.startsWith('free_')) free[m].f += ends[k]; }
 console.log('errors', JSON.stringify(errs)); console.log('freedom rate', JSON.stringify(Object.fromEntries(Object.entries(free).map(([m, v]) => [m, (100 * v.f / v.t).toFixed(1) + '% of ' + v.t]))));
 console.log('endings', JSON.stringify(ends, null, 0)); for(const m in globalThis.stat||{}){ const t=globalThis.stat[m]; console.log(m,'avg work',(t.w/t.n).toFixed(0),'bond',(t.b/t.n).toFixed(0),'self',(t.s/t.n).toFixed(0),'cash',(t.cash/t.n).toFixed(0),'clarity',(t.clar/t.n).toFixed(0)); }
+for(const [k,o] of Object.entries(globalThis.byTrack||{})) console.log('track',k.padEnd(9),'n',o.n,'free%',(100*o.free/o.n).toFixed(0),'debt%',(100*o.debt/o.n).toFixed(0),'avgCash',(o.cash/o.n).toFixed(0),'avgWork',(o.work/o.n).toFixed(0));
+if(globalThis.lawEnds){ console.log('lawyer endings',JSON.stringify(globalThis.lawEnds)); const a=globalThis.lawStat; const m=i=>Math.round(a.reduce((x,y)=>x+y[i],0)/a.length); console.log('lawyer avg work/bond/self/cash/borrowed',m(0),m(1),m(2),m(3),m(4)); }
 console.log('events', JSON.stringify(seenEv));

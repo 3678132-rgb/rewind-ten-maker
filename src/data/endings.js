@@ -1,5 +1,5 @@
 // 엔딩 판정과 텍스트 (ENGINE 구간 안, DOM 금지)
-const FREE_MIN = 50, FREE_SUM = 180;
+const FREE_MIN = 50, FREE_SUM = 184;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
 function finalPillars(S){
@@ -14,9 +14,7 @@ function computeEnding(S){
   if(S.ending) return S.ending;
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};
   if(isFree(P)){
-    if(S.track === 'startup' && P.work >= 75) return 'free_founder';
-    if(S.track === 'freelance' && P.work >= 65 && S.st.sense >= 40) return 'free_creator';
-    if(P.work >= 70 && S.track !== 'startup') return 'free_pro';
+    if(CAREERS[S.track] && S.hired && P.work >= 62 && !inLawSchool(S)) return 'free_' + S.track;
     if(S.engaged && P.bond >= 70) return 'free_home';
     if(P.self >= 75) return 'free_soul';
     return 'free_balance';
@@ -28,12 +26,20 @@ function computeEnding(S){
 }
 
 const ENDINGS = {
-  free_founder: {free:true, icon:'🚀', title:'내 이름의 회사', sub:'자유 시계 · 창업가',
-    letter:`서른 살의 ${'{name}'}, 보고 있니?\n\n나는 이 가게에서 수없이 많은 사람에게 모래시계를 건넸지만, 네 번째 시계는 처음 받아 본다. 네가 만든 회사의 첫 직원 얼굴이 어디서 많이 본 것 같더라. 그래, 그날 네가 커피를 건넨 사람이야.\n\n이제 시계는 네 것이다. 어느 나이에서든 살 수 있지만, 아마 너는 지금을 고를 거라고 생각해.`},
-  free_pro: {free:true, icon:'🧭', title:'이름으로 불리는 사람', sub:'자유 시계 · 전문가',
-    letter:`서른 살의 ${'{name}'}에게.\n\n사원증이 아니라 이름으로 불리는 사람이 되었구나. 마흔의 우리는 한 번도 그런 적이 없었지. 일이 사람을 정의하지 않는다는 걸 알면서도, 내가 쌓은 것이 내 이름으로 남는다는 건 정말 큰 위로야.\n\n시계는 이제 네 것이다.`},
-  free_creator: {free:true, icon:'🎨', title:'만드는 사람', sub:'자유 시계 · 창작자',
-    letter:`서른 살의 ${'{name}'}에게.\n\n너는 이제 밤새 만든 것으로 밥을 먹는다. 누군가는 네 작업물을 보고 하루를 견뎌 낸대. 마흔의 우리가 한 번도 상상하지 못한 일이지.\n\n시계는 이제 네 것이다. 마음껏 꿈꾸렴.`},
+  free_beauty: {free:true, icon:'💄', title:'브랜드를 만드는 사람', sub:'자유 시계 · 뷰티 마케터',
+    letter:`서른 살의 ${'{name}'}에게.\n\n루미에르 코스메틱의 신제품 캠페인에서 네 이름이 가장 먼저 불린다는 소식을 들었어. 마흔의 우리는 한 번도 브랜드의 얼굴이 되어 본 적이 없지. 사람의 하루에 작은 설렘을 건네는 일을 네가 해냈구나.\n\n시계는 이제 네 것이다.`},
+  free_pd: {free:true, icon:'🎥', title:'현장을 움직이는 사람', sub:'자유 시계 · 프로덕션 PD',
+    letter:`서른 살의 ${'{name}'}에게.\n\n촬영장에서 백 명의 이름을 외우던 그 눈빛이 아직도 선해. 폭우 속에서도 컷을 외치던 너를 보며 생각했어. 마흔의 우리는 이렇게 큰 판을 움직여 본 적이 없었다고.\n\n시계는 이제 네 것이다. 오늘 밤 촬영은 일찍 끝내렴.`},
+  free_writer: {free:true, icon:'✍️', title:'이야기를 쓰는 사람', sub:'자유 시계 · 드라마 작가',
+    letter:`서른 살의 ${'{name}'}에게.\n\n네가 쓴 한 줄 때문에 누군가가 밤새 울었대. 마흔의 우리가 쓰고 싶어서 서랍 속에 넣어 두었던 이야기들이 이제 화면 속에 살아 있어. 마감의 밤들이 헛되지 않았구나.\n\n시계는 이제 네 것이다.`},
+  free_actor: {free:true, icon:'🌟', title:'스크린 속의 나', sub:'자유 시계 · 연예인',
+    letter:`서른 살의 ${'{name}'}에게.\n\n카메라 앞에서 눈을 반짝이는 네 모습을 보며 오래 웃었어. 마흔의 우리는 누가 보지 않는 곳에서 늘 숨죽이고 살았잖아. 이제 너는 보이는 사람이 되었구나. 그래도 가끔은 아무도 보지 않는 곳에서 쉬어 가렴.\n\n시계는 이제 네 것이다.`},
+  free_lawyer: {free:true, icon:'⚖️', title:'원칙을 지키는 사람', sub:'자유 시계 · 로펌 변호사',
+    letter:`서른 살의 ${'{name}'}에게.\n\n눈을 감으라는 유혹 앞에서 눈을 뜨고 서 있었던 네가 자랑스러워. 누군가의 가장 힘든 날을 함께 견디는 일이 얼마나 무거운지 알면서도, 너는 그 자리에 섰구나.\n\n시계는 이제 네 것이다.`},
+  free_dev: {free:true, icon:'🖥️', title:'세상을 만드는 사람', sub:'자유 시계 · IT 개발자',
+    letter:`서른 살의 ${'{name}'}에게.\n\n네가 만든 서비스를 지금 수십만 명이 쓰고 있어. 아는 미래를 따르지 않고 밤새 코드를 쳤던 그 새벽들이 모두 여기에 쌓였구나. 이건 온전히 네 것이다.\n\n시계도 이제 네 것이다.`},
+  free_designer: {free:true, icon:'👗', title:'계절을 먼저 말하는 사람', sub:'자유 시계 · 패션 디자이너',
+    letter:`서른 살의 ${'{name}'}에게.\n\n네 컬렉션이 무대에 오르던 날, 객석에서 숨을 죽이고 있었어. 마흔의 우리는 늘 옷을 고르며 남의 시선을 신경 썼지. 이제 너는 남이 입고 싶은 옷을 만드는구나.\n\n시계는 이제 네 것이다.`},
   free_home: {free:true, icon:'💍', title:'함께 사는 사람', sub:'자유 시계 · 가정',
     letter:`서른 살의 ${'{name}'}에게.\n\n이번에는 도장이 아니라 손을 잡았구나. 같은 사람이든 다른 사람이든 중요하지 않아. 네가 이번엔 끝까지 서로를 보려 했다는 것이 중요해.\n\n시계는 이제 네 것이다. 오늘 저녁 메뉴 정도는 마음대로 골라도 좋아.`},
   free_soul: {free:true, icon:'🌿', title:'나를 아는 사람', sub:'자유 시계 · 내면',

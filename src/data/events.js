@@ -15,7 +15,7 @@ const PROLOGUE = {id:'prologue', once:true, speaker:'', title:'마흔 살, 비 �
     '나는 병을 땄다. 목이 타서였는지, 더 잃을 게 없어서였는지는 지금도 모르겠다.',
     '눈을 뜨자 천장의 얼룩이 낯익었다. 신입생 환영회 현수막, 삐걱대는 자취방 침대, 2006년 3월. 거울 속에는 스무 살의 내가 있었다.',
   ],
-  text:S => `${S.name}, 스무 살. 몸은 가볍고 머릿속은 마흔의 기억으로 가득하다. 이번에는 다르게 살 수 있다. 가장 먼저 무엇을 할까?`,
+  text:S => `${S.name}, 스무 살. ${UNIVERSITY} ${majorOf(S).name} 신입생. 몸은 가볍고 머릿속은 마흔의 기억으로 가득하다. 이번에는 다르게 살 수 있다. 가장 먼저 무엇을 할까?`,
   choices:[
     {label:'엄마에게 전화한다', sub:'관계 +3', run:S => R_(S, {bond:3, stress:-4}, '“웬일로 전화를 다 하고. 밥은 먹었니?” 수화기 너머 엄마의 목소리가 이렇게 젊었다. 나는 한참 아무 말도 못 했다.')},
     {label:'거울을 오래 본다', sub:'나 +3', run:S => R_(S, {self:3, ins:2}, '스무 살의 얼굴을 오래 들여다봤다. 이 얼굴에게 미안했고, 이 얼굴에게 약속했다. 이번엔 너를 먼저 챙기겠다고.')},
@@ -80,16 +80,30 @@ const ERA = [
    ]},
 ];
 
-// ── 졸업과 진로 (2010년 2월) ───────────────────────────────────
+// ── 진로 탐색(3학년 봄)과 졸업 취업(2010년 2월) ─────────────────
+const INTEREST_M = monthIndex(2008, 3);
 const GRAD_M = monthIndex(2010, 2);
-const GRADUATION = {id:'graduation', once:true, speaker:'', title:'졸업, 그리고 진로', place:'campus',
-  text:S => `${S.name}, 졸업이다. 마흔의 나는 이때 아무 생각 없이 큰 회사에 들어갔다. 이번에는 어떤 길로 갈까?`,
-  choices:[
-    {label:'대기업·중견기업 공채', sub:'안정적 · 학식/실무/협상 필요', run(S){ const ch = []; S.track = 'corp'; const p = clamp(0.25 + (S.st.know + S.st.skill + S.st.neg) / 280, 0.2, 0.9); if(R() < p){ S.hired = true; gauge(S, 'work', 8, ch); return {text:'최종 합격. 사원증을 목에 거는 순간 마흔의 기억이 스쳤다. 이번엔 다르게 다닐 것이다.', chips:ch}; } fx(S, {stress:8}, ch); return {text:'서류부터 줄줄이 떨어졌다. 구직 활동을 이어 가야 한다.', chips:ch}; }},
-    {label:'스타트업에 합류', sub:'불안하지만 성장 · 도전 필요', run(S){ const ch = []; S.track = 'startup'; const p = clamp(0.35 + (S.st.dare + S.st.skill) / 220, 0.25, 0.9); if(R() < p){ S.hired = true; gauge(S, 'work', 7, ch); fx(S, {dare:2}, ch); return {text:'“월급은 적지만 지분은 줄게.” 작은 사무실에서 나는 처음으로 설레는 출근을 했다.', chips:ch}; } fx(S, {stress:6}, ch); return {text:'면접에서 현실적인 질문에 막혔다. 다시 도전해야 한다.', chips:ch}; }},
-    {label:'프리랜서로 독립', sub:'자유롭지만 불안 · 감각 필요', run(S){ const ch = []; S.track = 'freelance'; const p = clamp(0.3 + (S.st.sense + S.st.skill) / 220, 0.25, 0.9); if(R() < p){ S.hired = true; gauge(S, 'work', 6, ch); return {text:'첫 거래처가 생겼다. 계약서에 내 이름 석 자가 적혔다.', chips:ch}; } fx(S, {stress:8}, ch); return {text:'일감이 들어오지 않는다. 포트폴리오와 구직을 병행해야 한다.', chips:ch}; }},
-    {label:'대학원 진학', sub:'학식 +, 수입 없음', run(S){ const ch = []; S.track = 'grad'; S.hired = true; fx(S, {know:4, work:4, ins:2}, ch); return {text:'장학금 한도만큼만 생활하며 연구실에 들어갔다. 천천히, 깊게 가는 길이다.', chips:ch}; }},
-  ]};
+const careerSub = (S, id) => `${CAREERS[id].company} · ${fitLabel(fitP(S, id))}`;
+function interestEvent(S){
+  return {id:'interest', once:true, speaker:'', title:'3학년, 진로 탐색', place:'campus',
+    beats:['학교 게시판에 기업 인턴 공고가 한가득 붙었다. 마흔의 나는 이 시기에 아무 생각 없이 이름 있는 곳에만 원서를 넣었다.', '이번에는 내가 무엇을 하고 싶은지부터 묻기로 했다. 어느 쪽에 마음이 끌리는가?'],
+    text:S => `${UNIVERSITY} ${majorOf(S).name} 3학년. 관심 있는 직업을 하나 고르면 그 회사에서 인턴 기회를 얻을 수 있다. 졸업 때 최종 선택은 다시 할 수 있다.`,
+    choices:CAREER_IDS.map(id => ({label:`${CAREERS[id].icon} ${CAREERS[id].name}`, sub:`${CAREERS[id].company} · ${fitLabel(fitP(S, id))}`, run(S){ const c = CAREERS[id], ch = []; S.interest = id; fx(S, {[Object.keys(c.key)[0]]:2, work:2}, ch); S.album.push(`${c.name}에 관심을 갖게 됨`); return {text:`${c.company}의 인턴 공고를 저장했다. ${majorOf(S).fav.includes(id) ? `${majorOf(S).name}라서 유리한 길이다.` : `${majorOf(S).name}에서 가기엔 조금 돌아가는 길이지만, 그래서 더 재미있을지도 모른다.`} (${fitLabel(fitP(S, id))})`, chips:ch}; }}))};
+}
+function graduationEvent(S){
+  return {id:'graduation', once:true, speaker:'', title:'졸업, 그리고 진로', place:'campus',
+    text:S => `${UNIVERSITY} 졸업. 마흔의 나는 이때 아무 생각 없이 큰 회사에 들어갔다. 이번에는 내가 고른 길로 간다. ${S.interest ? `(인턴으로 관심을 보인 곳: ${CAREERS[S.interest].company})` : ''}`,
+    choices:CAREER_IDS.map(id => ({label:`${CAREERS[id].icon} ${CAREERS[id].name}`, sub:careerSub(S, id), run(S){
+      const c = CAREERS[id], ch = []; S.track = id; S.tries = 0; const p = fitP(S, id);
+      if(R() < p){ S.hired = true; S.hiredAt = c.school || S.m; gauge(S, 'work', 6, ch);
+        const t = {beauty:'최종 합격. 사원증을 목에 거는 순간 마흔의 기억이 스쳤다. 이번엔 다르게 다닐 것이다.', pd:'“내일부터 조연출로 출근하세요.” 촬영장의 무전기 소리가 벌써부터 귀에 선하다.', writer:'공모전 당선 끝에 방송국 작가실의 막내 자리를 얻었다. 노트북 하나와 마감일이 내 세계다.', actor:'오디션 합격. 연습생 계약서에 이름을 쓰는 손이 떨렸다. 마흔의 나에게는 없던 종류의 용기였다.', lawyer:'로스쿨에 합격했다. 앞으로 삼 년, 도서관과 판례가 나의 일상이다. 변호사시험은 2013년 2월이다.', dev:'코딩 테스트와 면접을 통과했다. 네오플랫의 첫 출근날, 책상에는 모니터 두 대가 놓여 있었다.', designer:'포트폴리오가 통했다. 메종 오름의 작업실에는 원단 냄새와 연필 소리가 가득했다.'}[id];
+        return {text:t, chips:ch}; }
+      S.hired = false; fx(S, {stress:8}, ch); return {text:`${c.company}에서 아쉬운 소식이 왔다. 구직 활동을 이어 가며 다시 도전해야 한다.`, chips:ch}; }}))};
+}
+const BAR_EXAM = {id:'bar_exam', once:true, speaker:'', title:'변호사시험', place:'campus',
+  cond:S => S.track === 'lawyer' && S.hired,
+  text:S => '2013년 2월, 로스쿨 3년의 마지막 관문인 변호사시험이다. 마흔의 나는 이 시험장 앞에 서 본 적이 없다.',
+  choices:[{label:'온 힘을 다해 본다', sub:'학식과 협상이 높을수록 합격', run(S){ const ch = []; const p = clamp(0.35 + (S.st.know + S.st.neg) / 190, 0.3, 0.93); if(R() < p){ S.hiredAt = S.m; gauge(S, 'work', 8, ch); fx(S, {stress:-6}, ch); return {text:'합격자 명단에서 내 수험번호를 찾았다. 태성 법무법인에서 첫 출근이다.', chips:ch}; } S.hiredAt = S.m + 8; fx(S, {stress:10, work:-3}, ch); return {text:'불합격. 마흔의 내가 포기했던 순간들이 스쳤지만 이번엔 주저앉지 않았다. 일 년 뒤 재시험에서 합격해, 한 해 늦게 법무법인에 출근한다.', chips:ch}; }}]};
 
 // ── 랜덤 이벤트 ───────────────────────────────────────────────
 const EVENTS = [
@@ -181,6 +195,86 @@ const EVENTS = [
    ]},
 ];
 
+const onJob = id => S => S.hired && S.track === id && !inLawSchool(S);
+EVENTS.push(
+  {id:'beauty_pt', w:4, cd:12, cond:onJob('beauty'), speaker:'한지후', title:'신제품 캠페인 PT', place:'room', text:S => '루미에르 코스메틱의 신제품 론칭 회의. 내 기획안으로 임원진 앞에서 발표해야 한다. 어떤 방식으로 설득할까?',
+   choices:[
+     {label:'데이터와 수치로 설득한다', sub:'협상 · 일 +', run:S => R_(S, {neg:2, work:2.5, stress:5}, '표와 그래프로 빈틈없이 말했다. 임원진은 고개를 끄덕였고, 기획안은 통과됐다.')},
+     {label:'감성 스토리로 설득한다', sub:'감각 · 일 +', run:S => R_(S, {sense:2.5, work:2.2, stress:4}, '제품이 아닌 한 사람의 아침을 이야기했다. 회의실이 조용해졌고, 그 침묵이 합격이었다.')},
+     {label:'미래 트렌드를 아는 척한다', sub:'일 ++ · 선명도 -6', run:S => { S.borrowed++; return R_(S, {work:4, clarity:-6}, '앞으로 유행할 성분과 색을 척척 짚었다. 성공했지만, 이건 내 감각이 아니라 기억이었다.'); }},
+   ]},
+  {id:'beauty_review', w:3, cd:15, cond:onJob('beauty'), title:'리뷰 위기', place:'room', text:S => '온라인에 우리 제품 부작용 후기가 퍼졌다. 사실 여부는 불분명하지만 불길이 커지고 있다. 대응 방식은?',
+   choices:[
+     {label:'즉시 사과하고 원인을 공개한다', sub:'통찰 · 일 +', run:S => R_(S, {ins:2, work:2, stress:7}, '투명한 대응이 오히려 신뢰를 얻었다. 밤은 길었지만 아침은 차분했다.')},
+     {label:'법무팀에 맡기고 침묵한다', sub:'스트레스 + · 일 -', run:S => R_(S, {work:-2, stress:6}, '침묵은 의혹을 키웠다. 매출이 한 달간 흔들렸다.')},
+   ]},
+  {id:'pd_rain', w:4, cd:12, cond:onJob('pd'), speaker:'차도현', title:'우천 촬영', place:'night', text:S => '야외 촬영 당일, 폭우가 쏟아진다. 예산은 한계, 배우와 스태프 백여 명이 대기 중이다.',
+   choices:[
+     {label:'강행한다', sub:'일 + · 체력 -', run:S => R_(S, {work:3, dare:2, hp:-10, stress:6}, '모두가 비를 맞으며 찍었다. 그 컷은 방송에서 가장 아름다운 장면이 되었다.')},
+     {label:'취소하고 일정을 다시 짠다', sub:'협상 · 스트레스 +', run:S => R_(S, {neg:2.5, work:1, stress:4, cash:-20}, '위약금을 협상하고 일정을 다시 짰다. 스태프들이 고마워했다.')},
+   ]},
+  {id:'pd_cast', w:3, cd:15, cond:onJob('pd'), title:'캐스팅 갈등', place:'cafe', text:S => '메인 배역을 두고 방송국과 제작사의 의견이 갈렸다. 내가 밀던 신인이 위태롭다.',
+   choices:[
+     {label:'신인을 끝까지 밀어붙인다', sub:'도전 · 일 +', run:S => R_(S, {dare:2.5, work:2.5, stress:7}, '밀어붙인 끝에 신인이 캐스팅됐다. 첫 방송 후 반응이 터졌다.')},
+     {label:'안전한 스타 배우로 간다', sub:'일 + · 나 -', run:S => R_(S, {work:1.5, self:-2, stress:2}, '시청률은 안정적이었지만 마음 한구석이 비었다.')},
+   ]},
+  {id:'writer_slump', w:4, cd:12, cond:onJob('writer'), title:'대본 슬럼프', place:'room', text:S => '마감 사흘 전인데 한 줄도 나오지 않는다. 커서만 깜박이는 화면. 마흔의 나는 이런 날 포기했다.',
+   choices:[
+     {label:'산책을 나가 사람을 관찰한다', sub:'감각 · 스트레스 -', run:S => R_(S, {sense:2, ins:1.5, stress:-5, work:1.5}, '버스 안 사람들의 대화를 훔쳐 들었다. 그 대사가 오늘 밤 대본이 되었다.')},
+     {label:'밤새 앉아 억지로 쓴다', sub:'일 + · 체력 --', run:S => R_(S, {work:2.5, hp:-12, stress:8}, '마감은 지켰지만 대본의 온도는 식어 있었다.')},
+   ]},
+  {id:'writer_rating', w:3, cd:15, cond:onJob('writer'), title:'시청률 발표', place:'room', text:S => '어젯밤 방영분 시청률이 나왔다. 방송국 복도가 술렁인다.',
+   choices:[
+     {label:'결과를 겸허히 받아들이고 다음 회를 쓴다', sub:'통찰 · 일 +', run:S => { const up = S.st.sense + R() * 40 > 55; return R_(S, up ? {work:3, sense:1.5, stress:-4} : {work:1, ins:2, stress:4}, up ? '두 자릿수 시청률! 작가실이 환호했다. 칭찬보다 다음 회가 더 걱정이었다.' : '아쉬운 숫자였다. 시청자의 댓글을 읽으며 다음 회를 고쳐 썼다.'); }},
+     {label:'그 숫자는 보지 않는다', sub:'스트레스 -2', run:S => R_(S, {stress:-2, work:-1}, '모르는 편이 낫다고 생각했다. 하지만 숫자는 나 없이도 움직였다.')},
+   ]},
+  {id:'actor_audition', w:4, cd:12, cond:onJob('actor'), speaker:'백승현', title:'오디션', place:'night', text:S => '대형 드라마의 조연 오디션 기회가 왔다. 심사위원 앞에서 단 오 분. 마흔의 나는 한 번도 서 보지 못한 자리다.',
+   choices:[
+     {label:'준비한 대사를 완벽하게 한다', sub:'매력 · 일 +', run:S => { const ok = S.st.charm + S.st.sense + R() * 60 > 95; return R_(S, ok ? {charm:2.5, work:4, stress:-2} : {charm:1, work:1, stress:6}, ok ? '대사가 끝나자 심사위원이 박수를 쳤다. 합격 문자가 오후에 왔다.' : '아깝게 떨어졌다. 하지만 심사위원이 이름은 기억해 주었다.'); }},
+     {label:'즉흥 연기로 승부한다', sub:'도전 · 위험', run:S => { const ok = R() < 0.5; return R_(S, ok ? {dare:3, work:4, charm:1.5} : {dare:1.5, stress:7}, ok ? '즉흥 연기가 대박이었다. 그 장면이 지금도 회자된다.' : '대사가 꼬였고 침묵이 이어졌다. 그래도 도전은 도전이다.'); }},
+   ]},
+  {id:'actor_hate', w:3, cd:15, cond:onJob('actor'), title:'악플', place:'room', text:S => '새로 올라온 기사 밑에 악의적인 댓글이 쏟아졌다. 마흔의 내 마음을 닮은 문장들이 화면을 가득 채웠다.',
+   choices:[
+     {label:'소속사와 법적 대응한다', sub:'일 + · 스트레스 +', run:S => R_(S, {work:1.5, stress:5, ins:1.5}, '법무팀과 함께 대응했다. 마음이 한 겹 단단해졌다.')},
+     {label:'친구들과 만나 털어놓는다', sub:'관계 + · 스트레스 --', run:S => R_(S, {bond:3, stress:-9, self:1.5}, '“그 사람들은 널 몰라.” 소연이 말했다. 오랜만에 소리 내어 울었다.')},
+   ]},
+  {id:'lawyer_case', w:4, cd:12, cond:onJob('lawyer'), speaker:'최건우', title:'밤샘 사건', place:'night', text:S => '내일 아침 서면 제출인데 핵심 증거 한 줄이 모자란다. 사무실에는 나와 불 켜진 창문들뿐이다.',
+   choices:[
+     {label:'끝까지 파고든다', sub:'학식 · 일 + · 체력 --', run:S => R_(S, {know:2.5, work:3, hp:-12, stress:7}, '새벽 네 시, 숨은 판례를 찾아냈다. 서면은 완벽했다.')},
+     {label:'기한 연장을 신청한다', sub:'협상 · 일 -', run:S => R_(S, {neg:2, work:-1, stress:-2}, '재판부는 기한을 하루 늦춰 주었다. 몸은 살았지만 마음은 아쉬웠다.')},
+   ]},
+  {id:'lawyer_lie', w:3, cd:15, cond:onJob('lawyer'), title:'의뢰인의 거짓말', place:'room', text:S => '의뢰인이 사실과 다른 진술을 부탁했다. 승소 가능성은 오히려 높아진다. 마흔의 나는 이런 때 눈을 감았다.',
+   choices:[
+     {label:'원칙대로 거절한다', sub:'나 + · 일 -', run:S => R_(S, {self:3, work:-1, ins:2}, '의뢰인은 화를 냈지만 나는 거울 앞에서 부끄럽지 않았다.')},
+     {label:'눈을 감는다', sub:'일 + · 나 -- · 빌린 인생', run:S => { S.borrowed++; return R_(S, {work:2, self:-4, stress:6}, '이겼다. 하지만 서류에 적힌 문장이 오래 마음에 걸렸다.'); }},
+   ]},
+  {id:'dev_outage', w:4, cd:12, cond:onJob('dev'), speaker:'안유찬', title:'새벽 장애', place:'night', text:S => '새벽 세 시, 서비스가 다운됐다. 사용자 문의가 폭주하고 슬랙 알림이 멈추질 않는다.',
+   choices:[
+     {label:'로그를 뒤져 직접 복구한다', sub:'실무 · 일 + · 체력 -', run:S => R_(S, {skill:3, work:3, hp:-10, stress:6}, '원인은 한 줄의 설정 오류였다. 복구 후 동이 트는 창밖을 멍하니 봤다.')},
+     {label:'팀을 소집해 역할을 나눈다', sub:'협상 · 일 +', run:S => R_(S, {neg:2, work:2.5, stress:4}, '복구는 빠르게 끝났다. 사후 보고서에 팀원들 이름을 먼저 적었다.')},
+   ]},
+  {id:'dev_side', w:3, cd:18, cond:onJob('dev'), title:'사이드 서비스 제안', place:'cafe', text:S => '아이폰 앱 시장이 열리던 때를 나는 안다. 이번에 만들 서비스의 이름도 기억한다. 지금 만들면 선점할 수 있다.',
+   choices:[
+     {label:'미래 지식으로 선점한다', sub:'자금 ++ · 선명도 -8', run:S => { S.borrowed++; return R_(S, {cash:260, clarity:-8, work:1}, '빠르게 만들어 시장에 냈다. 순식간에 이용자가 모였다. 이상하게 뿌듯하지 않았다.'); }},
+     {label:'내 아이디어로 처음부터 만든다', sub:'실무 · 도전 · 일 +', run:S => R_(S, {skill:3, dare:2.5, work:3, stress:8, cash:-30}, '느리고 서툴렀지만 이건 온전히 내 것이었다. 첫 사용자 한 명의 후기가 눈물이 났다.')},
+   ]},
+  {id:'designer_collection', w:4, cd:12, cond:onJob('designer'), speaker:'신우진', title:'컬렉션 마감', place:'night', text:S => '패션위크 일주일 전, 메인 룩의 원단이 입고되지 않았다. 대체 원단을 찾느냐, 디자인을 바꾸느냐.',
+   choices:[
+     {label:'직접 시장을 돌아 원단을 찾는다', sub:'감각 · 일 + · 체력 -', run:S => R_(S, {sense:3, work:3, hp:-8, stress:6}, '동대문 새벽 시장을 누비다 완벽한 원단을 찾았다. 우진이 처음으로 엄지를 들어 줬다.')},
+     {label:'디자인을 단순하게 바꾼다', sub:'실무 + · 일 +', run:S => R_(S, {skill:2.5, work:1.5, stress:3}, '선을 덜어내니 오히려 세련됐다. 간결함도 용기다.')},
+   ]},
+  {id:'designer_copy', w:3, cd:15, cond:onJob('designer'), title:'표절 의혹', place:'room', text:S => '해외 브랜드의 신상품과 우리 시안이 비슷하다는 글이 올라왔다. 나는 안다. 이건 우연이다.',
+   choices:[
+     {label:'스케치와 날짜로 증명한다', sub:'일 + · 스트레스 +', run:S => R_(S, {work:2.5, ins:1.5, stress:6}, '작업 노트와 날짜가 증거가 되었다. 논란은 하루 만에 가라앉았다.')},
+     {label:'조용히 넘어간다', sub:'일 - · 스트레스 +', run:S => R_(S, {work:-1.5, stress:5}, '말없이 지나갔지만 오해는 오래 떠돌았다.')},
+   ]},
+  {id:'office_rumor', w:5, cd:10, cond:S => { const p = S.partner; return !!p && !!LOVERS[p] && !!LOVERS[p].career && S.hired && LOVERS[p].career === S.track; }, title:'사내 소문', place:'cafe', text:S => `${LOVERS[S.partner].name}와의 사이가 회사에 소문이 났다. 복도에서 시선이 따갑다. 어떻게 할까?`,
+   choices:[
+     {label:'당당하게 공개한다', sub:'관계 + · 일 -1', run:S => R_(S, {bond:3, work:-1, self:2}, '“네, 만나고 있어요.” 짧은 한마디에 수군거림은 오히려 잦아들었다.')},
+     {label:'일에 집중해 증명한다', sub:'일 +2 · 스트레스 +', run:S => R_(S, {work:2.5, stress:6}, '소문보다 성과가 더 크게 말했다. 대신 퇴근 후엔 기운이 없었다.')},
+     {label:'거리를 두고 지켜본다', sub:'호감 -3', run:S => { addAff(S, S.partner, -3); return R_(S, {stress:3}, '조심스러운 거리가 서로를 오히려 외롭게 했다.'); }},
+   ]},
+);
 // ── 이벤트 선택 ───────────────────────────────────────────────
 function fixedEvents(S){
   const out = [];
@@ -188,7 +282,9 @@ function fixedEvents(S){
   if(S.m === 0 && !S.seen.prologue) out.push(PROLOGUE);
   for(const c of CHECKS) if(S.m === c.m && !S.seen[c.id]) out.push(checkEvent(S, c));
   for(const e of ERA) if(S.m === e.m && !S.seen[e.id]) out.push(Object.assign({once:true, speaker:''}, e));
-  if(S.m === GRAD_M && !S.seen.graduation) out.push(GRADUATION);
+  if(S.m === INTEREST_M && !S.seen.interest) out.push(interestEvent(S));
+  if(S.m === GRAD_M && !S.seen.graduation) out.push(graduationEvent(S));
+  if(S.m === CAREERS.lawyer.school - 1 && !S.seen.bar_exam && BAR_EXAM.cond(S)) out.push(BAR_EXAM);
   const le = loveEvent(S); if(le) out.push(le);
   if(S.m === TOTAL_MONTHS - 1) out.push(FINALE);
   return out;

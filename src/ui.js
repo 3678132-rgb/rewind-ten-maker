@@ -1,6 +1,6 @@
 // ── UI (ENGINE 밖) ─────────────────────────────────────────────
 const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1';
-let S = null, setupSel = {origin:'office', regret:'work'};
+let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
@@ -22,11 +22,11 @@ function initTitle(){
   const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'block' : 'none';
   $('b-new').onclick = () => { renderSetup(); show('setup'); };
   $('b-cont').onclick = () => { S = store(SAVE_KEY); if(S){ show('game'); render(); } };
-  $('b-go').onclick = () => { S = newGame($('in-name').value.trim() || '서윤', setupSel.origin, setupSel.regret); save(); show('game'); render(); startFlow(); };
+  $('b-go').onclick = () => { S = newGame($('in-name').value.trim() || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow(); };
 }
 function renderSetup(){
   const mk = (arr, key, fn) => arr.map(o => `<button class="opt ${setupSel[key] === o.id ? 'sel' : ''}" data-k="${key}" data-id="${o.id}"><span class="ic">${o.icon}</span><span><b>${o.name}</b><br><span class="sub">${o.desc}</span></span></button>`).join('');
-  $('o-origin').innerHTML = mk(ORIGINS, 'origin'); $('o-regret').innerHTML = mk(REGRETS, 'regret');
+  $('o-major').innerHTML = mk(MAJORS, 'major'); $('o-origin').innerHTML = mk(ORIGINS, 'origin'); $('o-regret').innerHTML = mk(REGRETS, 'regret');
   document.querySelectorAll('.opt').forEach(b => b.onclick = () => { setupSel[b.dataset.k] = b.dataset.id; renderSetup(); });
 }
 
@@ -36,6 +36,7 @@ function render(){
   const left = TOTAL_MONTHS - S.m;
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
+  $('h-job').textContent = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨 · 법학전문대학원생` : `${CAREERS[S.track].company} · ${rankName(S)} (${CAREERS[S.track].name})`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중 (${CAREERS[S.track].name})` : `${UNIVERSITY} ${majorOf(S).name}${S.interest ? ` · 관심: ${CAREERS[S.interest].name}` : ''}`);
   $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.jpg)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
@@ -141,7 +142,7 @@ function showEnding(){
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
   $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
-  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
+  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><p class=\"sub\">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><div class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</div><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><button class="btn ghost" id="m-prev">지난달 계획 반복</button><button class="btn ghost" id="m-theme" style="margin-top:8px">밝은/어두운 화면</button><button class="btn ghost" id="m-title" style="margin-top:8px">타이틀로 (자동 저장)</button><button class="btn ghost" id="x" style="margin-top:8px">닫기</button>`);
     $('x').onclick = closeSheet;

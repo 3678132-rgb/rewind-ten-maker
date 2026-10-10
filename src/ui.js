@@ -292,20 +292,17 @@ function showAct(slotName, id, out){
     const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
-    const card = () => {
-      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
-      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
-      el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
-    };
+    const body = `<div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     const sp = SPRITE[id];
-    if(!sp){ card(); return; }
-    // 1) 계절 배경 + 움직이는 2.5등신 캐릭터, 2) 탭하거나 잠시 뒤 결과 카드
-    el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
-    const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
-    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div><div class="shint">${a.icon} ${esc(actName(S, id))} 중…</div>`;
-    el.classList.add('on'); let done = false;
-    const go = () => { if(done) return; done = true; clearTimeout(t); card(); };
-    const t = setTimeout(go, 2300); el.onclick = go;
+    if(sp){ // 계절 배경 위에서 2.5등신 캐릭터가 계속 움직이고, 결과 카드는 그 위에 같이 나온다
+      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
+      el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
+      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>` + body;
+    } else {
+      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div>` + body;
+    }
+    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });
 }
 async function runMonth(){

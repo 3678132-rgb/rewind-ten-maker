@@ -35,7 +35,7 @@ h1,h2,h3{margin:0}
 #title{overflow:hidden;text-align:center;background:#1d2350}
 .coverart{position:absolute;inset:0;background:url(art/cover.webp) 50% 40%/cover no-repeat}
 #title::before{content:"";position:absolute;inset:0 0 auto;height:38%;z-index:1;background:linear-gradient(180deg,rgba(28,36,92,.6),rgba(28,36,92,.18) 60%,transparent)}
-#title::after{content:"";position:absolute;inset:auto 0 0;height:46%;z-index:1;background:linear-gradient(0deg,rgba(246,248,252,.97) 0%,rgba(246,248,252,.88) 50%,rgba(246,248,252,0) 100%)}
+#title::after{content:"";position:absolute;inset:auto 0 0;height:30%;z-index:1;background:linear-gradient(0deg,rgba(246,248,252,.96) 0%,rgba(246,248,252,.7) 55%,rgba(246,248,252,0) 100%)}
 .ctop{position:absolute;z-index:2;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 44px);padding:0 20px;color:#fff}
 .ctop .eyebrow{color:rgba(255,255,255,.85)}
 .wordmark{font-family:var(--f-display);font-weight:800;font-size:clamp(40px,13.5vw,62px);line-height:1.05;letter-spacing:-.01em;margin:6px 0 0;color:#fff;text-shadow:0 2px 18px rgba(20,24,70,.55),0 0 2px rgba(20,24,70,.4)}
@@ -43,7 +43,7 @@ h1,h2,h3{margin:0}
 .wordmark small{display:block;font-size:.3em;letter-spacing:.5em;font-weight:700;margin-top:.5em;padding-left:.5em;color:rgba(255,255,255,.92)}
 .csub{margin:14px auto 0;display:inline-block;line-height:1.4;font-size:12px;letter-spacing:.14em;color:#fff;padding:5px 14px;border:1px solid rgba(255,255,255,.55);border-radius:99px;background:rgba(255,255,255,.12);backdrop-filter:blur(6px)}
 .cbot{position:absolute;z-index:2;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);padding:0 22px;display:grid;gap:12px;justify-items:center}
-.ccard{width:min(100%,340px);padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 6px 24px rgba(30,40,100,.12);backdrop-filter:blur(10px);font-size:13px;line-height:1.6;color:#27304d}
+.ccard{width:min(100%,340px);padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.94);border:1px solid #fff;box-shadow:0 6px 24px rgba(30,40,100,.18);font-size:13px;line-height:1.6;color:#27304d}
 .cbot .btn{width:min(100%,340px);min-height:54px}
 .note{font-size:11.5px;color:var(--mute)}
 /* ───── 시작 설정(종이 양식) ───── */
@@ -75,25 +75,24 @@ input[type=text]{width:100%;padding:15px;border-radius:var(--r);border:1px solid
 input[type=text]:focus{outline:2px solid var(--serum)}
 /* ───── 메인: 장면 + 떠 있는 UI ───── */
 #game{overflow:hidden;background:#1b2140}
-.scene{position:absolute;inset:0;overflow:hidden;background:#1b2140}
-.scene::before{content:'';position:absolute;inset:-30px;background:var(--scene-bg) center/cover no-repeat;filter:blur(18px) brightness(.8)}
-.scene .pimg{position:absolute;left:0;right:0;top:calc(76px + env(safe-area-inset-top));bottom:0;width:100%;height:calc(100% - 76px - env(safe-area-inset-top));object-fit:cover;object-position:50% 0;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16px);mask-image:linear-gradient(180deg,transparent 0,#000 16px)}
+.scene{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,#232a5c,#1b2140)}
+/*PIMG*/.scene .pimg{position:absolute;left:0;top:calc(52px + env(safe-area-inset-top));width:100%;height:calc(100% - 52px - env(safe-area-inset-top));object-fit:cover;object-position:50% 0;display:block;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14px);mask-image:linear-gradient(180deg,transparent 0,#000 14px)}
 .scene-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(15,20,45,.5) 0%,rgba(15,20,45,0) 16%,rgba(15,20,45,0) 66%,rgba(15,20,45,.45) 100%)}
 .hud-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:6px;z-index:4}
-.avatar{width:52px;height:52px;flex:none;border-radius:16px;border:3px solid #fff;background:#ffe9b5 50% 9%/330% no-repeat;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
-.hud-center{flex:1;min-width:0;background:rgba(18,24,52,.62);color:#fff;border:2px solid rgba(255,255,255,.35);border-radius:16px;padding:5px 10px;backdrop-filter:blur(4px)}
+.avatar{width:44px;height:44px;flex:none;border-radius:16px;border:3px solid #fff;background:#ffe9b5 50% 9%/330% no-repeat;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
+.hud-center{flex:1;min-width:0;background:rgba(18,24,52,.62);color:#fff;border:2px solid rgba(255,255,255,.35);border-radius:16px;padding:3px 10px 4px;backdrop-filter:blur(4px)}
 .hud-line{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .hud-line b{font-family:var(--f-display);font-size:15px;font-weight:800;white-space:nowrap}
 .hud-line span{font-size:11px;opacity:.9;white-space:nowrap}
-.hud-bar{height:9px;margin-top:4px;background:rgba(255,255,255,.22);border-radius:99px;overflow:hidden}
+.hud-bar{height:6px;margin-top:2px;background:rgba(255,255,255,.22);border-radius:99px;overflow:hidden}
 .hud-bar i{display:block;height:100%;background:linear-gradient(90deg,#7be35a,#c8f56b);border-radius:99px}
-.hud-sub{font-size:10.5px;opacity:.85;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gear{position:relative;width:40px;height:40px;flex:none;border-radius:50%;border:3px solid #fff;background:linear-gradient(180deg,#ffe07a,#ffb21f);color:#7a4a00;display:grid;place-items:center;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
+.hud-sub{font-size:10px;opacity:.85;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gear{position:relative;width:36px;height:36px;flex:none;border-radius:50%;border:3px solid #fff;background:linear-gradient(180deg,#ffe07a,#ffb21f);color:#7a4a00;display:grid;place-items:center;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
 .hud-res{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;z-index:4}
 .res{display:flex;align-items:center;gap:5px;background:rgba(18,24,52,.62);color:#fff;border:2px solid rgba(255,255,255,.3);border-radius:99px;padding:3px 10px 3px 4px;font-size:12px;backdrop-filter:blur(4px)}
 .res i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:11px;font-weight:900;background:linear-gradient(180deg,#ffe07a,#ffb21f);color:#5a3500}
 .res b.warn{color:#ffb4b4}
-.side-l,.side-r{position:absolute;top:calc(78px + env(safe-area-inset-top));display:grid;gap:10px;z-index:4}
+.side-l,.side-r{position:absolute;top:calc(66px + env(safe-area-inset-top));display:grid;gap:8px;z-index:4}
 .side-l{left:8px}.side-r{right:8px}
 .fab{--c1:#ff9cc0;--c2:#ff5c8a;--c3:#c93a66;position:relative;width:68px;display:grid;justify-items:center;color:#fff}
 .fab.c-orange{--c1:#ffc46b;--c2:#ff9330;--c3:#c4621a}.fab.c-purple{--c1:#c3a2ff;--c2:#8f5cff;--c3:#5f34c2}.fab.c-green{--c1:#9be87a;--c2:#4cc25a;--c3:#2b8a3a}.fab.c-red{--c1:#ffa38a;--c2:#ff6a4d;--c3:#c23c24}.fab.c-teal{--c1:#7ff0dc;--c2:#22c3ac;--c3:#138a79}
@@ -212,8 +211,8 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 @media (max-height:720px){.dialog{padding:7px 10px;grid-template-columns:36px minmax(0,1fr)}.dialog .face{width:36px;height:36px}.dialog .body{font-size:12px;line-height:1.4}.side-l,.side-r{gap:6px}.fab .ic{width:46px;height:46px}.gauge svg{width:40px;height:40px}}
 
 /* 스케줄 실행: 계절 배경 위에서 2.5등신 캐릭터가 두 장 그림으로 움직인다 */
-.sprite{position:absolute;left:50%;bottom:16%;height:44%;transform:translateX(-50%);aspect-ratio:3/5;animation:bob .9s ease-in-out infinite alternate}
-.sprite.wide{height:40%;aspect-ratio:7/8}
+.sprite{position:absolute;left:50%;bottom:36%;height:40%;transform:translateX(-50%);aspect-ratio:3/5;animation:bob .9s ease-in-out infinite alternate}
+.sprite.wide{height:36%;aspect-ratio:7/8}
 .sprite img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
 .sprite .fb{animation:flip2 .9s steps(1) infinite}
 @keyframes flip2{0%{opacity:0}50%{opacity:1}}
@@ -231,7 +230,7 @@ input[type=text]:focus{outline:2px solid var(--serum)}
    <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #21 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #22 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -2376,20 +2375,17 @@ function showAct(slotName, id, out){
     const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
-    const card = () => {
-      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
-      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
-      el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
-    };
+    const body = `<div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     const sp = SPRITE[id];
-    if(!sp){ card(); return; }
-    // 1) 계절 배경 + 움직이는 2.5등신 캐릭터, 2) 탭하거나 잠시 뒤 결과 카드
-    el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
-    const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
-    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div><div class="shint">${a.icon} ${esc(actName(S, id))} 중…</div>`;
-    el.classList.add('on'); let done = false;
-    const go = () => { if(done) return; done = true; clearTimeout(t); card(); };
-    const t = setTimeout(go, 2300); el.onclick = go;
+    if(sp){ // 계절 배경 위에서 2.5등신 캐릭터가 계속 움직이고, 결과 카드는 그 위에 같이 나온다
+      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
+      el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
+      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>` + body;
+    } else {
+      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div>` + body;
+    }
+    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });
 }
 async function runMonth(){
@@ -2436,7 +2432,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #21 · 2026.10.11</div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #22 · 2026.10.11</div>`);
     $('x').onclick = closeSheet;
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });

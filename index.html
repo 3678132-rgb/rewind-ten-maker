@@ -77,7 +77,7 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 /* ───── 메인: 장면 + 떠 있는 UI ───── */
 #game{overflow:hidden;background:#1b2140}
 .scene{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,#232a5c,#1b2140)}
-/*PIMG*/.scene .pimg{position:absolute;left:0;top:calc(52px + env(safe-area-inset-top));width:100%;height:calc(100% - 52px - env(safe-area-inset-top));object-fit:cover;object-position:50% 0;display:block;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 14px);mask-image:linear-gradient(180deg,transparent 0,#000 14px)}
+.scene .pimg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:50% 0;display:block}
 .scene-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(15,20,45,.5) 0%,rgba(15,20,45,0) 16%,rgba(15,20,45,0) 66%,rgba(15,20,45,.45) 100%)}
 .hud-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;right:10px;display:flex;align-items:center;gap:6px;z-index:4}
 .avatar{width:44px;height:44px;flex:none;border-radius:16px;border:3px solid #fff;background:#ffe9b5 50% 9%/330% no-repeat;box-shadow:0 4px 0 #b9780a,0 6px 12px rgba(0,0,0,.25)}
@@ -305,6 +305,10 @@ html.browser{--sb:env(safe-area-inset-bottom,0px)}
 /* 이벤트·활동 카드는 화면 맨 아래에 붙여서, 아이폰 하단 영역(페이지 배경색)과 끊김 없이 이어지게 한다 */
 .abot,.evpanel{left:0;right:0;bottom:0;border-radius:22px 22px 0 0;border-left:0;border-right:0;border-bottom:0;padding-bottom:calc(16px + var(--sb))}
 .tabbar{background:#fff}
+
+/* 위·아래 여백 없이: 그림은 화면 맨 위(상태바 뒤)부터 맨 아래(탭바 뒤)까지, 탭바는 반투명 유리로 */
+.scene{background:#1b2140}
+.tabbar{background:rgba(255,255,255,.84);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -315,7 +319,7 @@ html.browser{--sb:env(safe-area-inset-bottom,0px)}
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #30 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #31 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -353,7 +357,7 @@ html.browser{--sb:env(safe-area-inset-bottom,0px)}
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #30 · 2026.10.11</div>
+ <div id="buildtag">빌드 #31 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -2606,7 +2610,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #30 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #31 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -2623,7 +2627,7 @@ try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) nav
 try{ const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); if(ios && !standalone) document.documentElement.classList.add('browser'); }catch(e){}
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#30 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#31 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

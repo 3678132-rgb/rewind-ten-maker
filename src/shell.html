@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0e1230"><title>다시, 스무 살</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1230"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
 <style>/*CSS*/</style></head><body>
 <div id="app">
@@ -12,26 +12,28 @@
   <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
   <p class="note">저장은 이 기기에만 보관돼요.</p></div>
  </section>
- <section id="setup" class="screen">
+ <section id="setup" class="screen pad">
   <h2 style="margin-top:22px">이름</h2><input type="text" id="in-name" maxlength="6" value="서윤">
   <h2 style="margin-top:18px">되감기 전의 직업</h2><div class="opts" id="o-origin"></div>
   <h2 style="margin-top:18px">가장 후회하는 것</h2><div class="opts" id="o-regret"></div>
-  <button class="btn" id="b-go" style="margin-top:20px">약을 마신다</button>
+  <button class="btn" id="b-go" style="margin:20px 0 30px">약을 마신다</button>
  </section>
  <section id="game" class="screen">
-  <div class="hud">
+  <div class="gbg" id="g-bg"></div><div class="gshade"></div>
+  <div class="ghud">
    <div class="date"><b id="h-date"></b><span class="sub" id="h-left"></span></div>
    <div class="sand"><i id="h-sand"></i></div>
    <div class="chips" id="h-chips"></div>
   </div>
-  <div class="herorow"><div class="hero"><img id="hero-img" alt="" onerror="this.style.display='none'"></div><div class="pillars" id="pillars"></div></div>
-  <div class="stats" id="stats"></div>
-  <h3 style="margin-top:16px">이번 달 계획</h3>
-  <div class="slots" id="slots"></div>
-  <div class="row"><button class="btn" id="b-run">이번 달 시작</button></div>
-  <div class="row"><button class="btn ghost" id="b-log">기록</button><button class="btn ghost" id="b-menu">메뉴</button></div>
+  <div class="gbottom">
+   <div class="pillars" id="pillars"></div>
+   <div class="slots" id="slots"></div>
+   <div class="row3"><button class="btn ghost sm" id="b-stat">능력치</button><button class="btn ghost sm" id="b-log">기록</button><button class="btn ghost sm" id="b-menu">메뉴</button></div>
+   <button class="btn" id="b-run">이번 달 시작</button>
+  </div>
  </section>
- <section id="end" class="screen"></section>
+ <section id="end" class="screen pad"></section>
+ <div id="act" class="actcard"></div>
+ <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
-<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 <script>/*JS*/</script></body></html>

@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0e1230"><title>다시, 스무 살</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0e1230"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
 <style>:root{--bg:#0e1230;--bg2:#1a1f4a;--card:#222862;--card2:#2b3275;--ink:#f3efe6;--mute:#a9acd6;--gold:#f2b84b;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff6b6b;--line:rgba(255,255,255,.1)}
 :root[data-theme="light"]{--bg:#f6f1e7;--bg2:#ece3d0;--card:#fffaf0;--card2:#f3ead6;--ink:#262338;--mute:#6c6a85;--gold:#c98410;--gold2:#a96a00;--rose:#d9506a;--mint:#16967a;--sky:#3a62b8;--bad:#c93a3a;--line:rgba(0,0,0,.12)}
@@ -8,17 +8,19 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
 body{background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg))}
 button{font:inherit;color:inherit;cursor:pointer;border:0}
-#app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 40px;position:relative}
-.screen{display:none}.screen.on{display:block}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+#app{position:relative;width:100%;height:100vh;height:100dvh;max-width:calc(100dvh * 9 / 16);margin:0 auto;overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}.screen.on{display:block}
+.screen.pad{padding:0 16px;padding-top:env(safe-area-inset-top)}
 h1,h2,h3{margin:0}
 .btn{background:var(--gold);color:#241a05;font-weight:700;padding:13px 18px;border-radius:14px;width:100%;font-size:16px}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:500}
 .btn:disabled{opacity:.4}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
 /* title/setup */
-#title{position:relative;text-align:center;min-height:100vh;margin:0 -16px;overflow:hidden}
+#title{text-align:center;overflow:hidden}
 .coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.jpg) center top/cover no-repeat}
-.tcontent{position:relative;padding:58vh 32px 40px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 28px calc(34px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
 #title p{color:#e7e4ff}
 .hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}
 @keyframes flip{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
@@ -55,9 +57,9 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
 .slot .nm{font-weight:600}.slot .ds{font-size:12px;color:var(--mute)}
 .row{display:flex;gap:8px;margin-top:12px}
 /* overlay */
-.ov{position:fixed;inset:0;background:rgba(5,7,22,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.ov{position:absolute;inset:0;background:rgba(5,7,22,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .ov.on{display:flex}
-.sheet{width:100%;max-width:480px;max-height:88vh;overflow:auto;background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 16px 26px;animation:up .22s ease-out}
+.sheet{width:100%;max-height:82%;padding-bottom:calc(26px + env(safe-area-inset-bottom));overflow:auto;background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 16px 26px;animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 .sheet h2{font-size:18px;margin-bottom:8px}
 .place{height:92px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#323a8a,#14183f)}
@@ -83,6 +85,38 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
 .place.img{background-size:cover;background-position:center;height:150px;font-size:0}
 .face{width:64px;height:84px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:1px solid var(--line)}
 .endimg{width:100%;max-height:52vh;object-fit:cover;object-position:50% 15%;border-radius:18px;margin-bottom:10px}
+
+/* ── 풀스크린 게임 화면 ── */
+#game{overflow:hidden}
+.gbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat;transition:background-image .3s}
+.gshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.72) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 46%,rgba(10,12,34,.78) 72%,rgba(10,12,34,.94) 100%)}
+.ghud{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 0}
+.ghud .date b{font-size:17px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.ghud .sub{color:#d9d9f2}
+.ghud .chip{background:rgba(14,18,48,.62);backdrop-filter:blur(4px);border-color:rgba(255,255,255,.18);color:#fff}
+.gbottom .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 2px 10px}
+.gbottom .bar{grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:3px 6px;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.gbottom .bar span{grid-column:1}.gbottom .bar b{grid-column:2;grid-row:1;text-align:right}.gbottom .bar .t{grid-column:1/3;grid-row:2;height:8px;background:rgba(255,255,255,.25)}
+.gbottom{position:absolute;left:0;right:0;bottom:0;padding:0 12px calc(12px + env(safe-area-inset-bottom))}
+.gbottom .slots{grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
+.gbottom .slot{flex-direction:column;align-items:flex-start;gap:2px;padding:10px;min-height:92px;background:rgba(26,31,74,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);border-radius:14px}
+.gbottom .slot .lb{width:auto;font-size:11px;color:#c9caf0}
+.gbottom .slot .ic{font-size:22px;line-height:1.1}
+.gbottom .slot .nm{font-size:13px;font-weight:700;line-height:1.25}
+.gbottom .slot .ds{font-size:11px;color:#c9caf0}
+.gbottom .slot.cont{opacity:.55}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.btn.sm{padding:9px 6px;font-size:13px;background:rgba(14,18,48,.55);border-color:rgba(255,255,255,.2);color:#fff}
+#b-run{margin-top:0}
+/* 활동 카드: 활동 그림이 화면을 채운다 */
+.actcard{position:absolute;inset:0;z-index:15;display:none;background:#0e1230 center/cover no-repeat}
+.actcard.on{display:block;animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.actcard .ashade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.6),rgba(10,12,34,0) 22%,rgba(10,12,34,0) 50%,rgba(10,12,34,.92) 82%)}
+.actcard .atop{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.actcard .abot{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(18px + env(safe-area-inset-bottom))}
+.actcard h2{font-size:22px;margin:0 0 4px}
+.stats.sheetstats{margin-top:8px}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -93,28 +127,30 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
   <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
   <p class="note">저장은 이 기기에만 보관돼요.</p></div>
  </section>
- <section id="setup" class="screen">
+ <section id="setup" class="screen pad">
   <h2 style="margin-top:22px">이름</h2><input type="text" id="in-name" maxlength="6" value="서윤">
   <h2 style="margin-top:18px">되감기 전의 직업</h2><div class="opts" id="o-origin"></div>
   <h2 style="margin-top:18px">가장 후회하는 것</h2><div class="opts" id="o-regret"></div>
-  <button class="btn" id="b-go" style="margin-top:20px">약을 마신다</button>
+  <button class="btn" id="b-go" style="margin:20px 0 30px">약을 마신다</button>
  </section>
  <section id="game" class="screen">
-  <div class="hud">
+  <div class="gbg" id="g-bg"></div><div class="gshade"></div>
+  <div class="ghud">
    <div class="date"><b id="h-date"></b><span class="sub" id="h-left"></span></div>
    <div class="sand"><i id="h-sand"></i></div>
    <div class="chips" id="h-chips"></div>
   </div>
-  <div class="herorow"><div class="hero"><img id="hero-img" alt="" onerror="this.style.display='none'"></div><div class="pillars" id="pillars"></div></div>
-  <div class="stats" id="stats"></div>
-  <h3 style="margin-top:16px">이번 달 계획</h3>
-  <div class="slots" id="slots"></div>
-  <div class="row"><button class="btn" id="b-run">이번 달 시작</button></div>
-  <div class="row"><button class="btn ghost" id="b-log">기록</button><button class="btn ghost" id="b-menu">메뉴</button></div>
+  <div class="gbottom">
+   <div class="pillars" id="pillars"></div>
+   <div class="slots" id="slots"></div>
+   <div class="row3"><button class="btn ghost sm" id="b-stat">능력치</button><button class="btn ghost sm" id="b-log">기록</button><button class="btn ghost sm" id="b-menu">메뉴</button></div>
+   <button class="btn" id="b-run">이번 달 시작</button>
+  </div>
  </section>
- <section id="end" class="screen"></section>
+ <section id="end" class="screen pad"></section>
+ <div id="act" class="actcard"></div>
+ <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
-<div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
 const TOTAL_MONTHS = 120, START_YEAR = 2006, START_MONTH = 3; // 2006년 3월 입학 → 2016년 2월
 const STAT = {know:'학식', skill:'실무', neg:'협상', ins:'통찰', sense:'감각', dare:'도전', charm:'매력'};
@@ -675,16 +711,15 @@ function render(){
   const left = TOTAL_MONTHS - S.m;
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
-  $('hero-img').style.display = ''; $('hero-img').src = `art/${heroKey(S)}.jpg`;
+  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.jpg)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
   $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
-  $('stats').innerHTML = STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('') + `<div>빌린 인생<b>${S.borrowed}</b></div>`;
   $('slots').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
-    if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ds">↑ 이어지는 칸</span></button>`;
-    if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ds">＋ 활동을 고르세요</span></button>`;
-    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span style="font-size:22px">${a.icon}</span><span><span class="nm">${actName(S, id)}</span><br><span class="ds">${a.desc}</span></span></button>`;
+    if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">⏩</span><span class="ds">이어지는 칸</span></button>`;
+    if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">＋</span><span class="ds">활동 고르기</span></button>`;
+    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span></button>`;
   }).join('');
   document.querySelectorAll('.slot[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   $('b-run').disabled = S.plan.some(x => !x);
@@ -732,18 +767,26 @@ function playEvent(ev){
 const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`<h2>${esc(title)}</h2><div class="txt">${body}</div><div class="chips">${chipHTML(chips)}</div><button class="btn" id="nx" style="margin-top:14px">${btn || '계속'}</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
 
 // ── 한 달 진행 ────────────────────────────────────────────────
+const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
+function showAct(slotName, id, out){
+  return new Promise(res => {
+    const a = ACTS[id], el = $('act');
+    el.style.backgroundImage = ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
+    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
+  });
+}
 async function runMonth(){
-  seedMonth(S); const lines = []; S.lastPlan = S.plan.slice();
+  seedMonth(S); S.lastPlan = S.plan.slice();
   for(let i = 0; i < 3; i++){
-    let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id];
-    if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ lines.push(`<div class="card"><b>${SLOT_NAMES[i]} · 계획 변경</b><div class="sub">조건이 맞지 않아 쉬었어요.</div></div>`); id = 'rest'; a = ACTS[id]; }
-    const out = doAction(S, id); i += a.slots - 1;
-    lines.push(`<div class="card"><b>${SLOT_NAMES[i - a.slots + 1]} · ${a.icon} ${actName(S, id)}</b>${out.note ? `<div class="txt" style="margin:4px 0">${esc(out.note)}</div>` : ''}<div class="chips" style="margin-top:6px">${chipHTML(out.ch)}</div></div>`);
+    let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
+    let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
+    const out = doAction(S, id); i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    await showAct(SLOT_NAMES[first], id, out);
     if(out.burnout) break;
   }
   const sch = settle(S);
-  lines.push(`<div class="card"><b>월말 정산</b> <span class="sub">생활비·균형</span><div class="chips" style="margin-top:6px">${chipHTML(sch)}</div></div>`);
-  await new Promise(res => { openSheet(`<h2>${yearOf(S)}년 ${monthOf(S)}월 결과</h2>${lines.join('')}<button class="btn" id="nx" style="margin-top:14px">계속</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
+  await alertSheet(`${yearOf(S)}년 ${monthOf(S)}월 정산`, '생활비·균형을 정산했어요.', sch, '계속');
   if(!S.ending){
     const fx_ = fixedEvents(S); for(const f of fx_){ await playEvent(f); if(S.ending) break; }
     if(!S.ending){ const ev = fx_.length >= 2 ? null : (R() < 0.7 ? pickEvent(S) : null); if(ev) await playEvent(ev); }
@@ -773,6 +816,7 @@ function showEnding(){
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
   $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
+  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><div class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</div><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><button class="btn ghost" id="m-prev">지난달 계획 반복</button><button class="btn ghost" id="m-theme" style="margin-top:8px">밝은/어두운 화면</button><button class="btn ghost" id="m-title" style="margin-top:8px">타이틀로 (자동 저장)</button><button class="btn ghost" id="x" style="margin-top:8px">닫기</button>`);
     $('x').onclick = closeSheet;

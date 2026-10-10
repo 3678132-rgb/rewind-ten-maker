@@ -36,16 +36,15 @@ function render(){
   const left = TOTAL_MONTHS - S.m;
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
-  $('hero-img').style.display = ''; $('hero-img').src = `art/${heroKey(S)}.jpg`;
+  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.jpg)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
   $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
-  $('stats').innerHTML = STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('') + `<div>빌린 인생<b>${S.borrowed}</b></div>`;
   $('slots').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
-    if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ds">↑ 이어지는 칸</span></button>`;
-    if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ds">＋ 활동을 고르세요</span></button>`;
-    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span style="font-size:22px">${a.icon}</span><span><span class="nm">${actName(S, id)}</span><br><span class="ds">${a.desc}</span></span></button>`;
+    if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">⏩</span><span class="ds">이어지는 칸</span></button>`;
+    if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">＋</span><span class="ds">활동 고르기</span></button>`;
+    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span></button>`;
   }).join('');
   document.querySelectorAll('.slot[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   $('b-run').disabled = S.plan.some(x => !x);
@@ -93,18 +92,26 @@ function playEvent(ev){
 const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`<h2>${esc(title)}</h2><div class="txt">${body}</div><div class="chips">${chipHTML(chips)}</div><button class="btn" id="nx" style="margin-top:14px">${btn || '계속'}</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
 
 // ── 한 달 진행 ────────────────────────────────────────────────
+const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
+function showAct(slotName, id, out){
+  return new Promise(res => {
+    const a = ACTS[id], el = $('act');
+    el.style.backgroundImage = ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
+    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
+  });
+}
 async function runMonth(){
-  seedMonth(S); const lines = []; S.lastPlan = S.plan.slice();
+  seedMonth(S); S.lastPlan = S.plan.slice();
   for(let i = 0; i < 3; i++){
-    let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id];
-    if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ lines.push(`<div class="card"><b>${SLOT_NAMES[i]} · 계획 변경</b><div class="sub">조건이 맞지 않아 쉬었어요.</div></div>`); id = 'rest'; a = ACTS[id]; }
-    const out = doAction(S, id); i += a.slots - 1;
-    lines.push(`<div class="card"><b>${SLOT_NAMES[i - a.slots + 1]} · ${a.icon} ${actName(S, id)}</b>${out.note ? `<div class="txt" style="margin:4px 0">${esc(out.note)}</div>` : ''}<div class="chips" style="margin-top:6px">${chipHTML(out.ch)}</div></div>`);
+    let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
+    let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
+    const out = doAction(S, id); i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    await showAct(SLOT_NAMES[first], id, out);
     if(out.burnout) break;
   }
   const sch = settle(S);
-  lines.push(`<div class="card"><b>월말 정산</b> <span class="sub">생활비·균형</span><div class="chips" style="margin-top:6px">${chipHTML(sch)}</div></div>`);
-  await new Promise(res => { openSheet(`<h2>${yearOf(S)}년 ${monthOf(S)}월 결과</h2>${lines.join('')}<button class="btn" id="nx" style="margin-top:14px">계속</button>`); $('nx').onclick = () => { closeSheet(); res(); }; });
+  await alertSheet(`${yearOf(S)}년 ${monthOf(S)}월 정산`, '생활비·균형을 정산했어요.', sch, '계속');
   if(!S.ending){
     const fx_ = fixedEvents(S); for(const f of fx_){ await playEvent(f); if(S.ending) break; }
     if(!S.ending){ const ev = fx_.length >= 2 ? null : (R() < 0.7 ? pickEvent(S) : null); if(ev) await playEvent(ev); }
@@ -134,6 +141,7 @@ function showEnding(){
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
   $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
+  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><div class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</div><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
   $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><button class="btn ghost" id="m-prev">지난달 계획 반복</button><button class="btn ghost" id="m-theme" style="margin-top:8px">밝은/어두운 화면</button><button class="btn ghost" id="m-title" style="margin-top:8px">타이틀로 (자동 저장)</button><button class="btn ghost" id="x" style="margin-top:8px">닫기</button>`);
     $('x').onclick = closeSheet;

@@ -4,17 +4,19 @@
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
 body{background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg))}
 button{font:inherit;color:inherit;cursor:pointer;border:0}
-#app{max-width:480px;margin:0 auto;min-height:100%;padding:0 16px 40px;position:relative}
-.screen{display:none}.screen.on{display:block}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+#app{position:relative;width:100%;height:100vh;height:100dvh;max-width:calc(100dvh * 9 / 16);margin:0 auto;overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
+.screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}.screen.on{display:block}
+.screen.pad{padding:0 16px;padding-top:env(safe-area-inset-top)}
 h1,h2,h3{margin:0}
 .btn{background:var(--gold);color:#241a05;font-weight:700;padding:13px 18px;border-radius:14px;width:100%;font-size:16px}
 .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:500}
 .btn:disabled{opacity:.4}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
 /* title/setup */
-#title{position:relative;text-align:center;min-height:100vh;margin:0 -16px;overflow:hidden}
+#title{text-align:center;overflow:hidden}
 .coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.jpg) center top/cover no-repeat}
-.tcontent{position:relative;padding:58vh 32px 40px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 28px calc(34px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
 #title p{color:#e7e4ff}
 .hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}
 @keyframes flip{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
@@ -51,9 +53,9 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
 .slot .nm{font-weight:600}.slot .ds{font-size:12px;color:var(--mute)}
 .row{display:flex;gap:8px;margin-top:12px}
 /* overlay */
-.ov{position:fixed;inset:0;background:rgba(5,7,22,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.ov{position:absolute;inset:0;background:rgba(5,7,22,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
 .ov.on{display:flex}
-.sheet{width:100%;max-width:480px;max-height:88vh;overflow:auto;background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 16px 26px;animation:up .22s ease-out}
+.sheet{width:100%;max-height:82%;padding-bottom:calc(26px + env(safe-area-inset-bottom));overflow:auto;background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 16px 26px;animation:up .22s ease-out}
 @keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 .sheet h2{font-size:18px;margin-bottom:8px}
 .place{height:92px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#323a8a,#14183f)}
@@ -79,3 +81,35 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
 .place.img{background-size:cover;background-position:center;height:150px;font-size:0}
 .face{width:64px;height:84px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:1px solid var(--line)}
 .endimg{width:100%;max-height:52vh;object-fit:cover;object-position:50% 15%;border-radius:18px;margin-bottom:10px}
+
+/* ── 풀스크린 게임 화면 ── */
+#game{overflow:hidden}
+.gbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat;transition:background-image .3s}
+.gshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.72) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 46%,rgba(10,12,34,.78) 72%,rgba(10,12,34,.94) 100%)}
+.ghud{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 0}
+.ghud .date b{font-size:17px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.ghud .sub{color:#d9d9f2}
+.ghud .chip{background:rgba(14,18,48,.62);backdrop-filter:blur(4px);border-color:rgba(255,255,255,.18);color:#fff}
+.gbottom .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 2px 10px}
+.gbottom .bar{grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:3px 6px;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.gbottom .bar span{grid-column:1}.gbottom .bar b{grid-column:2;grid-row:1;text-align:right}.gbottom .bar .t{grid-column:1/3;grid-row:2;height:8px;background:rgba(255,255,255,.25)}
+.gbottom{position:absolute;left:0;right:0;bottom:0;padding:0 12px calc(12px + env(safe-area-inset-bottom))}
+.gbottom .slots{grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
+.gbottom .slot{flex-direction:column;align-items:flex-start;gap:2px;padding:10px;min-height:92px;background:rgba(26,31,74,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);border-radius:14px}
+.gbottom .slot .lb{width:auto;font-size:11px;color:#c9caf0}
+.gbottom .slot .ic{font-size:22px;line-height:1.1}
+.gbottom .slot .nm{font-size:13px;font-weight:700;line-height:1.25}
+.gbottom .slot .ds{font-size:11px;color:#c9caf0}
+.gbottom .slot.cont{opacity:.55}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.btn.sm{padding:9px 6px;font-size:13px;background:rgba(14,18,48,.55);border-color:rgba(255,255,255,.2);color:#fff}
+#b-run{margin-top:0}
+/* 활동 카드: 활동 그림이 화면을 채운다 */
+.actcard{position:absolute;inset:0;z-index:15;display:none;background:#0e1230 center/cover no-repeat}
+.actcard.on{display:block;animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.actcard .ashade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.6),rgba(10,12,34,0) 22%,rgba(10,12,34,0) 50%,rgba(10,12,34,.92) 82%)}
+.actcard .atop{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.actcard .abot{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(18px + env(safe-area-inset-bottom))}
+.actcard h2{font-size:22px;margin:0 0 4px}
+.stats.sheetstats{margin-top:8px}

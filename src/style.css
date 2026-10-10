@@ -206,3 +206,12 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 .endcard .pillars{text-align:left;margin:12px 0}
 .letter{text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;white-space:pre-wrap;margin:14px 0;font-size:14px;line-height:1.75}
 @media (max-height:720px){.dialog{padding:7px 10px;grid-template-columns:36px minmax(0,1fr)}.dialog .face{width:36px;height:36px}.dialog .body{font-size:12px;line-height:1.4}.side-l,.side-r{gap:6px}.fab .ic{width:46px;height:46px}.gauge svg{width:40px;height:40px}}
+
+/* 스케줄 실행: 계절 배경 위에서 2.5등신 캐릭터가 두 장 그림으로 움직인다 */
+.sprite{position:absolute;left:50%;bottom:16%;height:44%;transform:translateX(-50%);aspect-ratio:3/5;animation:bob .9s ease-in-out infinite alternate}
+.sprite.wide{height:40%;aspect-ratio:7/8}
+.sprite img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.sprite .fb{animation:flip2 .9s steps(1) infinite}
+@keyframes flip2{0%{opacity:0}50%{opacity:1}}
+@keyframes bob{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-6px)}}
+.shint{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;color:#fff;font-weight:800;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.7)}

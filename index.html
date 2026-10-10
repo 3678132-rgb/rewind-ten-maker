@@ -210,6 +210,15 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 .endcard .pillars{text-align:left;margin:12px 0}
 .letter{text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;white-space:pre-wrap;margin:14px 0;font-size:14px;line-height:1.75}
 @media (max-height:720px){.dialog{padding:7px 10px;grid-template-columns:36px minmax(0,1fr)}.dialog .face{width:36px;height:36px}.dialog .body{font-size:12px;line-height:1.4}.side-l,.side-r{gap:6px}.fab .ic{width:46px;height:46px}.gauge svg{width:40px;height:40px}}
+
+/* 스케줄 실행: 계절 배경 위에서 2.5등신 캐릭터가 두 장 그림으로 움직인다 */
+.sprite{position:absolute;left:50%;bottom:16%;height:44%;transform:translateX(-50%);aspect-ratio:3/5;animation:bob .9s ease-in-out infinite alternate}
+.sprite.wide{height:40%;aspect-ratio:7/8}
+.sprite img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.sprite .fb{animation:flip2 .9s steps(1) infinite}
+@keyframes flip2{0%{opacity:0}50%{opacity:1}}
+@keyframes bob{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-6px)}}
+.shint{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;color:#fff;font-weight:800;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.7)}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -2058,8 +2067,9 @@ function showDex(){
 // ── 이벤트 재생 ───────────────────────────────────────────────
 // 이벤트는 9:16 풀스크린: 일러스트가 화면을 채우고 글과 선택지는 아래 패널에 얹는다
 const PLACE_FULL = {rain:'art/cover.webp', shop:'art/bg_shop.webp'};
+const seasonPlace = ev => ev.place === 'campus' ? 'campus' : ev.place === 'room' ? 'room' : null;
 function evOpen(ev, inner){
-  const el = $('ev'), img = ev.img || PLACE_FULL[ev.place];
+  const el = $('ev'), sp = seasonPlace(ev), img = ev.img || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
   el.className = 'evcard on p-' + (ev.place || 'room');
   el.style.backgroundImage = img ? `url(${img})` : 'none';
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
@@ -2090,15 +2100,30 @@ const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`
 const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
 // 직업 그림은 나이대별: 25살(기본)·27살·30살 (인턴은 항상 기본)
 function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.webp`; }
+// 계절(3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울)과 2.5등신 캐릭터 스프라이트(두 장이 번갈아 움직인다)
+const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
+const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
+const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
+const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 function showAct(slotName, id, out){
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
     const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
-    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
-    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
-    el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
+    const card = () => {
+      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
+      el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
+    };
+    const sp = SPRITE[id];
+    if(!sp){ card(); return; }
+    // 1) 계절 배경 + 움직이는 2.5등신 캐릭터, 2) 탭하거나 잠시 뒤 결과 카드
+    el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
+    el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${sp}_a.webp" alt=""><img class="fb" src="art/chibi/${sp}_b.webp" alt=""></div><div class="shint">${a.icon} ${esc(actName(S, id))} 중…</div>`;
+    el.classList.add('on'); let done = false;
+    const go = () => { if(done) return; done = true; clearTimeout(t); card(); };
+    const t = setTimeout(go, 2300); el.onclick = go;
   });
 }
 async function runMonth(){

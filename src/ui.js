@@ -75,7 +75,7 @@ function openPicker(i){
 function playEvent(ev){
   return new Promise(resolve => {
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
-    const pimg = ev.img || PLACE_IMG[ev.place]; const head = (pimg ? `<div class="place img" style="background-image:url(${pimg})"></div>` : `<div class="place ${ev.place || 'room'}">${PLACE_ICON[ev.place] || '🏠'}</div>`) + (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
+    const pimg = ev.img || PLACE_IMG[ev.place]; const head = (pimg ? `<div class="place img" style="background-image:url(${pimg});background-position:${ev.img ? '50% 2%' : (PLACE_POS[ev.place] || '50% 50%')}"></div>` : `<div class="place ${ev.place || 'room'}">${PLACE_ICON[ev.place] || '🏠'}</div>`) + (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
     const beats = (ev.beats || []).slice();
     const nextBeat = () => {
       if(beats.length){ const t = beats.shift(); openSheet(head + `<div class="txt">${esc(t)}</div><button class="btn" id="nx">다음</button>`); $('nx').onclick = nextBeat; return; }

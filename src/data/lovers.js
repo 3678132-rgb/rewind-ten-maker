@@ -43,7 +43,7 @@ const LOVER_IDS = Object.keys(LOVERS);
 
 function meetEvent(S, id){
   const lv = LOVERS[id];
-  return {id:'meet_' + id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus', img:id === 'jaewoo' ? 'art/lv_jaewoo.jpg' : null,
+  return {id:'meet_' + id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus', img:'art/lv_' + id + '.jpg',
     text:S => lv.intro,
     choices:[
       {label:'말을 걸어 본다', sub:'호감 +12', run(S){ const ch = []; S.love[id] = {aff:12, stage:-1, since:S.m}; S.last.bond = S.m; if(id === 'jaewoo') bump(S, 'clarity', -3, ch); push(ch, lv.name + ' 호감', 12); return {text:`${josa(lv.name, '과', '와')} 처음으로 길게 이야기했다. 어색한 인사가 어느새 웃음이 되었다.`, chips:ch}; }},
@@ -55,7 +55,7 @@ function meetEvent(S, id){
 
 function confessEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'confess_' + id, once:true, speaker:lv.name, title:'고백', place:'night',
+  return {id:'confess_' + id, once:true, speaker:lv.name, title:'고백', place:'night', img:'art/lv_' + id + '.jpg',
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “나, 너 좋아해. 사귀자.”`,
     choices:[
       {label:'받아들인다', sub:'공식 연인이 된다', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:3, stress:-6}, ch); if(id === 'jaewoo' && !v.avoided) push(ch, '※ 서재우의 습관을 지켜볼 것', 0.1); S.album.push(`${josa(lv.name, '과', '와')} 연인이 됨`); for(const o in S.love) if(o !== id && S.love[o].stage === -1) S.love[o].aff = Math.min(S.love[o].aff, 44); return {text:'“…응.” 대답은 짧았지만 가슴은 그렇지 않았다. 마흔의 나는 몰랐던 종류의 두근거림이었다.', chips:ch}; }},
@@ -65,14 +65,14 @@ function confessEvent(S, id){
 
 function trialEvent(S, id){
   const lv = LOVERS[id], v = S.love[id], t = lv.trial;
-  return {id:'trial_' + id, once:true, speaker:lv.name, title:t.title, place:'night',
+  return {id:'trial_' + id, once:true, speaker:lv.name, title:t.title, place:'night', img:'art/lv_' + id + '.jpg',
     text:S => t.text,
     choices:t.choices.map(c => ({label:c.label, sub:c.sub, run(S){ const ch = []; const text = c.run(S, v, ch); return {text, chips:ch}; }}))};
 }
 
 function proposeEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'propose_' + id, once:true, speaker:lv.name, title:'평생의 약속', place:'night',
+  return {id:'propose_' + id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.jpg',
     text:S => `${lv.name}${id === 'jaewoo' ? '가' : '이'} 작은 상자를 열었다. “우리, 같이 살자.” 마흔의 나는 이 질문 뒤의 이십 년을 안다. 지금의 나는 어떤 대답을 하고 싶은가.`,
     choices:[
       {label:'응, 약속해', sub:'결혼 약속 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 2; S.engaged = true; fx(S, {bond:7, stress:-8}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼을 약속함`); return {text:'반지가 손가락에 들어갔다. 이번에는 도장이 아니라 손을 잡았다.', chips:ch}; }},
@@ -82,7 +82,7 @@ function proposeEvent(S, id){
 
 function breakupEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'fade_' + id, once:true, speaker:lv.name, title:'멀어지는 마음', place:'night',
+  return {id:'fade_' + id, once:true, speaker:lv.name, title:'멀어지는 마음', place:'night', img:'art/lv_' + id + '.jpg',
     text:S => `${lv.name}와의 연락이 뜸해진 지 오래다. 데이트도 없이 계절이 지나갔다. 오늘 그가 먼저 말했다. “우리, 이제 그만할까?”`,
     choices:[
       {label:'붙잡는다', sub:'노력으로 한 번 더', run(S){ const ch = []; v.aff = 40; v.fading = false; v.lastDate = S.m; fx(S, {stress:6}, ch); return {text:'“한 번만 더 해 보자.” 그는 한참 뒤에야 고개를 끄덕였다.', chips:ch}; }},

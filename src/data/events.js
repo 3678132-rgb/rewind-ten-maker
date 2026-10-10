@@ -31,7 +31,7 @@ function checkEvent(S, c){
   const P = {work:S.work, bond:S.bond, self:S.self};
   const bar = k => `${PILLAR[k]} ${Math.round(P[k])}/50`;
   const weakest = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
-  return {id:c.id, once:true, speaker:GRANDMA, title:c.title, place:'shop',
+  return {id:c.id, once:true, speaker:GRANDMA, title:c.title, place:'shop', img:'art/grandma.jpg',
     beats:[c.hint, c.line, `“지금의 당신은 이래요. ${bar('work')} · ${bar('bond')} · ${bar('self')}. 새 인생이 되려면 셋 다 50을 넘어야 해요.”`],
     text:S => `가장 부족한 것은 「${PILLAR[weakest]}」다. 할머니가 모래시계를 한 번 뒤집었다. 그래서 어떻게 할까?`,
     choices:[
@@ -40,7 +40,7 @@ function checkEvent(S, c){
     ]};
 }
 
-const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop',
+const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.jpg',
   beats:[
     '2016년 2월. 십 년의 마지막 날, 나는 다시 그 골목에 서 있었다.',
     '약방의 문은 처음처럼 열려 있었다. 카운터의 할머니는 모래시계를 쓰다듬고 있었다.',
@@ -93,7 +93,7 @@ const GRADUATION = {id:'graduation', once:true, speaker:'', title:'졸업, 그�
 
 // ── 랜덤 이벤트 ───────────────────────────────────────────────
 const EVENTS = [
-  {id:'mom_call', w:5, cd:5, speaker:'엄마', title:'엄마의 전화', place:'room', text:S => '“밥은 먹고 다니니? 이번 주말에 내려올 수 있어?” 엄마의 전화다. 마흔의 나는 이 전화를 자주 흘려 넘겼다.',
+  {id:'mom_call', w:5, cd:5, speaker:'엄마', title:'엄마의 전화', place:'room', img:'art/mom.jpg', text:S => '“밥은 먹고 다니니? 이번 주말에 내려올 수 있어?” 엄마의 전화다. 마흔의 나는 이 전화를 자주 흘려 넘겼다.',
    choices:[
      {label:'주말에 내려간다', sub:'관계 +4 · 자금 -10', run:S => { S.mom = clamp((S.mom || 40) + 8, 0, 100); return R_(S, {bond:4, cash:-10, stress:-6}, '엄마는 나를 보자마자 부엌으로 달려갔다. 상 위에 반찬이 가득 올라왔다. 그 위로 오래 눈물을 삼켰다.'); }},
      {label:'바쁘다고 끊는다', sub:'스트레스 -2 · 관계 -2', run:S => R_(S, {bond:-2, stress:-2}, '“그래, 바쁘면 어쩔 수 없지.” 엄마의 목소리가 작아졌다. 마흔의 나와 똑같은 선택이었다.')},
@@ -118,7 +118,7 @@ const EVENTS = [
      {label:'적극적으로 상담한다', sub:'일 + · 협상 +', run:S => R_(S, {work:2.5, neg:1.5, stress:4}, '명함을 열 장 받았다. 그중 한 장이 이후 큰 도움이 되었다.')},
      {label:'구경만 하고 나온다', sub:'스트레스 -', run:S => R_(S, {stress:-3}, '아직은 마음이 움직이지 않았다.')},
    ]},
-  {id:'friend_trouble', w:4, cd:8, cond:S => S.m >= 6, speaker:'소연', title:'소연의 고민', place:'cafe', text:S => '단짝 소연이 울먹이며 전화했다. 남자친구가 바람을 피운 것 같다고. 마흔의 나는 이런 때 “네가 알아서 해”라고 말했었다.',
+  {id:'friend_trouble', w:4, cd:8, cond:S => S.m >= 6, speaker:'소연', title:'소연의 고민', place:'cafe', img:'art/soyeon.jpg', text:S => '단짝 소연이 울먹이며 전화했다. 남자친구가 바람을 피운 것 같다고. 마흔의 나는 이런 때 “네가 알아서 해”라고 말했었다.',
    choices:[
      {label:'밤새 곁에 있어 준다', sub:'관계 +4 · 체력 -5', run:S => R_(S, {bond:4, ins:1.5, hp:-5, stress:2}, '소연은 새벽에야 잠들었다. “너 언제 이렇게 어른이 됐어?” 나는 웃었다.')},
      {label:'스스로 결정하라고 한다', sub:'관계 -2', run:S => R_(S, {bond:-2, ins:0.5}, '“네 인생이니까.” 말은 맞았지만, 소연의 표정은 한동안 잊히지 않았다.')},
@@ -149,7 +149,7 @@ const EVENTS = [
      {label:'소개를 받는다', sub:'자금·일 +', run:S => R_(S, {cash:60, work:2, neg:1}, '작은 인연이 이력의 한 줄이 되었다.')},
      {label:'사양한다', sub:'나 +1', run:S => R_(S, {self:1}, '“고맙지만 저는 제 길을 가 보려고요.”')},
    ]},
-  {id:'prefuture', w:3, cd:15, cond:S => S.borrowed >= 2, speaker:GRANDMA, title:'꿈속의 약방', place:'shop', text:S => '꿈에 약방이 나왔다. 모래시계 한쪽이 유난히 어둡다. 할머니가 말했다. “쉽게 얻은 건 쉽게 사라져요. 그걸 손에 쥐고 서른이 되면, 그건 당신의 인생이 아니에요.”',
+  {id:'prefuture', w:3, cd:15, cond:S => S.borrowed >= 2, speaker:GRANDMA, title:'꿈속의 약방', place:'shop', img:'art/grandma.jpg', text:S => '꿈에 약방이 나왔다. 모래시계 한쪽이 유난히 어둡다. 할머니가 말했다. “쉽게 얻은 건 쉽게 사라져요. 그걸 손에 쥐고 서른이 되면, 그건 당신의 인생이 아니에요.”',
    choices:[
      {label:'미래 지식 사용을 줄인다', sub:'나 +3 · 통찰 +2', run:S => R_(S, {self:3, ins:2}, '잠에서 깨어 한참 천장을 보았다. 이제부터는 내 손으로 한다.')},
      {label:'모른 척한다', sub:'스트레스 +3', run:S => R_(S, {stress:3}, '그냥 꿈이라고 생각하기로 했다. 어쩐지 손이 시렸다.')},
@@ -159,7 +159,7 @@ const EVENTS = [
      {label:'도전한다', sub:'일·도전 + · 스트레스 +', run:S => R_(S, {work:3, dare:2.5, stress:8, cash:-10}, '결과는 절반의 성공이었다. 하지만 배운 게 많았다.')},
      {label:'안전하게 거절한다', sub:'스트레스 -2', run:S => R_(S, {stress:-2}, '아직 때가 아니라고 생각했다.')},
    ]},
-  {id:'mom_sick', w:2, cd:36, cond:S => S.m >= 30 && (S.mom || 0) < 70, speaker:'엄마', title:'엄마의 건강검진', place:'room', text:S => '엄마가 검진 결과를 숨기고 있었다. 큰 이상은 아니라지만 목소리가 달랐다. 마흔의 나는 이런 걸 나중에야 알았다.',
+  {id:'mom_sick', w:2, cd:36, cond:S => S.m >= 30 && (S.mom || 0) < 70, speaker:'엄마', title:'엄마의 건강검진', place:'room', img:'art/mom.jpg', text:S => '엄마가 검진 결과를 숨기고 있었다. 큰 이상은 아니라지만 목소리가 달랐다. 마흔의 나는 이런 걸 나중에야 알았다.',
    choices:[
      {label:'당장 내려가 곁을 지킨다', sub:'관계 +5 · 일 -2', run:S => { S.mom = clamp((S.mom || 40) + 12, 0, 100); return R_(S, {bond:5, work:-2, stress:6, hp:-4}, '엄마 곁에서 이틀을 보냈다. “바쁜데 뭘 와.” 말과 달리 엄마의 손이 내 손을 꼭 쥐었다.'); }},
      {label:'전화로 안부만 전한다', sub:'일 +1', run:S => R_(S, {work:1, bond:-2}, '마음 한쪽이 계속 무거웠다.')},

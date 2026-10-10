@@ -20,38 +20,98 @@ function openSheet(html){ $('sheet').innerHTML = html; $('ov').classList.add('on
 function closeSheet(){ $('ov').classList.remove('on'); }
 const chipHTML = ch => (ch || []).filter(c => Math.abs(c.d) >= 0.05).map(c => `<span class="chip ${c.d > 0 ? (c.label === '스트레스' ? 'down' : 'up') : (c.label === '스트레스' ? 'up' : 'down')}">${esc(c.label)} ${c.d > 0 ? '+' : ''}${c.money ? fmtMoney(c.d) : (Math.abs(c.d) < 1 ? c.d.toFixed(1) : Math.round(c.d))}</span>`).join('');
 
-// ── 타이틀·셋업 ───────────────────────────────────────────────
+// ── 타이틀·시작 설정(한 화면에 질문 하나씩) ─────────────────────
+const WIZ = [
+  {key:'name',   q:'이름을 알려 주세요', p:'스무 살로 돌아가는 사람의 이름이에요.'},
+  {key:'major',  q:`${UNIVERSITY}, 어느 학과로 갈까요?`, p:'학과에 따라 시작 능력치와 어울리는 직업이 달라져요.', list:() => MAJORS, cols:2},
+  {key:'origin', q:'마흔의 나는 어떤 일을 했었나요?', p:'되감기 전의 경력이 타고난 강점이 돼요.', list:() => ORIGINS, cols:1},
+  {key:'regret', q:'가장 후회하는 건 무엇인가요?', p:'그 후회가 이번 생의 출발점이에요.', list:() => REGRETS, cols:1},
+];
+let wizStep = 0, wizName = '서윤';
+const fxTags = fx => Object.keys(fx).map(k => `<i class="up">${LABEL[k] || k} +${fx[k]}</i>`).join('');
 function initTitle(){
-  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'block' : 'none';
-  $('b-new').onclick = () => { renderSetup(); show('setup'); };
+  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'flex' : 'none';
+  $('b-new').onclick = () => { wizStep = 0; renderWiz(); show('setup'); };
   $('b-cont').onclick = () => { S = store(SAVE_KEY); if(S){ show('game'); render(); } };
-  $('b-go').onclick = () => { S = newGame($('in-name').value.trim() || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow(); };
+  $('w-back').onclick = () => { if(wizStep > 0){ wizStep--; renderWiz(); } else show('title'); };
+  $('w-next').onclick = () => {
+    if(wizStep === 0){ const v = $('in-name') && $('in-name').value.trim(); if(v) wizName = v; }
+    if(wizStep < WIZ.length - 1){ wizStep++; renderWiz(); return; }
+    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow();
+  };
 }
-function renderSetup(){
-  const mk = (arr, key, fn) => arr.map(o => `<button class="opt ${setupSel[key] === o.id ? 'sel' : ''}" data-k="${key}" data-id="${o.id}"><span class="ic">${o.icon}</span><span><b>${o.name}</b><br><span class="sub">${o.desc}</span></span></button>`).join('');
-  $('o-major').innerHTML = mk(MAJORS, 'major'); $('o-origin').innerHTML = mk(ORIGINS, 'origin'); $('o-regret').innerHTML = mk(REGRETS, 'regret');
-  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { setupSel[b.dataset.k] = b.dataset.id; renderSetup(); });
+function renderWiz(){
+  const st = WIZ[wizStep];
+  $('w-dots').innerHTML = WIZ.map((_, i) => `<i class="${i <= wizStep ? 'on' : ''}"></i>`).join('');
+  $('w-q').innerHTML = `<h2>${esc(st.q)}</h2><p class="sub">${esc(st.p)}</p>`;
+  if(st.key === 'name'){
+    $('w-body').innerHTML = `<input type="text" id="in-name" maxlength="6" value="${esc(wizName)}" autocomplete="off" aria-label="이름"><p class="sub" style="text-align:center;margin-top:12px">여섯 글자까지 쓸 수 있어요.</p>`;
+  } else {
+    const items = st.list();
+    $('w-body').innerHTML = `<div class="cards${st.cols}">` + items.map(o => {
+      const extra = st.key === 'major' ? `<span class="ds">어울리는 직업 · ${o.fav.map(c => CAREERS[c].name).join(', ')}</span>` : '';
+      const body = `<b>${o.name}</b><span class="ds">${o.desc}</span>${extra}<span class="tg">${fxTags(o.fx)}</span>`;
+      return `<button class="opt ${setupSel[st.key] === o.id ? 'sel' : ''}" data-id="${o.id}"><span class="ic">${o.icon}</span>${st.cols === 1 ? `<span>${body}</span>` : body}</button>`;
+    }).join('') + '</div>';
+    document.querySelectorAll('#w-body .opt').forEach(b => b.onclick = () => { setupSel[st.key] = b.dataset.id; document.querySelectorAll('#w-body .opt').forEach(x => x.classList.toggle('sel', x === b)); });
+  }
+  $('w-next').textContent = wizStep === WIZ.length - 1 ? '약을 마신다 🧪' : '다음';
+  $('w-body').scrollTop = 0;
 }
 
 // ── 메인 화면 ─────────────────────────────────────────────────
+// 활동이 올려 주는 것을 미리 보여 주는 태그 (고르기 전에 알 수 있게)
+function actTags(S, id, max){
+  const a = ACTS[id]; let eff = a.eff || {}, pay = a.pay, hp = a.hp || 0, st = a.stress || 0;
+  if(id === 'job' && S.hired){ const j = jobOf(S); eff = j.eff; pay = j.pay; hp = -j.hp; st = j.stress; }
+  if(id === 'intern' && CAREERS[S.interest]) eff = Object.assign({}, eff, CAREERS[S.interest].eff);
+  const out = [], ent = Object.entries(eff).filter(([k, v]) => v > 0 && LABEL[k]).sort((x, y) => y[1] - x[1]);
+  for(const [k] of ent.slice(0, 3)) out.push({t:LABEL[k] + '▲', c:'up'});
+  if(pay) out.push({t:'수입', c:'pay'});
+  if(hp > 0) out.push({t:'체력▲', c:'up'}); else if(hp <= -8) out.push({t:'체력▼', c:'down'});
+  if(st < 0) out.push({t:'스트레스▼', c:'up'}); else if(st >= 7) out.push({t:'스트레스▲', c:'down'});
+  if(id === 'future') out.push({t:'선명도▼', c:'down'});
+  if(a.cost) out.push({t:`-${a.cost}만`, c:'down'});
+  return max ? out.slice(0, max) : out;
+}
+// 부족한 축과 몸 상태를 보고 이번 달 계획을 추천 (고민 줄이기)
+function autoPlan(){
+  const ok = (id, idx) => { const a = ACTS[id]; return !!a && !(a.req && a.req(S)) && (!a.cost || a.cost <= S.cash) && (a.slots || 1) <= 3 - idx; };
+  const P = {work:S.work, bond:S.bond, self:S.self}, low = Object.keys(P).sort((x, y) => P[x] - P[y]);
+  const pools = {work:S.hired ? ['job', 'project', 'cert', 'job'] : (S.m < 48 ? ['study', 'intern', 'project', 'cert'] : ['jobhunt', 'project']),
+    bond:['friends', 'family', 'club', dateTarget(S) ? 'date' : 'friends'], self:['journal', 'exercise', 'hobby', 'style']};
+  const picks = [];
+  if(S.hp < 30 || S.stress > 75) picks.push('rest');
+  if(S.cash < 80) picks.push(S.hired && !inLawSchool(S) ? 'job' : (ok('tutor', 0) ? 'tutor' : 'cafe'));
+  for(let r = 0; r < 3; r++) for(const k of low) picks.push(pools[k][(S.m + r * 2 + low.indexOf(k)) % pools[k].length]);
+  const plan = [null, null, null]; let i = 0;
+  for(const id of picks){ if(i > 2) break; if(ok(id, i)){ plan[i] = id; const sl = ACTS[id].slots || 1; if(sl === 2) plan[i + 1] = '>'; i += sl; } }
+  while(i <= 2){ plan[i++] = 'rest'; }
+  return plan;
+}
+function resCard(label, v, bad){ return `<div class="rc ${bad ? 'warn' : ''}"><small>${label}</small><b>${Math.round(v)}</b><div class="mini"><i style="width:${clamp(v, 0, 100)}%"></i></div></div>`; }
 function render(){
   if(!S) return;
   const left = TOTAL_MONTHS - S.m;
-  $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
-  $('h-left').textContent = `남은 시간 ${left}개월`;
-  $('h-job').textContent = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨 · 법학전문대학원생` : `${CAREERS[S.track].company} · ${rankName(S)} (${CAREERS[S.track].name})`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중 (${CAREERS[S.track].name})` : `${UNIVERSITY} ${majorOf(S).name}${S.interest ? ` · 관심: ${CAREERS[S.interest].name}` : ''}`);
+  $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
+  const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
+  $('h-job').textContent = `${S.name} ${ageOf(S)}세 · ${jobLine}`;
+  $('h-left').textContent = `${left}개월 남음`;
   $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
-  $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
-  $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
+  $('h-res').innerHTML = `<div class="rc"><small>💰 자금</small><b>${fmtMoney(S.cash)}</b></div>` + resCard('❤️ 체력', S.hp, S.hp < 30) + resCard('😮‍💨 스트레스', S.stress, S.stress > 70) + resCard('🔮 선명도', S.clarity, false);
+  $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="pcard ${k} ${S[k] < 30 ? 'low' : ''}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(S[k])}</b></div><div class="t"><i style="width:${S[k]}%"></i><u></u></div></div>`).join('');
   $('slots').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
     if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">⏩</span><span class="ds">이어지는 칸</span></button>`;
     if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">＋</span><span class="ds">활동 고르기</span></button>`;
-    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span></button>`;
+    const a = ACTS[id];
+    return `<button class="slot filled" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span><span class="tg">${actTags(S, id, 2).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span></button>`;
   }).join('');
   document.querySelectorAll('.slot[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   $('b-run').disabled = S.plan.some(x => !x);
+  $('b-prev').disabled = !S.lastPlan;
+  $('call-badge').textContent = callsLeft(S) || '';
 }
 function setPlan(i, id){
   const p = S.plan;
@@ -59,19 +119,46 @@ function setPlan(i, id){
   clear(i); const a = ACTS[id];
   if(a.slots === 2){ clear(i + 1); p[i] = id; p[i + 1] = '>'; } else p[i] = id;
 }
+const CAT_ICON = {'공부':'📖', '일':'💼', '돈':'💰', '관계':'💞', '나':'🌿', '휴식':'🛌'};
+let pickCat = null;
 function openPicker(i){
-  let html = `<h2>${SLOT_NAMES[i]}에 무엇을 할까요?</h2>`;
-  for(const cat of ACTS_ORDER_CATS){
-    const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === cat); if(!ids.length) continue;
-    html += `<div class="cat">${cat}</div><div class="acts">` + ids.map(id => {
-      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금 부족'; if(!why && a.slots > 3 - i) why = '칸이 모자라요';
-      const meta = [a.cost ? `-${a.cost}만` : '', a.pay ? `+${Math.round(a.pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act" data-id="${id}" ${why ? 'disabled' : ''}><span class="ic">${a.icon}</span><span><b>${actName(S, id)}</b> <span class="sub">${meta}</span><small>${why || a.desc}</small></span></button>`;
-    }).join('') + `</div>`;
-  }
-  openSheet(html + `<button class="btn ghost" style="margin-top:14px" id="x">닫기</button>`);
+  const P = {work:S.work, bond:S.bond, self:S.self}, lowK = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
+  if(!pickCat) pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK];
+  const cats = ACTS_ORDER_CATS.filter(c => Object.values(ACTS).some(a => a.cat === c));
+  const draw = () => {
+    const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === pickCat).map(id => {
+      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - i) why = '이 칸에서는 못 해요 (2칸 필요)';
+      return {id, a, why};
+    }).sort((x, y) => (x.why ? 1 : 0) - (y.why ? 1 : 0));
+    openSheet(`<div class="picker"><div class="phead"><h2>${SLOT_NAMES[i]}에 무엇을 할까요?</h2><div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}"><span>${CAT_ICON[c] || ''}</span>${c}</button>`).join('')}</div></div><div class="acts">` + ids.map(({id, a, why}) => {
+      const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
+      const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
+      return `<button class="act" data-id="${id}" ${why ? 'disabled' : ''}><span class="ic">${a.icon}</span><span><span class="top"><b>${actName(S, id)}</b><em>${em}</em></span><small>${why || a.desc}</small>${why ? '' : `<span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</span></button>`;
+    }).join('') + `</div><button class="btn ghost sm" style="margin-top:14px" id="x">닫기</button></div>`);
+    $('x').onclick = closeSheet;
+    document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
+    document.querySelectorAll('.act').forEach(b => b.onclick = () => { setPlan(i, b.dataset.id); closeSheet(); render(); save(); });
+  };
+  draw();
+}
+
+// ── 전화하기: 친구·엄마·썸·연인 (한 달 2회, 활동 칸 소모 없음) ─────────────
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('app').appendChild(t); setTimeout(() => t.remove(), 1800); }
+function openPhone(){
+  const left = callsLeft(S);
+  const rows = contactsOf(S).map(c => { const done = calledThisMonth(S, c.id), dis = done || left <= 0;
+    return `<button class="contact" data-id="${c.id}" ${dis ? 'disabled' : ''}><img class="av" src="${c.img}" alt="" onerror="this.style.visibility='hidden'"><span class="ci"><b>${esc(c.name)}</b><small>${esc(c.sub)}${done ? ' · 이번 달 통화함' : ''}</small></span><span class="cb">📞</span></button>`; }).join('');
+  openSheet(`<h2>전화하기</h2><p class="sub">이번 달 통화 ${left}회 남음 · 활동 칸은 쓰지 않아요</p><div class="contacts">${rows}</div><button class="btn ghost sm" id="x" style="margin-top:12px">닫기</button>`);
   $('x').onclick = closeSheet;
-  document.querySelectorAll('.act').forEach(b => b.onclick = () => { setPlan(i, b.dataset.id); closeSheet(); render(); save(); });
+  document.querySelectorAll('.contact').forEach(b => b.onclick = async () => {
+    const r = tryCall(S, b.dataset.id); if(typeof r === 'string'){ toast(r); return; }
+    closeSheet(); await playEvent(r); save(); render();
+  });
+}
+function showStats(){
+  const rows = STAT_KEYS.map(k => `<div class="srow"><span>${STAT[k]}</span><div class="t"><i style="width:${S.st[k]}%"></i></div><b>${Math.round(S.st[k])}</b></div>`).join('');
+  openSheet(`<h2>능력치</h2><p class="sub">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="statrows">${rows}</div><p class="sub" style="margin-top:12px">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`);
+  $('x').onclick = closeSheet;
 }
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
@@ -149,7 +236,7 @@ function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.webp)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
-   <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
+   <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
@@ -160,14 +247,16 @@ function showEnding(){
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
   $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
-  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><p class=\"sub\">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
-  $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><div class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</div><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
-  $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><button class="btn ghost" id="m-prev">지난달 계획 반복</button><button class="btn ghost" id="m-theme" style="margin-top:8px">밝은/어두운 화면</button><button class="btn ghost" id="m-title" style="margin-top:8px">타이틀로 (자동 저장)</button><button class="btn ghost" id="x" style="margin-top:8px">닫기</button>`);
+  $('b-auto').onclick = () => { S.plan = autoPlan(); render(); save(); };
+  $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); render(); save(); } };
+  $('b-call').onclick = openPhone;
+  $('b-stat').onclick = showStats;
+  $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><p class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
+  $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><div style="display:grid;gap:10px"><button class="btn ghost sm" id="m-theme">🌗 밝은/어두운 화면</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button><button class="btn ghost sm" id="x">닫기</button></div>`);
     $('x').onclick = closeSheet;
-    $('m-prev').onclick = () => { if(S.lastPlan) S.plan = S.lastPlan.slice(); closeSheet(); render(); };
     $('m-theme').onclick = () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'light' ? 'dark' : 'light'; try{ localStorage.setItem('rewind-ten-theme', d.dataset.theme); }catch(e){} closeSheet(); };
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
-  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet .ch, #sheet #nx')) closeSheet(); });
+  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')) closeSheet(); });
 }
 try{ const t = localStorage.getItem('rewind-ten-theme'); if(t) document.documentElement.dataset.theme = t; }catch(e){}
 initTitle(); initGame();

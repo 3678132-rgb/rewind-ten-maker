@@ -2,142 +2,187 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#0e1230"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="다시스무살"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
-<style>:root{--bg:#0e1230;--bg2:#1a1f4a;--card:#222862;--card2:#2b3275;--ink:#f3efe6;--mute:#a9acd6;--gold:#f2b84b;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff6b6b;--line:rgba(255,255,255,.1)}
-:root[data-theme="light"]{--bg:#f6f1e7;--bg2:#ece3d0;--card:#fffaf0;--card2:#f3ead6;--ink:#262338;--mute:#6c6a85;--gold:#c98410;--gold2:#a96a00;--rose:#d9506a;--mint:#16967a;--sky:#3a62b8;--bad:#c93a3a;--line:rgba(0,0,0,.12)}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5}
-body{background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg))}
-button{font:inherit;color:inherit;cursor:pointer;border:0}
-html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-body{word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%}
+<style>/* ───────────────────────── 디자인 토큰 ───────────────────────── */
+:root{--bg:#0e1230;--bg2:#171c47;--card:#1f2560;--card2:#2a3178;--ink:#f6f2ea;--mute:#b7bae0;--gold:#f4b94d;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff7a7a;--line:rgba(255,255,255,.14);--glass:rgba(18,22,58,.72);
+  --r:16px;--fs-s:13px;--fs-m:15px;--fs-l:17px;--fs-xl:22px}
+:root[data-theme="light"]{--bg:#f6f1e7;--bg2:#ece3d0;--card:#fffaf0;--card2:#f3ead6;--ink:#262338;--mute:#6c6a85;--gold:#c98410;--gold2:#a96a00;--rose:#d9506a;--mint:#16967a;--sky:#3a62b8;--bad:#c93a3a;--line:rgba(0,0,0,.12);--glass:rgba(255,250,240,.82)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;font-size:var(--fs-m);line-height:1.55;word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;touch-action:manipulation;transition:transform .08s ease,opacity .15s ease,background .15s ease}
+button:active:not(:disabled){transform:scale(.97)}
+h1,h2,h3{margin:0}
 .txt,.sub,.ch span,.ch b,#title p{text-wrap:pretty}
-/* 화면 틀: 보이는 영역 전체에 고정(iPhone Safari·홈 화면 앱에서도 아래가 비지 않게). 폰은 꽉 채우고, 넓은 화면에서는 9:16 폭으로 가운데에 둔다 */
+.sub{color:var(--mute);font-size:var(--fs-s)}
+/* 화면 틀: 보이는 영역 전체에 고정. 폰은 꽉 채우고 넓은 화면은 9:16 폭으로 가운데에 */
 #app{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:calc(100vh * 9 / 16);overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
 @supports (height:100dvh){#app{max-width:calc(100dvh * 9 / 16)}}
 .screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}.screen.on{display:block}
-.screen.pad{padding:0 16px;padding-top:env(safe-area-inset-top)}
-h1,h2,h3{margin:0}
-.btn{background:var(--gold);color:#241a05;font-weight:700;padding:13px 18px;border-radius:14px;width:100%;font-size:16px}
-.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:500}
-.btn:disabled{opacity:.4}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
-/* title/setup */
+/* ───────────────────────── 버튼·칩 ───────────────────────── */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;background:linear-gradient(180deg,#ffcb62,var(--gold));color:#2a1d05;font-weight:800;min-height:54px;padding:0 18px;border-radius:var(--r);width:100%;font-size:var(--fs-l);box-shadow:0 6px 18px rgba(244,185,77,.28)}
+.btn.ghost{background:var(--glass);border:1px solid var(--line);color:var(--ink);font-weight:600;box-shadow:none;backdrop-filter:blur(8px)}
+.btn.sm{min-height:44px;font-size:var(--fs-m)}
+.btn:disabled{opacity:.38;box-shadow:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:var(--fs-s);font-weight:600;background:rgba(255,255,255,.1);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap;color:var(--ink)}
+.chip.up{color:var(--mint)}.chip.down{color:var(--bad)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:var(--fs-s);border:1px solid var(--gold);color:var(--gold)}
+.tag.ret{border-color:var(--bad);color:var(--bad)}
+.who{display:inline-block;font-size:var(--fs-s);background:var(--gold);color:#241a05;border-radius:99px;padding:2px 11px;font-weight:800;margin-bottom:6px}
+/* ───────────────────────── 타이틀 ───────────────────────── */
 #title{text-align:center;overflow:hidden}
-.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.webp) center top/cover no-repeat}
-.tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 28px calc(34px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
-#title p{color:#e7e4ff}
+.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.1),rgba(14,18,48,.5) 55%,rgba(14,18,48,.94)),url(art/cover.webp) center top/cover no-repeat}
+.tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 24px calc(30px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
 .hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}
 @keyframes flip{0%,40%{transform:rotate(0)}50%,90%{transform:rotate(180deg)}100%{transform:rotate(180deg)}}
-#title h1{font-size:36px;margin-top:10px;letter-spacing:-1px}
-#title p{color:var(--mute);margin:10px 0 28px}
-.sub{color:var(--mute);font-size:13px}
-.opts{display:grid;gap:8px;margin-top:8px}
-.opt{display:flex;gap:10px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.opt.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(242,184,75,.3)}
-.opt .ic{font-size:24px}
-input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
-/* game */
-.hud{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 85%,transparent);padding:12px 0 8px}
-.date{display:flex;justify-content:space-between;align-items:baseline}
-.date b{font-size:18px}
-.sand{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 8px}
-.sand i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose))}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-size:12px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap}
-.chip.up{color:var(--mint)}.chip.down{color:var(--bad)}
-.pillars{display:grid;gap:8px;margin-top:6px}
-.bar{display:grid;grid-template-columns:44px 1fr 40px;align-items:center;gap:8px;font-size:13px}
-.bar .t{height:10px;background:var(--line);border-radius:99px;position:relative;overflow:visible}
-.bar .t i{display:block;height:100%;border-radius:99px;background:var(--gold)}
-.bar .t u{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.5}
-.bar.bond .t i{background:var(--rose)}.bar.self .t i{background:var(--mint)}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:12px}
-.stats div{background:var(--card);border-radius:10px;padding:6px 4px;text-align:center}
-.stats b{display:block;font-size:15px}
-.slots{display:grid;gap:8px;margin-top:6px}
-.slot{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--card2);border:1px dashed var(--line);border-radius:14px;padding:12px}
-.slot .lb{font-size:12px;color:var(--mute);width:34px}
-.slot.cont{opacity:.5}
-.slot .nm{font-weight:600}.slot .ds{font-size:12px;color:var(--mute)}
-.row{display:flex;gap:8px;margin-top:12px}
-/* overlay */
-.ov{position:absolute;inset:0;background:rgba(5,7,22,.78);display:none;align-items:flex-end;justify-content:center;z-index:20}
-.ov.on{display:flex}
-.sheet{width:100%;max-height:82%;padding-bottom:calc(26px + env(safe-area-inset-bottom));overflow:auto;background:var(--bg2);border-radius:22px 22px 0 0;padding:18px 16px 26px;animation:up .22s ease-out}
-@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-.sheet h2{font-size:18px;margin-bottom:8px}
-.place{height:92px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,#323a8a,#14183f)}
-.place.rain{background:linear-gradient(135deg,#2b3350,#0f1325)}.place.shop{background:linear-gradient(135deg,#6b4a1a,#2a1b07)}.place.night{background:linear-gradient(135deg,#201a52,#0b0a20)}.place.campus{background:linear-gradient(135deg,#3b7fb5,#274c84)}.place.cafe{background:linear-gradient(135deg,#7a4c2b,#2f1b0d)}.place.room{background:linear-gradient(135deg,#4a4170,#1f1a3a)}
-.who{display:inline-block;font-size:12px;background:var(--gold);color:#241a05;border-radius:99px;padding:2px 10px;font-weight:700;margin-bottom:6px}
-.txt{white-space:pre-wrap;margin:6px 0 12px}
-.ch{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px}
-.ch b{display:block}.ch span{font-size:12px;color:var(--mute)}
-.acts{display:grid;gap:8px}
-.act{display:flex;gap:10px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%}
-.act:disabled{opacity:.4}
-.act .ic{font-size:22px}.act b{font-size:14px}.act small{display:block;color:var(--mute);font-size:12px}
-.cat{font-size:12px;color:var(--gold);margin:12px 0 2px;letter-spacing:1px}
-.ending{text-align:center}
-.ending .big{font-size:64px}.ending h1{font-size:26px;margin:4px 0}
-.letter{text-align:left;background:var(--card);border-radius:14px;padding:14px;white-space:pre-wrap;margin:14px 0}
-.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;border:1px solid var(--gold);color:var(--gold)}
-.tag.ret{border-color:var(--bad);color:var(--bad)}
-.note{font-size:12px;color:var(--mute);text-align:center;margin-top:18px}
-.herorow{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;margin-top:6px}
-.hero{width:104px;height:150px;border-radius:14px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
-.hero img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
-.place.img{background-size:cover;background-position:center;background-color:#1a1f4a;height:150px;font-size:0}
-.face{width:64px;height:84px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:1px solid var(--line)}
-.endimg{width:100%;max-height:52vh;object-fit:cover;object-position:50% 15%;border-radius:18px;margin-bottom:10px}
-
-/* ── 풀스크린 게임 화면 ── */
+#title h1{font-size:40px;margin-top:6px;letter-spacing:-1.5px}
+#title p{color:#e7e4ff;margin:10px 0 24px;font-size:var(--fs-m)}
+.note{font-size:var(--fs-s);color:var(--mute);text-align:center;margin-top:16px}
+/* ───────────────────────── 시작 설정(마법사) ───────────────────────── */
+#setup{background:var(--bg)}
+.wizbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.78),rgba(14,18,48,.96)),url(art/cover.webp) center top/cover no-repeat;filter:saturate(.9)}
+.wiz{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(14px + env(safe-area-inset-top)) 16px 0}
+.wizhead{display:flex;align-items:center;gap:12px}
+.wizback{width:40px;height:40px;border-radius:50%;background:var(--glass);border:1px solid var(--line);font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.wizback[hidden]{visibility:hidden;display:flex}
+.dots{display:flex;gap:6px;flex:1}
+.dots i{flex:1;height:5px;border-radius:99px;background:rgba(255,255,255,.2)}
+.dots i.on{background:var(--gold)}
+.wizq{margin:18px 2px 12px}
+.wizq h2{font-size:var(--fs-xl);letter-spacing:-.5px}
+.wizq p{margin:4px 0 0}
+.wizbody{flex:1;overflow-y:auto;margin:0 -16px;padding:2px 16px 12px;-webkit-overflow-scrolling:touch}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cards1{display:grid;gap:10px}
+.opt{position:relative;text-align:left;background:var(--glass);border:1.5px solid var(--line);border-radius:var(--r);padding:14px 14px 12px;backdrop-filter:blur(8px);min-height:92px}
+.opt .ic{font-size:28px;line-height:1}
+.opt b{display:block;font-size:var(--fs-l);margin-top:6px;letter-spacing:-.3px}
+.opt .ds{display:block;font-size:var(--fs-s);color:var(--mute);margin-top:2px;line-height:1.4}
+.opt.sel{border-color:var(--gold);background:rgba(244,185,77,.16);box-shadow:0 0 0 3px rgba(244,185,77,.25)}
+.opt.sel::after{content:'✓';position:absolute;top:8px;right:10px;color:var(--gold);font-weight:900}
+.cards1 .opt{display:flex;gap:12px;align-items:center;min-height:0}
+.cards1 .opt b{margin-top:0}
+.wizfoot{padding:12px 0 calc(14px + env(safe-area-inset-bottom));background:linear-gradient(transparent,rgba(14,18,48,.96) 30%)}
+input[type=text]{width:100%;padding:16px;border-radius:var(--r);border:1.5px solid var(--line);background:var(--glass);color:var(--ink);font-size:20px;font-weight:700;text-align:center}
+input[type=text]:focus{outline:none;border-color:var(--gold)}
+/* ───────────────────────── 메인(풀스크린) ───────────────────────── */
 #game{overflow:hidden}
 .gbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat;transition:background-image .3s}
-.gshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.72) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 46%,rgba(10,12,34,.78) 72%,rgba(10,12,34,.94) 100%)}
+.gshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.7) 0,rgba(10,12,34,0) 20%,rgba(10,12,34,0) 38%,rgba(10,12,34,.8) 64%,rgba(10,12,34,.96) 100%)}
 .ghud{position:absolute;left:0;right:0;top:0;padding:calc(10px + env(safe-area-inset-top)) 14px 0}
-.ghud .date b{font-size:17px;text-shadow:0 1px 6px rgba(0,0,0,.6)}
-.ghud .sub{color:#d9d9f2}
-.ghud .chip{background:rgba(14,18,48,.62);backdrop-filter:blur(4px);border-color:rgba(255,255,255,.18);color:#fff}
-.gbottom .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 2px 10px}
-.gbottom .bar{grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:3px 6px;font-size:12px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
-.gbottom .bar span{grid-column:1}.gbottom .bar b{grid-column:2;grid-row:1;text-align:right}.gbottom .bar .t{grid-column:1/3;grid-row:2;height:8px;background:rgba(255,255,255,.25)}
+.hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.hdate b{display:block;font-size:var(--fs-xl);letter-spacing:-.5px;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.hjob{font-size:var(--fs-s);color:#eceeff;text-shadow:0 1px 4px rgba(0,0,0,.8);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibtns{display:flex;gap:8px}
+.ibtn{width:42px;height:42px;border-radius:50%;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);font-size:19px;display:flex;align-items:center;justify-content:center}
+.sandwrap{display:flex;align-items:center;gap:8px;margin:8px 0 6px}
+.sand{flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.sand i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--rose))}
+.left{font-size:var(--fs-s);font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+.res{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:6px}
+.rc{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:12px;padding:6px 8px}
+.rc small{display:block;font-size:11px;color:var(--mute);line-height:1.2}
+.rc b{display:block;font-size:var(--fs-m);line-height:1.3}
+.rc .mini{height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin-top:3px;overflow:hidden}
+.rc .mini i{display:block;height:100%;border-radius:99px;background:var(--mint)}
+.rc.warn .mini i{background:var(--bad)}
 .gbottom{position:absolute;left:0;right:0;bottom:0;padding:0 12px calc(12px + env(safe-area-inset-bottom))}
-.gbottom .slots{grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
-.gbottom .slot{flex-direction:column;align-items:flex-start;gap:2px;padding:10px;min-height:92px;background:rgba(26,31,74,.78);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.16);border-radius:14px}
-.gbottom .slot .lb{width:auto;font-size:11px;color:#c9caf0}
-.gbottom .slot .ic{font-size:22px;line-height:1.1}
-.gbottom .slot .nm{font-size:13px;font-weight:700;line-height:1.25}
-.gbottom .slot .ds{font-size:11px;color:#c9caf0}
-.gbottom .slot.cont{opacity:.55}
-.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
-.btn.sm{padding:9px 6px;font-size:13px;background:rgba(14,18,48,.55);border-color:rgba(255,255,255,.2);color:#fff}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 10px}
+.pcard{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(8px);border-radius:14px;padding:8px 10px}
+.pcard .pt{display:flex;justify-content:space-between;align-items:baseline;font-size:var(--fs-s);font-weight:700}
+.pcard .pt b{font-size:var(--fs-l)}
+.pcard .t{height:8px;border-radius:99px;background:rgba(255,255,255,.18);position:relative;margin-top:5px}
+.pcard .t i{display:block;height:100%;border-radius:99px;background:var(--gold)}
+.pcard .t u{position:absolute;left:50%;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:.55}
+.pcard.bond .t i{background:var(--rose)}.pcard.self .t i{background:var(--mint)}
+.pcard.low .pt b{color:var(--bad)}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0}
+.slot{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:112px;padding:10px;text-align:left;background:var(--glass);border:1.5px dashed rgba(255,255,255,.28);border-radius:var(--r);backdrop-filter:blur(8px)}
+.slot.filled{border-style:solid;border-color:rgba(255,255,255,.22);background:linear-gradient(180deg,rgba(42,49,120,.82),rgba(26,31,84,.82))}
+.slot .lb{font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.5px}
+.slot .ic{font-size:28px;line-height:1.15;margin-top:2px}
+.slot .nm{font-size:var(--fs-m);font-weight:800;line-height:1.25;letter-spacing:-.3px}
+.slot .ds{font-size:12px;color:var(--mute)}
+.slot .tg{display:flex;flex-wrap:wrap;gap:3px;margin-top:auto}
+.slot .tg i{font-style:normal;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.12)}
+.slot.cont{opacity:.55}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
 #b-run{margin-top:0}
-/* 활동 카드: 활동 그림이 화면을 채운다 */
-.actcard{position:absolute;inset:0;z-index:15;display:none;background:#0e1230 center/cover no-repeat}
-.actcard.on{display:block;animation:fade .25s ease-out}
+/* ───────────────────────── 활동 카드·이벤트(풀스크린) ───────────────────────── */
+.actcard,.evcard{position:absolute;inset:0;z-index:15;display:none;background:#0e1230 center top/cover no-repeat}
+.evcard{z-index:18;background-color:#14183f}
+.actcard.on,.evcard.on{display:block;animation:fade .25s ease-out}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.actcard .ashade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.6),rgba(10,12,34,0) 22%,rgba(10,12,34,0) 50%,rgba(10,12,34,.92) 82%)}
-.actcard .atop{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.actcard .abot{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(18px + env(safe-area-inset-bottom))}
-.actcard h2{font-size:22px;margin:0 0 4px}
-.stats.sheetstats{margin-top:8px}
-
-/* ── 이벤트 풀스크린(9:16) ── */
-.evcard{position:absolute;inset:0;z-index:18;display:none;background:#14183f center top/cover no-repeat}
-.evcard.on{display:block;animation:fade .25s ease-out}
+.ashade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.6),rgba(10,12,34,0) 22%,rgba(10,12,34,0) 46%,rgba(10,12,34,.92) 80%)}
+.atop{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top)) 16px 0;text-shadow:0 1px 6px rgba(0,0,0,.7)}
+.abot{position:absolute;left:0;right:0;bottom:0;padding:0 16px calc(18px + env(safe-area-inset-bottom))}
+.abot h2{font-size:var(--fs-xl);margin:0 0 4px;letter-spacing:-.5px}
 .evcard.p-night{background-color:#0b0a20}.evcard.p-campus{background-color:#274c84}.evcard.p-cafe{background-color:#2f1b0d}.evcard.p-room{background-color:#1f1a3a}.evcard.p-rain{background-color:#0f1325}.evcard.p-shop{background-color:#2a1b07}
-.evshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.35) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 38%,rgba(10,12,34,.86) 62%,rgba(10,12,34,.96) 100%)}
+.evshade{position:absolute;inset:0;background:linear-gradient(rgba(10,12,34,.35) 0,rgba(10,12,34,0) 24%,rgba(10,12,34,0) 36%,rgba(10,12,34,.88) 60%,rgba(10,12,34,.97) 100%)}
 .evicon{position:absolute;left:0;right:0;top:12%;text-align:center;font-size:92px;filter:drop-shadow(0 4px 18px rgba(0,0,0,.5))}
-.evpanel{position:absolute;left:0;right:0;bottom:0;max-height:66%;overflow-y:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
-.evpanel .txt{text-shadow:0 1px 4px rgba(0,0,0,.6)}
-.evpanel .ch{background:rgba(26,31,74,.82);backdrop-filter:blur(6px);border-color:rgba(255,255,255,.16)}
-/* ── 엔딩 풀스크린 ── */
+.evpanel{position:absolute;left:0;right:0;bottom:0;max-height:68%;overflow-y:auto;padding:14px 16px calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.evpanel h2{font-size:var(--fs-xl);letter-spacing:-.5px;margin-bottom:2px}
+.evpanel .txt,.abot .txt{font-size:var(--fs-l);line-height:1.65;margin:6px 0 14px;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:pre-wrap}
+.ch{display:block;width:100%;text-align:left;background:var(--glass);border:1.5px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-top:10px;backdrop-filter:blur(8px)}
+.ch b{display:block;font-size:var(--fs-l);letter-spacing:-.3px}
+.ch span{display:block;font-size:var(--fs-s);color:var(--gold2);margin-top:2px}
+.ch:active{border-color:var(--gold)}
+.face{width:68px;height:92px;border-radius:12px;object-fit:cover;object-position:50% 20%;float:left;margin:0 12px 6px 0;border:1px solid var(--line)}
+/* ───────────────────────── 시트·활동 고르기 ───────────────────────── */
+.ov{position:absolute;inset:0;background:rgba(5,7,22,.72);display:none;align-items:flex-end;justify-content:center;z-index:20}
+.ov.on{display:flex}
+.sheet{width:100%;max-height:86%;overflow:auto;background:var(--bg2);border-radius:24px 24px 0 0;padding:6px 16px calc(22px + env(safe-area-inset-bottom));animation:up .22s ease-out;-webkit-overflow-scrolling:touch}
+.sheet::before{content:'';display:block;width:44px;height:5px;border-radius:99px;background:rgba(255,255,255,.25);margin:8px auto 12px}
+@keyframes up{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.sheet h2{font-size:var(--fs-xl);margin-bottom:8px;letter-spacing:-.5px}
+.txt{white-space:pre-wrap;margin:6px 0 12px}
+.picker{padding-top:0}
+.phead{position:sticky;top:-6px;z-index:2;background:var(--bg2);padding:4px 0 8px;margin:0 -2px}
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:2px 0 4px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 2px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);line-height:1.2}
+.tab span{font-size:18px}
+.tab.on{background:var(--gold);color:#2a1d05;border-color:var(--gold)}
+.acts{display:grid;gap:8px;margin-top:6px}
+.act{display:grid;grid-template-columns:44px 1fr;gap:12px;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:12px;width:100%;align-items:center}
+.act .ic{font-size:30px;text-align:center}
+.act .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.act .top b{font-size:var(--fs-l);letter-spacing:-.3px}
+.act .top em{font-style:normal;font-size:var(--fs-s);font-weight:700;color:var(--gold2);white-space:nowrap}
+.act small{display:block;color:var(--mute);font-size:var(--fs-s);line-height:1.4;margin-top:1px}
+.act .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.tg i{font-style:normal;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.1)}
+.tg i.up{color:var(--mint)}.tg i.down{color:var(--bad)}.tg i.pay{color:var(--gold2)}
+.act:disabled{opacity:.42}
+.act:disabled small{color:var(--bad)}
+.cat{font-size:var(--fs-s);color:var(--gold);margin:14px 0 2px;letter-spacing:1px}
+/* 능력치 시트 */
+.statrows{display:grid;gap:8px;margin-top:8px}
+.srow{display:grid;grid-template-columns:62px 1fr 36px;gap:10px;align-items:center;font-size:var(--fs-m)}
+.srow .t{height:10px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+.srow .t i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--sky),var(--mint))}
+.srow b{text-align:right}
+/* 엔딩 */
 #end{overflow:hidden}
 .endbg{position:absolute;inset:0;background:#0e1230 center top/cover no-repeat}
 .endscroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .endspacer{height:46%}
-.endcard{background:linear-gradient(rgba(10,12,34,0),rgba(10,12,34,.92) 40px);padding:48px 16px calc(24px + env(safe-area-inset-bottom));min-height:54%}
-.endcard .letter{background:rgba(26,31,74,.78);backdrop-filter:blur(6px)}
+.endcard{background:linear-gradient(rgba(10,12,34,0),rgba(10,12,34,.92) 40px);padding:48px 16px calc(24px + env(safe-area-inset-bottom));min-height:54%;text-align:center}
+.endcard .big{font-size:56px}.endcard h1{font-size:28px;margin:6px 0 10px;letter-spacing:-.8px}
+.endcard .pillars{text-align:left;margin:12px 0}
+.letter{text-align:left;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(6px);border-radius:var(--r);padding:16px;white-space:pre-wrap;margin:14px 0;font-size:var(--fs-m);line-height:1.7}
+
+/* 전화하기 */
+.ibtn{position:relative}
+.badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:99px;background:var(--rose);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center;padding:0 4px}
+.badge:empty{display:none}
+.contacts{display:grid;gap:8px;margin:10px 0 4px}
+.contact{display:grid;grid-template-columns:52px 1fr 36px;gap:12px;align-items:center;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:var(--r);padding:10px 12px;width:100%}
+.contact .av{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:50% 10%;background:var(--card2);border:2px solid rgba(255,255,255,.2)}
+.contact .ci b{display:block;font-size:var(--fs-l)}
+.contact .ci small{color:var(--mute);font-size:var(--fs-s)}
+.contact .cb{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:17px}
+.contact:disabled{opacity:.42}
+.contact:disabled .cb{background:rgba(255,255,255,.2)}
+.toast{position:absolute;left:50%;bottom:calc(120px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(10,12,34,.92);border:1px solid var(--line);color:#fff;padding:10px 16px;border-radius:99px;font-size:var(--fs-s);z-index:40;white-space:nowrap;animation:fade .2s}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -148,25 +193,30 @@ input[type=text]{width:100%;padding:12px;border-radius:12px;border:1px solid var
   <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
   <p class="note">저장은 이 기기에만 보관돼요.</p></div>
  </section>
- <section id="setup" class="screen pad">
-  <h2 style="margin-top:22px">이름</h2><input type="text" id="in-name" maxlength="6" value="서윤">
-  <h2 style="margin-top:22px">학과 <span class="sub">한국대학교</span></h2><div class="opts" id="o-major"></div>
-  <h2 style="margin-top:18px">되감기 전의 직업</h2><div class="opts" id="o-origin"></div>
-  <h2 style="margin-top:18px">가장 후회하는 것</h2><div class="opts" id="o-regret"></div>
-  <button class="btn" id="b-go" style="margin:20px 0 30px">약을 마신다</button>
+ <section id="setup" class="screen">
+  <div class="wizbg"></div>
+  <div class="wiz">
+   <div class="wizhead"><button class="wizback" id="w-back" aria-label="이전">←</button><div class="dots" id="w-dots"></div></div>
+   <div class="wizq" id="w-q"></div>
+   <div class="wizbody" id="w-body"></div>
+   <div class="wizfoot"><button class="btn" id="w-next">다음</button></div>
+  </div>
  </section>
  <section id="game" class="screen">
   <div class="gbg" id="g-bg"></div><div class="gshade"></div>
   <div class="ghud">
-   <div class="date"><b id="h-date"></b><span class="sub" id="h-left"></span></div>
-   <div class="sub" id="h-job" style="margin-top:2px"></div>
-   <div class="sand"><i id="h-sand"></i></div>
-   <div class="chips" id="h-chips"></div>
+   <div class="hrow">
+    <div class="hdate"><b id="h-date"></b></div>
+    <div class="ibtns"><button class="ibtn" id="b-call" aria-label="전화하기">📞<span class="badge" id="call-badge"></span></button><button class="ibtn" id="b-stat" aria-label="능력치">📊</button><button class="ibtn" id="b-log" aria-label="기록">📖</button><button class="ibtn" id="b-menu" aria-label="메뉴">⚙️</button></div>
+   </div>
+   <div class="hjob" id="h-job"></div>
+   <div class="sandwrap"><div class="sand"><i id="h-sand"></i></div><span class="left" id="h-left"></span></div>
+   <div class="res" id="h-res"></div>
   </div>
   <div class="gbottom">
    <div class="pillars" id="pillars"></div>
    <div class="slots" id="slots"></div>
-   <div class="row3"><button class="btn ghost sm" id="b-stat">능력치</button><button class="btn ghost sm" id="b-log">기록</button><button class="btn ghost sm" id="b-menu">메뉴</button></div>
+   <div class="plans"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev">↻ 지난달처럼</button></div>
    <button class="btn" id="b-run">이번 달 시작</button>
   </div>
  </section>
@@ -889,6 +939,211 @@ function pickEvent(S){
   return pool[pool.length - 1];
 }
 
+// 이벤트 확장판 (ENGINE 구간 안, DOM 금지). events.js의 EVENTS에 이어 붙인다.
+// ── 연애 인물별 말투: 연애 사건 템플릿에서 인물마다 다른 대사가 나오도록 ─────────────
+const LOVE_VOICE = {
+  jaewoo:   {warm:'“네가 있어서 힘이 나.”', tease:'“또 네가 이겼네.”', sorry:'“…미안, 내가 또 내 얘기만 했지.”'},
+  minjun:   {warm:'“네 옆이 제일 편해.”', tease:'“너 웃을 때 코 찡긋하는 거 알아?”', sorry:'“말을 잘 못해서 미안.”'},
+  hajin:    {warm:'“너랑 있으면 꿈이 더 선명해져.”', tease:'“대표님 허락 없이 퇴근하시나요?”', sorry:'“또 일 얘기만 했네. 미안.”'},
+  taeoh:    {warm:'“서두르지 않아도 돼. 난 여기 있을게.”', tease:'“오늘은 어느 쪽 길로 같이 헤맬까?”', sorry:'“연락 못 해서 미안해요.”'},
+  jihu:     {warm:'“오늘도 수고했어요.”', tease:'“회의 때처럼 단호하게 말해 볼래요?”', sorry:'“제가 말이 짧았죠.”'},
+  dohyun:   {warm:'“너 있으면 현장이 덜 외로워.”', tease:'“컷! 이건 NG, 다시 가자.”', sorry:'“내가 또 촬영에 취했어.”'},
+  sian:     {warm:'“네 문장 옆에 내가 있고 싶어요.”', tease:'“이 대사, 너무 낯간지러운데요?”', sorry:'“내 고집이 과했어요.”'},
+  seunghyun:{warm:'“카메라 밖의 네가 제일 좋아요.”', tease:'“이번엔 내가 대본 없이 말해 볼게요.”', sorry:'“괜히 불안하게 했죠.”'},
+  geonwoo:  {warm:'“오늘 하루의 마지막이 너라서 좋다.”', tease:'“이의 있습니다. 반론은 저녁 먹고.”', sorry:'“내가 너무 원칙만 따졌네요.”'},
+  yuchan:   {warm:'“네가 있으면 에러도 귀여워.”', tease:'“재부팅하면 기분이 풀릴까?”', sorry:'“알림 꺼 놓고 있었네. 미안.”'},
+  ujin:     {warm:'“네 손끝의 색이 좋아요.”', tease:'“이 천은 안 어울리는데, 너는 어울려요.”', sorry:'“또 작업에만 빠졌어요.”'},
+};
+const hasP = S => !!S.partner && !!S.love[S.partner] && S.love[S.partner].stage >= 1;
+const PN = S => LOVERS[S.partner].name;
+const PV = S => LOVE_VOICE[S.partner] || LOVE_VOICE.minjun;
+const LV = (S, d, o, text) => { const ch = []; addAff(S, S.partner, d, ch); fx(S, o, ch); return {text, chips:ch}; };
+const seenKey = (S, k) => !!S.seen[k + '_' + S.partner];
+const markKey = (S, k) => { S.seen[k + '_' + S.partner] = true; };
+const sinceMonths = S => S.m - (S.love[S.partner].since2 != null ? S.love[S.partner].since2 : S.love[S.partner].since);
+
+EVENTS.push(
+  // ── 연애 일상 (공식 연인이 있을 때, 상대마다 말투가 다르다) ────────────────
+  {id:'love_100', w:30, cd:1, cond:S => hasP(S) && sinceMonths(S) >= 3 && !seenKey(S, 'love100'), place:'night', title:'100일', speaker:'', img:null,
+   text:S => `${PN(S)}와 사귄 지 벌써 100일이 되었다. ${PN(S)}가 작은 상자를 내밀었다. ${PV(S).warm}`,
+   choices:[
+     {label:'직접 쓴 편지를 건넨다', sub:'호감 +8 · 나 +1', run(S){ markKey(S, 'love100'); return LV(S, 8, {self:1, bond:1.5}, '밤새 쓴 편지를 건네자 그가 한 줄씩 소리 내어 읽었다. 읽는 목소리가 조금 떨렸다.'); }},
+     {label:'서로 좋아하는 음식을 만들어 먹는다', sub:'호감 +6 · 스트레스 -5', run(S){ markKey(S, 'love100'); return LV(S, 6, {stress:-5, bond:1.5}, '서툰 솜씨로 만든 음식이 하나도 맞지 않았는데, 이상하게 가장 맛있는 저녁이었다.'); }},
+     {label:'바빠서 문자로만 축하한다', sub:'호감 -4', run(S){ markKey(S, 'love100'); return LV(S, -4, {stress:3}, `“…그래, 바쁘면 어쩔 수 없지.” ${PV(S).sorry.replace(/^“…?/, '“')}이라고 답했지만 목소리가 가라앉아 있었다.`); }},
+   ]},
+  {id:'love_jealous', w:5, cd:14, cond:S => hasP(S) && sinceMonths(S) >= 5, place:'cafe', title:'작은 질투', speaker:'',
+   text:S => `${PN(S)}의 휴대폰 화면에 낯선 이름의 메시지가 떴다. 별것 아닐 수도 있지만 마음이 따끔했다. 마흔의 나는 이런 순간을 그냥 삼켰다.`,
+   choices:[
+     {label:'솔직하게 물어본다', sub:'협상이 높을수록 좋다', run(S){ const ok = S.st.neg + rand(-12, 14) >= 40; return ok ? LV(S, 6, {self:2, ins:1}, `“누구야?” 묻자 그가 웃으며 설명해 주었다. ${PV(S).tease} 오해가 풀리자 마음이 가벼워졌다.`) : LV(S, -4, {stress:6}, '질문이 추궁처럼 들렸는지 그가 얼굴을 굳혔다. 괜히 서로 기분만 상했다.'); }},
+     {label:'모른 척 넘어간다', sub:'스트레스 +4', run:S => LV(S, 0, {stress:4}, '아무 일도 없다는 얼굴을 했지만 집에 와서도 한참 그 이름이 머리에서 떠나지 않았다.')},
+     {label:'나도 질투한다고 가볍게 말한다', sub:'호감 +3', run:S => LV(S, 3, {self:1.5}, `“나 지금 조금 질투 나.” 말하자 그가 놀란 얼굴로 웃었다. ${PV(S).warm}`)},
+   ]},
+  {id:'love_sick', w:4, cd:18, cond:S => hasP(S) && sinceMonths(S) >= 4, place:'room', title:'아픈 날', speaker:'',
+   text:S => `${PN(S)}가 독감에 걸려 연락이 끊겼다. 혼자 앓고 있을 모습이 걱정된다. 마흔의 나는 이런 때 “푹 쉬어”라고만 말했다.`,
+   choices:[
+     {label:'죽과 약을 사 들고 찾아간다', sub:'호감 +8 · 체력 -5', run:S => LV(S, 8, {hp:-5, bond:2}, '현관에서 마스크를 쓴 그가 놀란 눈을 했다. 죽을 먹는 모습을 지켜보다 나도 모르게 웃음이 났다.')},
+     {label:'문자와 배달 앱으로 챙긴다', sub:'호감 +3', run:S => LV(S, 3, {cash:-8}, '문 앞에 죽을 두고 가겠다고 문자를 보냈다. 한 시간 뒤 “고마워”라는 답이 왔다.')},
+     {label:'옮을까 봐 연락만 한다', sub:'호감 -3', run:S => LV(S, -3, {stress:2}, '그는 알겠다고 했지만 한동안 답이 짧았다.')},
+   ]},
+  {id:'love_surprise', w:4, cd:16, cond:S => hasP(S) && sinceMonths(S) >= 6, place:'night', title:'서프라이즈', speaker:'',
+   text:S => `퇴근길에 ${PN(S)}가 갑자기 앞에 나타났다. 손에는 꽃 한 송이. “오늘 별일 없는데, 그냥 보고 싶어서.” ${PV(S).warm}`,
+   choices:[
+     {label:'환하게 웃으며 안긴다', sub:'호감 +7 · 스트레스 -8', run:S => LV(S, 7, {stress:-8, bond:2}, '피곤이 한꺼번에 녹았다. 아무 이유 없는 날이 이렇게 특별해질 수 있다는 걸 몰랐다.')},
+     {label:'“연락 없이 오면 놀라잖아”라고 말한다', sub:'호감 -3', run:S => LV(S, -3, {stress:2}, '말이 먼저 나가 버렸다. 그의 얼굴에서 빛이 한 겹 사라졌다.')},
+   ]},
+  {id:'love_parents', w:4, cd:36, once:true, cond:S => hasP(S) && sinceMonths(S) >= 8 && S.m >= 40, speaker:'엄마', place:'room', img:'art/mom.webp', title:'엄마에게 소개하다',
+   text:S => `엄마가 눈치를 챈 듯 전화에서 슬쩍 물었다. “요즘 만나는 사람 있니?” 마흔의 나는 이 질문에 늘 얼버무렸다. 이번엔 ${PN(S)}를 소개해도 좋을까?`,
+   choices:[
+     {label:'주말에 함께 내려간다', sub:'호감 +6 · 관계 +4', run(S){ S.mom = clamp((S.mom || 40) + 6, 0, 100); return LV(S, 6, {bond:4, stress:3}, `엄마는 ${PN(S)}에게 계속 밥을 권했다. 현관에서 엄마가 내 귀에 속삭였다. “사람 참 괜찮다. 눈이 좋아.”`); }},
+     {label:'아직은 말하지 않는다', sub:'스트레스 +2', run:S => LV(S, -1, {stress:2}, '“아직은 친구예요.” 전화를 끊고 나서 괜히 마음이 무거웠다.')},
+   ]},
+  {id:'love_trip', w:4, cd:20, cond:S => hasP(S) && sinceMonths(S) >= 6 && S.cash >= 80, place:'night', title:'둘만의 여행', speaker:'',
+   text:S => `${PN(S)}가 짧은 여행을 제안했다. 바다가 보이는 작은 마을, 1박 2일. ${PV(S).tease}`,
+   choices:[
+     {label:'좋아, 가자', sub:'자금 -60 · 호감 +8 · 스트레스 -15', run:S => LV(S, 8, {cash:-60, stress:-15, self:2, bond:2}, '밤바다 앞에 나란히 앉아 아무 말도 하지 않았다. 그 침묵이 이상하게 가득 차 있었다.')},
+     {label:'일정이 걱정돼서 미룬다', sub:'일 +1 · 호감 -3', run:S => LV(S, -3, {work:1.5, stress:3}, '“다음에 가자.” 그는 고개를 끄덕였지만 그 다음은 한참 오지 않았다.')},
+   ]},
+  {id:'love_busy', w:5, cd:12, cond:S => hasP(S) && S.hired, place:'cafe', title:'서로 바쁜 계절', speaker:'',
+   text:S => `두 주째 ${PN(S)}와 데이트를 못 하고 있다. 서로 일이 바쁘다. 통화도 점점 짧아진다. 이대로 괜찮을까?`,
+   choices:[
+     {label:'일정을 조정해 반나절이라도 만난다', sub:'일 -1 · 호감 +6', run:S => LV(S, 6, {work:-1, stress:-4, bond:2}, '반나절의 커피 한 잔이 두 주의 공백을 채웠다. 서로 조금 더 일찍 말하기로 약속했다.')},
+     {label:'지금은 일이 우선이라고 이해를 구한다', sub:'일 +2 · 호감 -4', run:S => LV(S, -4, {work:2, stress:4}, '그는 이해한다고 했지만, 이해와 서운함이 다른 곳에 있다는 걸 나는 안다.')},
+     {label:'함께 일하는 시간을 만든다', sub:'호감 +3 · 일 +1', run:S => LV(S, 3, {work:1, bond:1}, '서로의 일을 도우며 보내는 저녁. 그것도 데이트가 될 수 있다는 걸 처음 알았다.')},
+   ]},
+  {id:'love_future', w:3, cd:24, once:true, cond:S => hasP(S) && sinceMonths(S) >= 12, place:'night', title:'우리의 미래', speaker:'',
+   text:S => `${PN(S)}와 한강 둔치에 앉았다. 문득 그가 물었다. “우리, 오 년 뒤엔 뭘 하고 있을까?” 마흔의 나는 이 질문의 답을 알고 있다. 하지만 이번엔 아직 모른다.`,
+   choices:[
+     {label:'서로의 꿈을 번갈아 응원하자고 말한다', sub:'호감 +7 · 통찰 +1.5', run:S => LV(S, 7, {ins:1.5, self:2}, `“네 꿈도 내 꿈만큼 크게 적자.” ${PV(S).warm} 둘은 서로의 수첩에 꿈 하나씩을 적어 주었다.`)},
+     {label:'“그냥 지금처럼만 있자”고 말한다', sub:'스트레스 -3', run:S => LV(S, 2, {stress:-3}, '답은 미뤄졌지만 손은 놓지 않았다. 천천히 가는 사랑도 사랑이다.')},
+   ]},
+  {id:'love_year', w:30, cd:1, once:false, cond:S => hasP(S) && sinceMonths(S) >= 12 && !seenKey(S, 'loveyear'), place:'night', title:'1주년', speaker:'',
+   text:S => `${PN(S)}와 사귄 지 어느덧 1년. 처음 만난 날부터 오늘까지가 한 편의 영화처럼 스쳤다. ${PV(S).warm}`,
+   choices:[
+     {label:'처음 만난 장소로 돌아가 본다', sub:'호감 +8 · 나 +1', run(S){ markKey(S, 'loveyear'); return LV(S, 8, {self:1, bond:2}, '그곳엔 우리만 아는 풍경이 남아 있었다. “그때 우린 어떤 표정이었을까.” 둘이 동시에 같은 말을 했다.'); }},
+     {label:'작은 선물을 서로 교환한다', sub:'자금 -15 · 호감 +6', run(S){ markKey(S, 'loveyear'); return LV(S, 6, {cash:-15, bond:1.5}, '서로의 선물을 열어 보며 같은 곳에서 웃음이 터졌다. 취향이 닮아 가고 있었다.'); }},
+   ]},
+  {id:'love_fight', w:4, cd:16, cond:S => hasP(S) && sinceMonths(S) >= 7, place:'night', title:'작은 다툼', speaker:'',
+   text:S => `사소한 일로 ${PN(S)}와 말다툼이 시작됐다. 서로 한마디씩 날이 서 있다. 이 장면을 어디서 끊어야 할까.`,
+   choices:[
+     {label:'먼저 사과한다', sub:'호감 +4 · 스트레스 -3', run:S => LV(S, 4, {stress:-3, ins:1}, `“내가 말이 심했어.” 그가 눈을 크게 뜨더니 ${PV(S).sorry}`)},
+     {label:'감정이 가라앉을 때까지 시간을 둔다', sub:'통찰 +1.5 · 호감 ±', run(S){ const ok = S.st.ins + rand(-10, 14) >= 42; return ok ? LV(S, 3, {ins:1.5}, '하룻밤 뒤 전화를 걸자 그도 똑같이 전화를 걸려던 참이었다고 했다.') : LV(S, -4, {stress:5}, '시간은 두었는데 연락은 끊겨 버렸다. 침묵이 사과보다 길어졌다.'); }},
+     {label:'끝까지 따지고 든다', sub:'호감 -8', run:S => LV(S, -8, {stress:7}, '이긴 것 같았지만 그의 눈에는 아무 감정도 남아 있지 않았다. 이겨서 진 싸움이었다.')},
+   ]},
+  {id:'love_holiday', w:6, cd:12, cond:S => hasP(S) && monthOf(S) === 12, place:'night', title:'크리스마스 이브', speaker:'',
+   text:S => `눈이 내리는 크리스마스 이브. ${PN(S)}와의 약속 장소에 도착하니 그가 먼저 와서 두 손을 호호 불고 있었다. ${PV(S).tease}`,
+   choices:[
+     {label:'장갑을 한쪽씩 나눠 낀다', sub:'호감 +8 · 스트레스 -6', run:S => LV(S, 8, {stress:-6, bond:2}, '한 손은 장갑, 한 손은 서로의 주머니. 올해의 눈은 유난히 따뜻했다.')},
+     {label:'레스토랑에서 근사하게 보낸다', sub:'자금 -30 · 호감 +6', run:S => LV(S, 6, {cash:-30, bond:1.5}, '창가 자리에서 보이는 거리의 불빛이 반짝였다. 마흔의 크리스마스는 대부분 야근이었다.')},
+   ]},
+  {id:'love_birthday', w:30, cd:12, cond:S => hasP(S) && monthOf(S) === 3 && S.m >= 12, place:'night', title:'내 생일', speaker:'',
+   text:S => `3월, 내 생일. 자정이 되자마자 ${PN(S)}의 전화가 울렸다. ${PV(S).warm} 마흔의 나는 생일을 혼자 보낸 해가 더 많았다.`,
+   choices:[
+     {label:'자정 통화를 오래 이어 간다', sub:'호감 +6 · 스트레스 -5', run:S => LV(S, 6, {stress:-5, self:1.5}, '“생일 축하해.” 목소리가 귓가에 오래 남았다. 잠들기 아쉬운 밤이었다.')},
+     {label:'친구들, 엄마까지 함께 모인다', sub:'관계 +4 · 호감 +3', run:S => LV(S, 3, {bond:4, stress:-4}, '엄마의 미역국, 소연의 서툰 케이크, 그리고 ' + PN(S) + '의 선물. 어느 해보다 풍성한 생일이었다.')},
+   ]},
+);
+
+// 전화하기 (ENGINE 구간 안, DOM 금지): 친구·엄마·썸·연인에게 짧은 통화. 활동 칸은 쓰지 않고 한 달에 2번까지, 같은 사람은 달마다 한 번.
+const CALLS_PER_MONTH = 2;
+const callsLeft = S => (S.calls && S.calls.m === S.m) ? Math.max(0, CALLS_PER_MONTH - S.calls.n) : CALLS_PER_MONTH;
+const calledThisMonth = (S, id) => !!(S.callAt && S.callAt[id] === S.m);
+const CALL_WORK = {beauty:'캠페인 자료', pd:'촬영 일정', writer:'대본', actor:'연기 연습', lawyer:'사건 기록', dev:'배포 일정', designer:'컬렉션 도안'};
+
+function contactsOf(S){
+  const out = [
+    {id:'soyeon', kind:'friend', name:'소연', sub:'단짝 친구', img:'art/soyeon.webp'},
+    {id:'mom', kind:'mom', name:'엄마', sub:'엄마', img:'art/mom.webp'},
+  ];
+  for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9) continue;
+    const partner = v.stage >= 1;
+    out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${partner ? LOVE_STAGE[v.stage] : '썸'} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
+  return out;
+}
+const hashM = (S, id) => { let h = S.m * 7; for(const c of id) h += c.charCodeAt(0); return h; };
+
+function callEvent(S, id){
+  const c = contactsOf(S).find(x => x.id === id); if(!c) return null;
+  const mk = o => Object.assign({id:`call_${id}_${S.m}`, once:false, place:'room', speaker:c.name, title:`${c.name}와 통화`, beats:[`📞 ${c.name}에게 전화를 걸었다. 신호음이 간다…`], img:c.kind === 'friend' || c.kind === 'mom' ? c.img : `art/lv_${id}.webp`, lover:LOVERS[id] ? id : null}, o);
+  const v = S.love[id], lv = LOVERS[id], k = hashM(S, id);
+
+  // ── 친구 소연 ──
+  if(c.kind === 'friend'){
+    const V = [
+      {text:'“어머, 웬일이야! 나 지금 너한테 전화하려던 참이었는데!” 소연의 목소리가 수화기 너머로 쏟아졌다. 오늘 있었던 일을 한꺼번에 털어놓고 싶은 모양이다.',
+       choices:[{label:'끝까지 들어 준다', sub:'관계 +3 · 스트레스 -4', run:S => R_(S, {bond:3, stress:-4}, '한 시간 가까이 소연의 이야기를 들었다. 별것 아닌 이야기인데 이상하게 마음이 따뜻해졌다.')},
+                {label:'내 이야기도 꺼낸다', sub:'관계 +2 · 나 +1', run:S => R_(S, {bond:2, self:1, stress:-3}, '“사실 나도 말이야…” 말하다 보니 속에 있던 게 풀렸다. 소연이 한참 내 편을 들어 주었다.')},
+                {label:'바쁘다며 짧게 끊는다', sub:'관계 -1', run:S => R_(S, {bond:-1}, '“미안, 나중에 다시 얘기하자.” 소연은 괜찮다고 했지만 목소리가 한 톤 낮아졌다.')}]},
+      {text:S => S.m < 48 ? '“학점이 너무 걱정돼서 잠이 안 와…” 소연이 울먹이며 말했다. 마흔의 나는 이런 때 “다들 그래”라고만 말했다.' : '“회사에서 또 한소리 들었어. 그만두고 싶다.” 소연이 지친 목소리로 말했다. 마흔의 나도 같은 말을 입에 달고 살았다.',
+       choices:[{label:'공감해 주며 같이 욕해 준다', sub:'관계 +3 · 스트레스 -3', run:S => R_(S, {bond:3, stress:-3}, '“그 사람 진짜 너무하다.” 같이 흥분해 주자 소연이 웃음을 터뜨렸다. 웃고 나니 둘 다 가벼워졌다.')},
+                {label:'현실적인 조언을 한다', sub:'통찰 +1.5 · 관계 +1', run:S => R_(S, {ins:1.5, bond:1}, '“일단 이번 학기만 버텨 보자.” 마흔의 경험이 입에서 흘러나왔다. 소연은 조용히 고개를 끄덕이는 소리를 냈다.')},
+                {label:'맛있는 거 먹으러 가자고 한다', sub:'자금 -10 · 관계 +3', run:S => R_(S, {cash:-10, bond:3, stress:-4}, '“이번 주말에 떡볶이 먹으러 가자.” 소연이 환호했다. 작은 약속 하나가 한 주를 지탱해 준다.')}]},
+      {text:'“우리 요즘 너무 못 본 것 같지 않아?” 소연이 전화를 받자마자 말했다. “이번 주에 시간 돼?”',
+       choices:[{label:'이번 주말에 만나자', sub:'자금 -8 · 관계 +3 · 스트레스 -3', run:S => R_(S, {cash:-8, bond:3, stress:-3}, '약속을 잡고 전화를 끊자 이상하게 기운이 났다. 사람은 이런 약속으로 사나 보다.')},
+                {label:'일정이 안 돼서 미룬다', sub:'일 +1 · 관계 -1', run:S => R_(S, {work:1, bond:-1}, '“다음에 꼭!” 소연이 씩씩하게 말했지만 마음이 조금 걸렸다.')}]},
+      {text:'“야, 우리 고1 때 기억나? 네가 도시락 바꿔 먹자고 했던 거.” 소연이 갑자기 옛날 이야기를 꺼냈다.',
+       choices:[{label:'기억나는 척 맞장구친다', sub:'관계 +2', run:S => R_(S, {bond:2, stress:-2}, '마흔의 기억은 이미 흐려졌지만 소연의 이야기 속에서 그날이 다시 살아났다. 웃음이 났다.')},
+                {label:'그때를 떠올리며 솔직하게 고마웠다고 말한다', sub:'관계 +4 · 나 +1.5', run:S => R_(S, {bond:4, self:1.5}, '“그때 네가 있어서 힘이 났어.” 소연이 갑자기 말이 없어졌다가 훌쩍였다. “…나도.”')}]},
+    ];
+    const t = V[k % V.length]; return mk({text:typeof t.text === 'function' ? t.text : () => t.text, choices:t.choices});
+  }
+  // ── 엄마 ──
+  if(c.kind === 'mom'){
+    const V = [
+      {text:'“밥은 먹었니? 요즘 얼굴이 많이 상했을 것 같아서.” 엄마의 목소리가 평소보다 조금 이르게 걱정으로 시작했다.',
+       choices:[{label:'“엄마, 사랑해”라고 말한다', sub:'관계 +4 · 나 +2', run(S){ S.mom = clamp((S.mom || 40) + 6, 0, 100); return R_(S, {bond:4, self:2, stress:-5}, '엄마가 한참 말을 잇지 못했다. “…이 아이가 오늘 왜 이래.” 목소리가 떨렸다. 마흔의 나는 한 번도 하지 못한 말이었다.'); }},
+                {label:'잔소리를 끝까지 듣는다', sub:'관계 +2 · 스트레스 -2', run(S){ S.mom = clamp((S.mom || 40) + 3, 0, 100); return R_(S, {bond:2, stress:-2}, '“김치 보내 줄게, 냉동실에 넣어 놓고 먹어.” 잔소리인데 사랑이었다. 이제야 알겠다.'); }},
+                {label:'바쁘다며 서둘러 끊는다', sub:'관계 -2', run:S => R_(S, {bond:-2, stress:1}, '“그래, 바쁘면 어쩔 수 없지.” 끊고 나서 오래 휴대폰을 쥐고 있었다.')}]},
+      {text:'“반찬 좀 보냈어. 택배 오면 상하기 전에 냉장고에 넣어.” 엄마는 이렇게 시작해서 한참을 이어 갔다. 마흔의 나는 이 전화를 늘 귀찮아했다.',
+       choices:[{label:'“엄마 반찬이 제일 맛있어”라고 말한다', sub:'관계 +3', run(S){ S.mom = clamp((S.mom || 40) + 4, 0, 100); return R_(S, {bond:3, stress:-3}, '“그럼, 엄마가 누구니.” 엄마가 목소리를 높이며 웃었다. 수화기 너머로 부엌 소리가 들렸다.'); }},
+                {label:'“저도 돈 벌면 맛있는 거 사 드릴게요”라고 말한다', sub:'관계 +3 · 나 +1', run:S => R_(S, {bond:3, self:1}, '“내 걱정 말고 네 건강이나 챙겨.” 엄마는 그렇게 말하면서도 목소리가 달아 있었다.')}]},
+      {text:S => S.hired ? '“회사는 다닐 만하니? 사람들이 너한테 잘해 주니?” 엄마가 조심스럽게 물었다.' : '“요즘 공부는 잘 돼 가니? 힘들면 언제든 내려와.” 엄마가 조심스럽게 말했다.',
+       choices:[{label:'힘들었던 걸 솔직히 털어놓는다', sub:'관계 +3 · 스트레스 -6', run(S){ S.mom = clamp((S.mom || 40) + 5, 0, 100); return R_(S, {bond:3, stress:-6, self:1.5}, '“많이 힘들었구나. 내 딸이 혼자서.” 엄마가 울먹였다. 말하고 나니 짐이 반쯤 내려갔다.'); }},
+                {label:'“괜찮아, 잘하고 있어”라고 말한다', sub:'관계 +1 · 스트레스 +2', run:S => R_(S, {bond:1, stress:2}, '엄마는 안심한 듯했지만 나는 전화를 끊고 한참 멍하니 있었다.')}]},
+    ];
+    const t = V[k % V.length]; return mk({text:typeof t.text === 'function' ? t.text : () => t.text, choices:t.choices});
+  }
+  // ── 썸·연인: 인물별 말투, 직장 상대는 일 얘기 ──
+  const V = LOVE_VOICE[id] || LOVE_VOICE.minjun, topic = lv.career ? CALL_WORK[lv.career] : null;
+  const fxC = (S, d, o, text) => { const ch = []; addAff(S, id, d, ch); fx(S, o, ch); v.lastDate = S.m; return {text, chips:ch}; };
+  // 호감이 낮은 썸은 전화를 못 받을 수 있다
+  if(c.kind === 'crush' && v.aff < 15 && ((hashM(S, id) + S.m) % 3 === 0)){
+    return mk({beats:[`📞 ${c.name}에게 전화를 걸었다. 신호음이 간다…`, '신호음이 끊겼다. “지금은 전화를 받을 수 없습니다.”'], text:() => '받지 않았다. 부재중 화면을 한참 보다가 휴대폰을 내려놓았다. 용기를 낸 만큼 허전했다.',
+      choices:[{label:'문자를 남긴다', sub:'호감 +1', run:S => fxC(S, 1, {}, '“전화했었어요. 시간 되면 연락 줘요.” 문자를 보내고 나서야 숨을 쉬었다.')},
+               {label:'그냥 둔다', sub:'스트레스 +2', run:S => fxC(S, 0, {stress:2}, '답은 오지 않았다. 마음이 조금 쓸쓸해졌다.')}]});
+  }
+  if(c.kind === 'crush'){
+    const lowA = v.aff < 30;
+    const choices = lowA ? [
+      {label:topic ? `${topic} 핑계로 말을 건다` : '가볍게 안부를 묻는다', sub:'호감 +3', run:S => fxC(S, 3, {}, topic ? `“${topic} 때문에 잠깐 여쭤볼 게 있어서요.” 어색한 통화였지만 끝날 즈음엔 서로 웃고 있었다.` : '“그냥 안부 전화예요.” 어색함 속에서도 그가 천천히 대답해 주었다.')},
+      {label:'용건 없이 목소리만 듣고 끊는다', sub:'호감 +1', run:S => fxC(S, 1, {stress:-2}, '“무슨 일 있어요?” 걱정스러운 목소리에 “아니에요”라고만 답했다. 그 목소리가 오래 귓가에 남았다.')},
+    ] : [
+      {label:'장난스럽게 말을 받아친다', sub:'호감 +4 · 매력 +0.5', run:S => fxC(S, 4, {charm:0.5, stress:-3}, `${V.tease} 우리는 별것 아닌 얘기로 한참 웃었다. 전화를 끊고 나서도 입꼬리가 내려가지 않았다.`)},
+      {label:'보고 싶다고 솔직히 말한다', sub:v.aff >= 45 ? '호감 +6' : '호감 ±', run:S => v.aff >= 45 ? fxC(S, 6, {stress:-3}, `잠깐의 침묵 뒤에 그가 말했다. ${V.warm} 심장이 귀까지 올라온 것 같았다.`) : fxC(S, -2, {stress:3}, '너무 이른 말이었는지 그가 어색하게 웃었다. “…어, 고마워요.” 대화가 조금 식었다.')},
+      {label:'다음 주 약속을 잡는다', sub:'호감 +3', run:S => fxC(S, 3, {}, '“그럼 이번 주 토요일 어때요?” 약속을 잡고 나자 하루 종일 달력이 환해 보였다.')},
+    ];
+    return mk({text:() => lowA ? `${c.name}가 세 번째 신호음에 전화를 받았다. “여보세요? …아, ${S.name}씨.” 낮은 목소리가 의외로 반가웠다.` : `${c.name}가 두 번째 신호음에 전화를 받았다. “어, 마침 생각하고 있었는데.” 목소리가 웃고 있었다.`, choices});
+  }
+  // 공식 연인
+  const night = (S.m + k) % 2 === 0;
+  return mk({text:() => night ? `자기 전에 ${c.name}에게 전화를 걸었다. “아직 안 잤어요?” 낮고 조용한 목소리가 귀에 닿았다. ${V.warm}` : `${c.name}가 전화를 받자마자 웃었다. “어, 마침 전화하려던 참이었어요.” ${V.tease}`,
+    choices:[
+      {label:'오늘 힘들었던 일을 털어놓는다', sub:'호감 +4 · 스트레스 -7', run:S => fxC(S, 4, {stress:-7, self:1}, '말하다가 목이 메었다. 그는 끊지 않고 끝까지 들어 주었다. “고생 많았어요.” 그 한마디에 마음이 풀렸다.')},
+      {label:'아무 말 없이 서로 숨소리만 듣는다', sub:'호감 +5 · 스트레스 -5', run:S => fxC(S, 5, {stress:-5, bond:1.5}, '한참 말이 없었다. 그런데 이상하게 불편하지 않았다. “…끊지 마요.” 그가 작게 말했다.')},
+      {label:'주말 데이트를 약속한다', sub:'호감 +4 · 관계 +1.5', run:S => fxC(S, 4, {bond:1.5}, '“이번 주엔 어디 갈까요?” 둘이 번갈아 장소를 대다가 결국 웃으며 정하지 못했다.')},
+      {label:'사과하고 싶은 일이 있다고 말한다', sub:'호감 +3 · 통찰 +1', run:S => fxC(S, 3, {ins:1}, `${V.sorry} 서로 같은 말을 먼저 하려다 동시에 웃었다.`)},
+    ]});
+}
+
+// 전화 걸기: 성공하면 이벤트를 돌려주고, 횟수·달 제한은 여기서 처리한다. 걸 수 없으면 사유 문자열.
+function tryCall(S, id){
+  if(callsLeft(S) <= 0) return '이번 달 통화는 모두 사용했어요';
+  if(calledThisMonth(S, id)) return '이번 달에 이미 통화했어요';
+  const ev = callEvent(S, id); if(!ev) return '연락할 수 없어요';
+  if(!S.calls || S.calls.m !== S.m) S.calls = {m:S.m, n:0};
+  S.calls.n++; (S.callAt || (S.callAt = {}))[id] = S.m;
+  return ev;
+}
+
 // 엔딩 판정과 텍스트 (ENGINE 구간 안, DOM 금지)
 const FREE_MIN = 50, FREE_SUM = 184;
 
@@ -975,38 +1230,98 @@ function openSheet(html){ $('sheet').innerHTML = html; $('ov').classList.add('on
 function closeSheet(){ $('ov').classList.remove('on'); }
 const chipHTML = ch => (ch || []).filter(c => Math.abs(c.d) >= 0.05).map(c => `<span class="chip ${c.d > 0 ? (c.label === '스트레스' ? 'down' : 'up') : (c.label === '스트레스' ? 'up' : 'down')}">${esc(c.label)} ${c.d > 0 ? '+' : ''}${c.money ? fmtMoney(c.d) : (Math.abs(c.d) < 1 ? c.d.toFixed(1) : Math.round(c.d))}</span>`).join('');
 
-// ── 타이틀·셋업 ───────────────────────────────────────────────
+// ── 타이틀·시작 설정(한 화면에 질문 하나씩) ─────────────────────
+const WIZ = [
+  {key:'name',   q:'이름을 알려 주세요', p:'스무 살로 돌아가는 사람의 이름이에요.'},
+  {key:'major',  q:`${UNIVERSITY}, 어느 학과로 갈까요?`, p:'학과에 따라 시작 능력치와 어울리는 직업이 달라져요.', list:() => MAJORS, cols:2},
+  {key:'origin', q:'마흔의 나는 어떤 일을 했었나요?', p:'되감기 전의 경력이 타고난 강점이 돼요.', list:() => ORIGINS, cols:1},
+  {key:'regret', q:'가장 후회하는 건 무엇인가요?', p:'그 후회가 이번 생의 출발점이에요.', list:() => REGRETS, cols:1},
+];
+let wizStep = 0, wizName = '서윤';
+const fxTags = fx => Object.keys(fx).map(k => `<i class="up">${LABEL[k] || k} +${fx[k]}</i>`).join('');
 function initTitle(){
-  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'block' : 'none';
-  $('b-new').onclick = () => { renderSetup(); show('setup'); };
+  const sv = store(SAVE_KEY); $('b-cont').style.display = sv && !sv.ending ? 'flex' : 'none';
+  $('b-new').onclick = () => { wizStep = 0; renderWiz(); show('setup'); };
   $('b-cont').onclick = () => { S = store(SAVE_KEY); if(S){ show('game'); render(); } };
-  $('b-go').onclick = () => { S = newGame($('in-name').value.trim() || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow(); };
+  $('w-back').onclick = () => { if(wizStep > 0){ wizStep--; renderWiz(); } else show('title'); };
+  $('w-next').onclick = () => {
+    if(wizStep === 0){ const v = $('in-name') && $('in-name').value.trim(); if(v) wizName = v; }
+    if(wizStep < WIZ.length - 1){ wizStep++; renderWiz(); return; }
+    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow();
+  };
 }
-function renderSetup(){
-  const mk = (arr, key, fn) => arr.map(o => `<button class="opt ${setupSel[key] === o.id ? 'sel' : ''}" data-k="${key}" data-id="${o.id}"><span class="ic">${o.icon}</span><span><b>${o.name}</b><br><span class="sub">${o.desc}</span></span></button>`).join('');
-  $('o-major').innerHTML = mk(MAJORS, 'major'); $('o-origin').innerHTML = mk(ORIGINS, 'origin'); $('o-regret').innerHTML = mk(REGRETS, 'regret');
-  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { setupSel[b.dataset.k] = b.dataset.id; renderSetup(); });
+function renderWiz(){
+  const st = WIZ[wizStep];
+  $('w-dots').innerHTML = WIZ.map((_, i) => `<i class="${i <= wizStep ? 'on' : ''}"></i>`).join('');
+  $('w-q').innerHTML = `<h2>${esc(st.q)}</h2><p class="sub">${esc(st.p)}</p>`;
+  if(st.key === 'name'){
+    $('w-body').innerHTML = `<input type="text" id="in-name" maxlength="6" value="${esc(wizName)}" autocomplete="off" aria-label="이름"><p class="sub" style="text-align:center;margin-top:12px">여섯 글자까지 쓸 수 있어요.</p>`;
+  } else {
+    const items = st.list();
+    $('w-body').innerHTML = `<div class="cards${st.cols}">` + items.map(o => {
+      const extra = st.key === 'major' ? `<span class="ds">어울리는 직업 · ${o.fav.map(c => CAREERS[c].name).join(', ')}</span>` : '';
+      const body = `<b>${o.name}</b><span class="ds">${o.desc}</span>${extra}<span class="tg">${fxTags(o.fx)}</span>`;
+      return `<button class="opt ${setupSel[st.key] === o.id ? 'sel' : ''}" data-id="${o.id}"><span class="ic">${o.icon}</span>${st.cols === 1 ? `<span>${body}</span>` : body}</button>`;
+    }).join('') + '</div>';
+    document.querySelectorAll('#w-body .opt').forEach(b => b.onclick = () => { setupSel[st.key] = b.dataset.id; document.querySelectorAll('#w-body .opt').forEach(x => x.classList.toggle('sel', x === b)); });
+  }
+  $('w-next').textContent = wizStep === WIZ.length - 1 ? '약을 마신다 🧪' : '다음';
+  $('w-body').scrollTop = 0;
 }
 
 // ── 메인 화면 ─────────────────────────────────────────────────
+// 활동이 올려 주는 것을 미리 보여 주는 태그 (고르기 전에 알 수 있게)
+function actTags(S, id, max){
+  const a = ACTS[id]; let eff = a.eff || {}, pay = a.pay, hp = a.hp || 0, st = a.stress || 0;
+  if(id === 'job' && S.hired){ const j = jobOf(S); eff = j.eff; pay = j.pay; hp = -j.hp; st = j.stress; }
+  if(id === 'intern' && CAREERS[S.interest]) eff = Object.assign({}, eff, CAREERS[S.interest].eff);
+  const out = [], ent = Object.entries(eff).filter(([k, v]) => v > 0 && LABEL[k]).sort((x, y) => y[1] - x[1]);
+  for(const [k] of ent.slice(0, 3)) out.push({t:LABEL[k] + '▲', c:'up'});
+  if(pay) out.push({t:'수입', c:'pay'});
+  if(hp > 0) out.push({t:'체력▲', c:'up'}); else if(hp <= -8) out.push({t:'체력▼', c:'down'});
+  if(st < 0) out.push({t:'스트레스▼', c:'up'}); else if(st >= 7) out.push({t:'스트레스▲', c:'down'});
+  if(id === 'future') out.push({t:'선명도▼', c:'down'});
+  if(a.cost) out.push({t:`-${a.cost}만`, c:'down'});
+  return max ? out.slice(0, max) : out;
+}
+// 부족한 축과 몸 상태를 보고 이번 달 계획을 추천 (고민 줄이기)
+function autoPlan(){
+  const ok = (id, idx) => { const a = ACTS[id]; return !!a && !(a.req && a.req(S)) && (!a.cost || a.cost <= S.cash) && (a.slots || 1) <= 3 - idx; };
+  const P = {work:S.work, bond:S.bond, self:S.self}, low = Object.keys(P).sort((x, y) => P[x] - P[y]);
+  const pools = {work:S.hired ? ['job', 'project', 'cert', 'job'] : (S.m < 48 ? ['study', 'intern', 'project', 'cert'] : ['jobhunt', 'project']),
+    bond:['friends', 'family', 'club', dateTarget(S) ? 'date' : 'friends'], self:['journal', 'exercise', 'hobby', 'style']};
+  const picks = [];
+  if(S.hp < 30 || S.stress > 75) picks.push('rest');
+  if(S.cash < 80) picks.push(S.hired && !inLawSchool(S) ? 'job' : (ok('tutor', 0) ? 'tutor' : 'cafe'));
+  for(let r = 0; r < 3; r++) for(const k of low) picks.push(pools[k][(S.m + r * 2 + low.indexOf(k)) % pools[k].length]);
+  const plan = [null, null, null]; let i = 0;
+  for(const id of picks){ if(i > 2) break; if(ok(id, i)){ plan[i] = id; const sl = ACTS[id].slots || 1; if(sl === 2) plan[i + 1] = '>'; i += sl; } }
+  while(i <= 2){ plan[i++] = 'rest'; }
+  return plan;
+}
+function resCard(label, v, bad){ return `<div class="rc ${bad ? 'warn' : ''}"><small>${label}</small><b>${Math.round(v)}</b><div class="mini"><i style="width:${clamp(v, 0, 100)}%"></i></div></div>`; }
 function render(){
   if(!S) return;
   const left = TOTAL_MONTHS - S.m;
-  $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
-  $('h-left').textContent = `남은 시간 ${left}개월`;
-  $('h-job').textContent = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨 · 법학전문대학원생` : `${CAREERS[S.track].company} · ${rankName(S)} (${CAREERS[S.track].name})`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중 (${CAREERS[S.track].name})` : `${UNIVERSITY} ${majorOf(S).name}${S.interest ? ` · 관심: ${CAREERS[S.interest].name}` : ''}`);
+  $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
+  const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
+  $('h-job').textContent = `${S.name} ${ageOf(S)}세 · ${jobLine}`;
+  $('h-left').textContent = `${left}개월 남음`;
   $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
-  $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
-  $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
+  $('h-res').innerHTML = `<div class="rc"><small>💰 자금</small><b>${fmtMoney(S.cash)}</b></div>` + resCard('❤️ 체력', S.hp, S.hp < 30) + resCard('😮‍💨 스트레스', S.stress, S.stress > 70) + resCard('🔮 선명도', S.clarity, false);
+  $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="pcard ${k} ${S[k] < 30 ? 'low' : ''}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(S[k])}</b></div><div class="t"><i style="width:${S[k]}%"></i><u></u></div></div>`).join('');
   $('slots').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
     if(id === '>') return `<button class="slot cont" disabled><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">⏩</span><span class="ds">이어지는 칸</span></button>`;
     if(!id) return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">＋</span><span class="ds">활동 고르기</span></button>`;
-    const a = ACTS[id]; return `<button class="slot" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span></button>`;
+    const a = ACTS[id];
+    return `<button class="slot filled" data-i="${i}"><span class="lb">${SLOT_NAMES[i]}</span><span class="ic">${a.icon}</span><span class="nm">${actName(S, id)}</span><span class="tg">${actTags(S, id, 2).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span></button>`;
   }).join('');
   document.querySelectorAll('.slot[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   $('b-run').disabled = S.plan.some(x => !x);
+  $('b-prev').disabled = !S.lastPlan;
+  $('call-badge').textContent = callsLeft(S) || '';
 }
 function setPlan(i, id){
   const p = S.plan;
@@ -1014,19 +1329,46 @@ function setPlan(i, id){
   clear(i); const a = ACTS[id];
   if(a.slots === 2){ clear(i + 1); p[i] = id; p[i + 1] = '>'; } else p[i] = id;
 }
+const CAT_ICON = {'공부':'📖', '일':'💼', '돈':'💰', '관계':'💞', '나':'🌿', '휴식':'🛌'};
+let pickCat = null;
 function openPicker(i){
-  let html = `<h2>${SLOT_NAMES[i]}에 무엇을 할까요?</h2>`;
-  for(const cat of ACTS_ORDER_CATS){
-    const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === cat); if(!ids.length) continue;
-    html += `<div class="cat">${cat}</div><div class="acts">` + ids.map(id => {
-      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금 부족'; if(!why && a.slots > 3 - i) why = '칸이 모자라요';
-      const meta = [a.cost ? `-${a.cost}만` : '', a.pay ? `+${Math.round(a.pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act" data-id="${id}" ${why ? 'disabled' : ''}><span class="ic">${a.icon}</span><span><b>${actName(S, id)}</b> <span class="sub">${meta}</span><small>${why || a.desc}</small></span></button>`;
-    }).join('') + `</div>`;
-  }
-  openSheet(html + `<button class="btn ghost" style="margin-top:14px" id="x">닫기</button>`);
+  const P = {work:S.work, bond:S.bond, self:S.self}, lowK = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
+  if(!pickCat) pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK];
+  const cats = ACTS_ORDER_CATS.filter(c => Object.values(ACTS).some(a => a.cat === c));
+  const draw = () => {
+    const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === pickCat).map(id => {
+      const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - i) why = '이 칸에서는 못 해요 (2칸 필요)';
+      return {id, a, why};
+    }).sort((x, y) => (x.why ? 1 : 0) - (y.why ? 1 : 0));
+    openSheet(`<div class="picker"><div class="phead"><h2>${SLOT_NAMES[i]}에 무엇을 할까요?</h2><div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}"><span>${CAT_ICON[c] || ''}</span>${c}</button>`).join('')}</div></div><div class="acts">` + ids.map(({id, a, why}) => {
+      const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
+      const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
+      return `<button class="act" data-id="${id}" ${why ? 'disabled' : ''}><span class="ic">${a.icon}</span><span><span class="top"><b>${actName(S, id)}</b><em>${em}</em></span><small>${why || a.desc}</small>${why ? '' : `<span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</span></button>`;
+    }).join('') + `</div><button class="btn ghost sm" style="margin-top:14px" id="x">닫기</button></div>`);
+    $('x').onclick = closeSheet;
+    document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
+    document.querySelectorAll('.act').forEach(b => b.onclick = () => { setPlan(i, b.dataset.id); closeSheet(); render(); save(); });
+  };
+  draw();
+}
+
+// ── 전화하기: 친구·엄마·썸·연인 (한 달 2회, 활동 칸 소모 없음) ─────────────
+function toast(msg){ const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; $('app').appendChild(t); setTimeout(() => t.remove(), 1800); }
+function openPhone(){
+  const left = callsLeft(S);
+  const rows = contactsOf(S).map(c => { const done = calledThisMonth(S, c.id), dis = done || left <= 0;
+    return `<button class="contact" data-id="${c.id}" ${dis ? 'disabled' : ''}><img class="av" src="${c.img}" alt="" onerror="this.style.visibility='hidden'"><span class="ci"><b>${esc(c.name)}</b><small>${esc(c.sub)}${done ? ' · 이번 달 통화함' : ''}</small></span><span class="cb">📞</span></button>`; }).join('');
+  openSheet(`<h2>전화하기</h2><p class="sub">이번 달 통화 ${left}회 남음 · 활동 칸은 쓰지 않아요</p><div class="contacts">${rows}</div><button class="btn ghost sm" id="x" style="margin-top:12px">닫기</button>`);
   $('x').onclick = closeSheet;
-  document.querySelectorAll('.act').forEach(b => b.onclick = () => { setPlan(i, b.dataset.id); closeSheet(); render(); save(); });
+  document.querySelectorAll('.contact').forEach(b => b.onclick = async () => {
+    const r = tryCall(S, b.dataset.id); if(typeof r === 'string'){ toast(r); return; }
+    closeSheet(); await playEvent(r); save(); render();
+  });
+}
+function showStats(){
+  const rows = STAT_KEYS.map(k => `<div class="srow"><span>${STAT[k]}</span><div class="t"><i style="width:${S.st[k]}%"></i></div><b>${Math.round(S.st[k])}</b></div>`).join('');
+  openSheet(`<h2>능력치</h2><p class="sub">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="statrows">${rows}</div><p class="sub" style="margin-top:12px">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`);
+  $('x').onclick = closeSheet;
 }
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
@@ -1104,7 +1446,7 @@ function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.webp)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
-   <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
+   <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
@@ -1115,14 +1457,16 @@ function showEnding(){
 // ── 메뉴·기록 ─────────────────────────────────────────────────
 function initGame(){
   $('b-run').onclick = () => { $('b-run').disabled = true; runMonth(); };
-  $('b-stat').onclick = () => { openSheet(`<h2>능력치</h2><p class=\"sub\">${UNIVERSITY} ${majorOf(S).name}${S.hired && CAREERS[S.track] ? ' · ' + CAREERS[S.track].company + ' ' + rankName(S) : ''}</p><div class="stats sheetstats">${STAT_KEYS.map(k => `<div>${STAT[k]}<b>${Math.round(S.st[k])}</b></div>`).join('')}<div>빌린 인생<b>${S.borrowed}</b></div></div><p class="sub" style="margin-top:10px">생활비 월 ${livingCost(S)}만 · 지원 ${allowance(S)}만 · 기억 선명도 ${Math.round(S.clarity)}</p><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
-  $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><div class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</div><button class="btn ghost" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
-  $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><button class="btn ghost" id="m-prev">지난달 계획 반복</button><button class="btn ghost" id="m-theme" style="margin-top:8px">밝은/어두운 화면</button><button class="btn ghost" id="m-title" style="margin-top:8px">타이틀로 (자동 저장)</button><button class="btn ghost" id="x" style="margin-top:8px">닫기</button>`);
+  $('b-auto').onclick = () => { S.plan = autoPlan(); render(); save(); };
+  $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); render(); save(); } };
+  $('b-call').onclick = openPhone;
+  $('b-stat').onclick = showStats;
+  $('b-log').onclick = () => { openSheet(`<h2>기록</h2><div class="txt">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div><p class="sub">연애: ${Object.keys(S.love).map(i => `${LOVERS[i].name} ${LOVE_STAGE[S.love[i].stage] || ''} ${Math.round(S.love[i].aff)}`).join(' / ') || '없음'}</p><button class="btn ghost sm" id="x" style="margin-top:14px">닫기</button>`); $('x').onclick = closeSheet; };
+  $('b-menu').onclick = () => { openSheet(`<h2>메뉴</h2><div style="display:grid;gap:10px"><button class="btn ghost sm" id="m-theme">🌗 밝은/어두운 화면</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button><button class="btn ghost sm" id="x">닫기</button></div>`);
     $('x').onclick = closeSheet;
-    $('m-prev').onclick = () => { if(S.lastPlan) S.plan = S.lastPlan.slice(); closeSheet(); render(); };
     $('m-theme').onclick = () => { const d = document.documentElement; d.dataset.theme = d.dataset.theme === 'light' ? 'dark' : 'light'; try{ localStorage.setItem('rewind-ten-theme', d.dataset.theme); }catch(e){} closeSheet(); };
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
-  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet .ch, #sheet #nx')) closeSheet(); });
+  $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')) closeSheet(); });
 }
 try{ const t = localStorage.getItem('rewind-ten-theme'); if(t) document.documentElement.dataset.theme = t; }catch(e){}
 initTitle(); initGame();

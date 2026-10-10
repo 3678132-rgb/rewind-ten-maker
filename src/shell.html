@@ -12,25 +12,30 @@
   <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
   <p class="note">저장은 이 기기에만 보관돼요.</p></div>
  </section>
- <section id="setup" class="screen pad">
-  <h2 style="margin-top:22px">이름</h2><input type="text" id="in-name" maxlength="6" value="서윤">
-  <h2 style="margin-top:22px">학과 <span class="sub">한국대학교</span></h2><div class="opts" id="o-major"></div>
-  <h2 style="margin-top:18px">되감기 전의 직업</h2><div class="opts" id="o-origin"></div>
-  <h2 style="margin-top:18px">가장 후회하는 것</h2><div class="opts" id="o-regret"></div>
-  <button class="btn" id="b-go" style="margin:20px 0 30px">약을 마신다</button>
+ <section id="setup" class="screen">
+  <div class="wizbg"></div>
+  <div class="wiz">
+   <div class="wizhead"><button class="wizback" id="w-back" aria-label="이전">←</button><div class="dots" id="w-dots"></div></div>
+   <div class="wizq" id="w-q"></div>
+   <div class="wizbody" id="w-body"></div>
+   <div class="wizfoot"><button class="btn" id="w-next">다음</button></div>
+  </div>
  </section>
  <section id="game" class="screen">
   <div class="gbg" id="g-bg"></div><div class="gshade"></div>
   <div class="ghud">
-   <div class="date"><b id="h-date"></b><span class="sub" id="h-left"></span></div>
-   <div class="sub" id="h-job" style="margin-top:2px"></div>
-   <div class="sand"><i id="h-sand"></i></div>
-   <div class="chips" id="h-chips"></div>
+   <div class="hrow">
+    <div class="hdate"><b id="h-date"></b></div>
+    <div class="ibtns"><button class="ibtn" id="b-call" aria-label="전화하기">📞<span class="badge" id="call-badge"></span></button><button class="ibtn" id="b-stat" aria-label="능력치">📊</button><button class="ibtn" id="b-log" aria-label="기록">📖</button><button class="ibtn" id="b-menu" aria-label="메뉴">⚙️</button></div>
+   </div>
+   <div class="hjob" id="h-job"></div>
+   <div class="sandwrap"><div class="sand"><i id="h-sand"></i></div><span class="left" id="h-left"></span></div>
+   <div class="res" id="h-res"></div>
   </div>
   <div class="gbottom">
    <div class="pillars" id="pillars"></div>
    <div class="slots" id="slots"></div>
-   <div class="row3"><button class="btn ghost sm" id="b-stat">능력치</button><button class="btn ghost sm" id="b-log">기록</button><button class="btn ghost sm" id="b-menu">메뉴</button></div>
+   <div class="plans"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev">↻ 지난달처럼</button></div>
    <button class="btn" id="b-run">이번 달 시작</button>
   </div>
  </section>

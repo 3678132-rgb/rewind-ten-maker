@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#0e1230"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="다시스무살"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
 <style>:root{--bg:#0e1230;--bg2:#1a1f4a;--card:#222862;--card2:#2b3275;--ink:#f3efe6;--mute:#a9acd6;--gold:#f2b84b;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff6b6b;--line:rgba(255,255,255,.1)}
@@ -9,7 +9,11 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 body{background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg))}
 button{font:inherit;color:inherit;cursor:pointer;border:0}
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-#app{position:relative;width:100%;height:100vh;height:100dvh;max-width:calc(100dvh * 9 / 16);margin:0 auto;overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
+body{word-break:keep-all;overflow-wrap:break-word;-webkit-text-size-adjust:100%}
+.txt,.sub,.ch span,.ch b,#title p{text-wrap:pretty}
+/* 화면 틀: 보이는 영역 전체에 고정(iPhone Safari·홈 화면 앱에서도 아래가 비지 않게). 폰은 꽉 채우고, 넓은 화면에서는 9:16 폭으로 가운데에 둔다 */
+#app{position:fixed;top:0;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:calc(100vh * 9 / 16);overflow:hidden;background:var(--bg);box-shadow:0 0 60px rgba(0,0,0,.5)}
+@supports (height:100dvh){#app{max-width:calc(100dvh * 9 / 16)}}
 .screen{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}.screen.on{display:block}
 .screen.pad{padding:0 16px;padding-top:env(safe-area-inset-top)}
 h1,h2,h3{margin:0}

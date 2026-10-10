@@ -331,7 +331,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #34 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #35 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -369,7 +369,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #34 · 2026.10.11</div>
+ <div id="buildtag">빌드 #35 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -2034,7 +2034,290 @@ function rivalMood(S, d, ch){ const st = SS(S); const b = st.rival; st.rival = c
 const rivalState = S => { const r = SS(S).rival; return r >= 4 ? 'ally' : r <= -4 ? 'enemy' : 'neutral'; };
 
 
-const STORY_A = [];
+// 주 스토리 1~3장 (2016~2018) + 라이벌 랜덤 이벤트. ENGINE 구간(DOM 금지)
+// 로컬 헬퍼는 _sa 접두어. 효과 → 라이벌 관계 → 칩 순으로 만든다.
+const _sa = (S, o, rd, text, mood) => { const ch = []; fx(S, o, ch); if(rd) rivalMood(S, rd, ch); const out = {text, chips:ch}; if(mood) out.mood = mood; return out; };
+const _saScore = S => (S.st.know + S.st.skill + S.st.neg + S.st.ins) / 4;
+const _saHarin = {speaker:RIVAL, img:'art/rival_harin.webp', face:'harin'};
+
+const STORY_A = [
+// ════════ 1장 되감기 (2016) ════════
+Object.assign({}, _saHarin, {id:'st_1_1', m:1, exp:6, place:'campus', title:'수석 입학생',
+  beats:[
+    '경영학원론 첫 주. 교수가 출석부를 덮으며 말했다. “올해 수석 입학생, 서하린 학생. 첫 과제 대표로 발표해 보세요.”',
+    '단정한 단발, 칼같이 다린 셔츠. 일어선 그녀는 메모 한 장 없이 십 분을 말했다. 숫자는 정확했고, 문장에는 군더더기가 없었다.',
+    '수업이 끝나자 그녀가 내 자리 앞에 멈췄다. “발표 중에 한 번 웃으셨죠. 틀린 부분이 있었나요?”',
+    '“개인적인 감정은 없어요. 확인하고 싶었을 뿐이에요.” 그 말투. 마흔의 어느 날, 닫힌 회의실에서 들었던 것과 같은 높낮이였다.',
+  ],
+  text:S => '그 목소리를 어디서 들었는지 끝내 기억나지 않는다. 몸이 먼저 식은땀을 흘린다. 뭐라고 답할까?',
+  choices:[
+    {label:'“아니요. 너무 잘해서 웃음이 나왔어요.”', sub:'하린 관계 +1 · 나 +1', run(S){ SF(S).harinMet = true; return _sa(S, {self:1, charm:0.5}, 1, '하린의 눈매가 아주 잠깐 흔들렸다. “…칭찬은 근거가 있을 때만 받습니다.” 그렇게 말하면서도 그녀는 내 이름을 입속으로 한 번 되뇌었다.', 'surprised'); }},
+    {label:'“3분 40초쯤, 표 수치 하나가 틀렸어요.”', sub:'통찰 +2 · 하린 관계 -1', run(S){ SF(S).harinMet = true; return _sa(S, {ins:1.5, know:1}, -1, '그녀가 노트를 펼쳐 숫자를 확인했다. 소수점 하나. “…맞네요. 다시는 안 틀려요.” 사과도 칭찬도 아닌, 선전포고에 가까운 한마디였다.', 'serious'); }},
+    {label:'대답하지 않고 자리를 뜬다', sub:'스트레스 +3', run(S){ SF(S).harinMet = true; return _sa(S, {stress:3}, 0, '등 뒤에서 “이유 없이 웃은 거예요?”라는 차가운 목소리가 들렸다. 복도 끝에서야 내 손이 떨리고 있다는 걸 알았다. 그 목소리가 누구의 것인지는, 아직 몰랐다.', 'serious'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'st_1_2', m:4, exp:6, place:'campus', title:'발표 대결',
+  beats:[
+    '중간 과제는 팀 발표. 교수는 단 한 팀에게만 A+를 주겠다고 했다. 상대 팀 에이스는 서하린이었다.',
+    '주제는 「편의점 시장의 다음 5년」. 하린 팀은 이미 점주 인터뷰까지 따 놨다는 소문이 돌았다.',
+    '나는 안다. 다음 5년 동안 편의점이 어떻게 바뀌는지. 한 줄이면 이길 수 있다. 하지만 그건 내가 쓴 적 없는 정답이다.',
+    '발표 전날 밤, 복사실. 프린터 앞의 하린이 돌아보지 않고 물었다. “긴장돼요?” “아니요.” “거짓말.” 그녀가 처음으로 입꼬리를 올렸다.',
+  ],
+  text:S => '내일이 발표다. 오늘 밤을 어떻게 쓸까?',
+  choices:[
+    {label:'미래의 기억으로 자료를 채운다', sub:'선명도 -4 · 승산 큼', run(S){ S.borrowed++; const win = _saScore(S) + 14 + rand(-10, 10) > 36; if(win){ SF(S).debateWon = true; return _sa(S, {clarity:-4, work:1.5}, -1, '슬라이드 한 장에 숫자가 오르자 강의실이 조용해졌다. A+는 우리 팀이었다. 단상에서 내려오는데 하린이 낮게 말했다. “그 수치, 어디서 났어요? 논문에도 아직 없는데.” 등골이 서늘했다.', 'serious'); } SF(S).debateLost = true; return _sa(S, {clarity:-4, stress:3}, 0, '숫자는 맞았지만 설명이 서툴렀다. 아는 것과 설득하는 것은 달랐다. A+는 하린 팀. 지름길을 알고도 나는 넘어졌다.', 'serious'); }},
+    {label:'밤새 점포 인터뷰를 다시 돈다', sub:'학식 +2 · 스트레스 +4', run(S){ const win = _saScore(S) + 9 + rand(-10, 10) > 36; if(win){ SF(S).debateWon = true; return _sa(S, {know:2, neg:1, stress:4, work:1.5}, -1, '새벽 편의점 점주의 한마디를 마지막 장에 넣었다. 발표가 끝나자 교수가 고개를 끄덕였다. 하린이 박수를 쳤지만 손은 아주 조용히 움직였다.', 'serious'); } SF(S).debateLost = true; return _sa(S, {know:2, neg:1, stress:4}, 0, '열심히 했지만 하린 팀이 한 걸음 더 갔다. 복도에서 하린이 말했다. “인터뷰는 좋았어요. 질문 순서만 바꿨으면 이겼을 거예요.” 위로인지 채점인지 알 수 없었다.', 'serious'); }},
+    {label:'“우리 팀 아이디어 일부를 서로 공유할래요?” 하린에게 제안한다', sub:'하린 관계 +2 · 승산 보통', run(S){ const win = _saScore(S) + 4 + rand(-10, 10) > 36; if(win){ SF(S).debateWon = true; return _sa(S, {neg:1.5, bond:1, work:1}, 1, '“이상한 사람이네요.” 하린은 거절했지만 한 가지 자료 출처만은 알려 줬다. 결과는 근소하게 우리 팀의 승리. 그녀는 이긴 사람에게만 하는 악수를 정확하게 했다.', 'surprised'); } SF(S).debateLost = true; return _sa(S, {neg:1.5, bond:1}, 2, '“경쟁자에게 전략을 나누자는 사람은 처음 봐요.” 그녀가 웃었다. 발표는 졌지만, 복사실에서의 십 분이 이상하게 오래 남았다.', 'tender'); }},
+  ]}),
+
+{id:'st_1_3', m:7, exp:6, speaker:'소연', img:'art/soyeon.webp', place:'rain', title:'주황색 봉투',
+  beats:[
+    '장마가 시작된 7월 초. 소연이 강의 중 세 번째로 고개를 떨궜다. 노트에는 침 자국과 지워진 글씨.',
+    '“어제 잠을 못 잤어.” 웃으며 말했지만 가방 틈으로 주황색 봉투가 삐져나왔다. 독촉장이었다.',
+    '마흔의 기억이 올라온다. 소연의 아버지 가게가 무너진 해. 그때 나는 소연이 말을 안 하길래 묻지 않았다. 그게 배려인 줄 알았다.',
+    '소연이 봉투를 급히 밀어 넣었다. “아, 이거 스팸이야.” 창밖에서 비가 쏟아지기 시작했다.',
+  ],
+  text:S => '이번에도 모른 척하면 똑같은 마흔이 온다. 어떻게 할까?',
+  choices:[
+    {label:'“스팸이 아니잖아. 말해 줘.” 직접 묻는다', sub:'관계 +2 · 소연의 사정을 알게 됨', run(S){ SF(S).soyeonClue = true; return R_(S, {bond:2, stress:2, ins:1}, '소연은 한참 우산 끝만 보다가 말했다. 아버지 가게 빚, 새벽 편의점 알바, 아무에게도 안 한 이야기. “창피해서 말 못 했어.” 울다 웃는 소연의 어깨를 나는 오래 잡고 있었다.'); }},
+    {label:'아무것도 묻지 않고 따뜻한 밥을 산다', sub:'자금 -12 · 관계 +3', run(S){ return R_(S, {cash:-12, bond:3, stress:-2}, '순두부찌개 두 그릇. 소연은 말없이 먹다 눈이 빨개졌다. “…나중에 말할게.” 나는 고개만 끄덕였다. 문은 닫히지 않고 열려 있었다.'); }},
+    {label:'눈치채지 못한 척한다', sub:'관계 -2 · 스트레스 +2', run(S){ return R_(S, {bond:-2, stress:2, self:-1}, '“비 많이 오네.” 나는 화제를 돌렸다. 소연이 안도한 얼굴로 웃었다. 마흔 때와 똑같은 선택이었다는 걸 집에 와서야 깨달았다.'); }},
+  ]},
+
+{id:'st_1_4', m:10, exp:6, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'첫 번째 모래',
+  beats:[
+    '2016년 12월. 첫눈이 내리던 밤, 눈을 감았는데 낯익은 골목에 서 있었다. 비도 눈도 아닌 것이 내리고 있었다.',
+    `${GRANDMA}가 모래시계를 뒤집으며 말했다. “일 년 지났네요. 어땠어요, 두 번째 스무 살은?”`,
+    '카운터 위에는 호박색 파편이 하나 놓여 있었다. 시계의 첫 조각. “가져가요. 대신 하나만 말해 봐요. 올해 가장 마음에 남은 사람은 누구예요?”',
+  ],
+  text:S => SF(S).debateWon ? '발표 대결에서 이긴 기억이 아직 따뜻하다. 하지만 할머니의 질문은 이긴 사람을 묻지 않았다.' : '지고 이기고 하는 사이에도 마음에 남은 얼굴이 있다. 할머니가 기다린다.',
+  choices:[
+    {label:'하린. 그 목소리를 어디서 들었는지 모르겠어요', sub:'조각 1 · 통찰 +2', run(S){ const ch = []; fx(S, {ins:2, stress:2}, ch); givePiece(S, ch); return {text:'“아는 목소리일수록 늦게 알아보는 법이에요.” 할머니는 웃지 않고 모래시계를 한 번 더 흔들었다. 위쪽 모래가 가늘게 떨어졌다.', chips:ch}; }},
+    {label:'엄마. 전화로 목소리를 다시 듣게 돼서 좋았어요', sub:'조각 1 · 관계 +3', run(S){ const ch = []; fx(S, {bond:3, stress:-5}, ch); givePiece(S, ch); return {text:'“그 마음이 첫 번째 조각의 무게예요.” 할머니가 조각을 손바닥에 올려 주었다. 따뜻했다. 엄마가 끓여 주던 보리차처럼.', chips:ch}; }},
+    {label:'나 자신. 아직 이 모든 게 무서워요', sub:'조각 1 · 나 +3', run(S){ const ch = []; fx(S, {self:3, stress:-2}, ch); givePiece(S, ch); return {text:'“무서운 게 정상이에요. 두 번 사는 사람은 두 번 겁먹어요.” 할머니의 손등에 나와 똑같은 흉터가 있었다. 나는 아무 말도 하지 못했다.', chips:ch}; }},
+  ]},
+
+// ════════ 2장 시험대 (2017) ════════
+Object.assign({}, _saHarin, {id:'st_2_1', m:12, exp:6, place:'campus', title:'회장 후보 등록',
+  beats:[
+    '2017년 3월. 경영학회 회장 선거 공고가 붙었다. 후보 등록 마감은 금요일.',
+    '게시판 앞에서 하린과 마주쳤다. 그녀는 이미 등록서를 들고 있었다. “나갈 거예요?”',
+    '“회장이 되면 학회 예산 천만 원을 쓸 수 있어요. 해야 할 일이 있어서요.” 그녀의 목소리가 처음으로 조금 빨랐다.',
+    '그때 소연이 달려왔다. 앞치마도 못 벗은 채였다. 카페 알바 사이 십오 분 틈이라고 했다. “포스터는 내가 그려 줄게. 나갈 거지?”',
+  ],
+  text:S => SF(S).debateWon ? '1학년 때 발표 대결에서 이긴 기억이 있다. 그래도 하린은 같은 실수를 두 번 하는 사람이 아니다. 공약을 어떻게 만들까?' : '하린은 이번에도 빈틈없이 준비해 올 것이다. 공약을 어떻게 만들까?',
+  choices:[
+    {label:'예산 투명 공개와 멘토링 — 정공법', sub:'일 +1 · 협상 +1', run(S){ SF(S).clubEdge = 8; return _sa(S, {work:1, neg:1}, 0, '공약 세 개를 A4 한 장에 담았다. 숫자와 일정이 있는 약속만 남겼다. 하린이 어깨 너머로 보더니 낮게 말했다. “나쁘지 않아요. 아주 나쁘지 않아요.”', 'serious'); }},
+    {label:'올해 뜰 업계를 짚는 미래형 공약', sub:'선명도 -4 · 승산 큼', run(S){ S.borrowed++; SF(S).clubEdge = 13; return _sa(S, {clarity:-4, ins:1}, -1, '“올해 하반기 학회 세미나는 이 세 분야로 하겠습니다.” 내가 쓴 공약이 이상하게 정확해서 소름이 돋았다. 하린이 고개를 들었다. 그녀의 눈이 나를 오래 보았다.', 'surprised'); }},
+    {label:'소연과 새벽까지 포스터를 만든다', sub:'관계 +3 · 스트레스 +3', run(S){ SF(S).clubEdge = 6; SF(S).soyeonJob = true; return _sa(S, {bond:3, stress:3, sense:1}, 0, '소연이 평일 카페, 주말 예식장, 밤 편의점까지 알바 세 개를 뛴다는 걸 그날 알았다. “괜찮아. 나 체력 좋아.” 포스터 속 내 얼굴 옆에 소연의 서명이 작게 있었다.', 'tender'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'st_2_2', m:15, exp:6, place:'campus', title:'마지막 공개 질의',
+  beats:[
+    '선거 당일 오후 네 시, 대강당. 투표 전 마지막 공개 질의 시간.',
+    '하린이 먼저 연단에 섰다. 공약은 빈틈이 없었다. 마지막에 그녀가 말했다. “저는 친해지려고 나온 게 아닙니다. 결과를 내려고 나왔습니다.”',
+    '박수가 터졌다. 맞는 말이었다. 그리고 문장 구조가 마흔의 회의실에서 들은 말과 같았다.',
+    '사회자가 내 이름을 불렀다. 질문 카드가 올라왔다. 「서하린 후보와 무엇이 다릅니까?」',
+  ],
+  text:S => '강당이 조용해졌다. 한 문장으로 답해야 한다.',
+  choices:[
+    {label:'“저는 결과를 못 내도 사람을 버리지 않겠습니다.”', sub:'관계 중시 · 매력 +1', run(S){ const win = S.st.charm * 0.5 + S.st.neg * 0.4 + (SF(S).clubEdge || 5) + 4 + S.bond / 12 + rand(-10, 10) > 33; if(win){ SF(S).clubWin = true; return _sa(S, {bond:3, charm:1, work:1}, -1, '잠시 정적. 그다음 객석 뒤쪽에서 소연의 박수가 먼저 터졌다. 개표 결과는 근소한 차이로 내 승리. 하린이 단상 아래서 말했다. “사람을 버리지 않겠다는 약속, 지키기 어려울 텐데요.”', 'serious'); } SF(S).clubLost = true; return _sa(S, {bond:2, stress:3, self:1}, 1, '내 문장은 진심이었지만 표는 하린에게 갔다. 그녀가 당선 인사 후 다가와 말했다. “원래 당신은 이런 데서 지는 사람이 아니었는데요.” 내가 뭐라고 되묻기 전에 그녀가 먼저 고개를 돌렸다.', 'surprised'); }},
+    {label:'하린의 약점을 짚는다 — 지난 조별 과제의 독단', sub:'하린 관계 -2 · 승부수', run(S){ const win = S.st.charm * 0.5 + S.st.neg * 0.4 + (SF(S).clubEdge || 5) + 6 + rand(-10, 10) > 33; if(win){ SF(S).clubWin = true; return _sa(S, {work:2, stress:3, self:-1}, -3, '객석이 술렁였고, 하린의 입술이 얇아졌다. 승리했지만 박수가 이상하게 작았다. 연단을 내려오는 그녀의 뒷모습이 오래 마음에 남았다.', 'sad'); } SF(S).clubLost = true; return _sa(S, {stress:5, self:-2}, -3, '비판은 먹히지 않았다. 객석은 날을 세운 사람보다 아픈 곳을 아는 사람 쪽에 섰다. 하린은 이긴 뒤에도 웃지 않았다. 그게 더 아팠다.', 'serious'); }},
+    {label:'“이기든 지든 먼저 인정할게요. 서하린은 준비된 사람입니다.”', sub:'나 +2 · 하린 관계 +1', run(S){ const win = S.st.charm * 0.5 + S.st.neg * 0.4 + (SF(S).clubEdge || 5) + 2 + rand(-10, 10) > 33; if(win){ SF(S).clubWin = true; return _sa(S, {self:2, charm:1, work:1}, 0, '예상 밖의 대답에 강당이 웃었다. 결과는 내 승리였다. 하린이 투표함 앞에서 말했다. “…인정이라는 단어를 공개적으로 쓰는 사람은 처음 봤어요.”', 'surprised'); } SF(S).clubLost = true; return _sa(S, {self:2, stress:2}, 1, '졌다. 하지만 이상하게 가벼웠다. 하린은 당선증을 받고도 곧장 내게 왔다. “부회장 자리, 정식으로 제안해도 될까요.” 나는 대답을 미뤘다.', 'tender'); }},
+  ]}),
+
+{id:'st_2_3', m:18, exp:6, speaker:'엄마', img:'art/mom.webp', place:'room', title:'엄마의 기침',
+  beats:[
+    '추석 연휴, 본가. 엄마는 전을 부치다가 두 번 멈춰 서서 기침을 눌러 삼켰다.',
+    '“감기야. 며칠 가네.” 엄마가 손등으로 입을 가렸다. 나는 그 동작을 안다. 서른넷의 겨울, 병원 복도에서 의사가 했던 말이 되살아났다. “조금만 일찍 오셨더라면.”',
+    '엄마는 병원 얘기만 나오면 손사래를 쳤다. “다 늙어서 무슨 검진이야. 돈 아깝게.”',
+    '식탁 위 모래색 보리차가 천천히 식고 있었다. 지금이다. 이번 생에서 내가 가장 먼저 바꿔야 할 일이 바로 여기에 있다.',
+  ],
+  text:S => '엄마의 기침은 아직 “이상 신호”일 뿐이다. 서른넷의 그날로 가는 길은 여기서 갈라진다. 어떻게 할까?',
+  choices:[
+    {label:'“엄마, 내일 나랑 검진 가요.” 끝까지 설득한다', sub:'조기 발견 · 자금 -30 · 스트레스 +4', run(S){ SS(S).momStage = 1; SF(S).momCheckup = true; return R_(S, {cash:-30, stress:4, bond:3}, '한 시간의 실랑이 끝에 엄마가 겉옷을 집었다. 의사가 말했다. “조금 일찍 오셨네요. 다행입니다.” 마흔의 내가 평생 듣고 싶었던 문장이었다. 엄마가 물었다. “너 그걸 어떻게 알았니?”'); }},
+    {label:'엄마가 싫어하는 걸 알아 더는 밀지 못한다', sub:'관계 -1 · 후회가 남음', run(S){ SS(S).momStage = 1; SF(S).momRefused = true; return R_(S, {bond:-1, stress:5}, '“알겠어요. 대신 아프면 바로 말해야 해요.” 약국에서 기침약만 사서 들려 보냈다. 한 번 더 말했어야 했다. 문 닫히는 소리 뒤에도 엄마의 기침이 한참 귀에 남았다.'); }},
+    {label:'영양제를 사 드리고 다음 달에 다시 권한다', sub:'자금 -15 · 관계 +1', run(S){ SS(S).momStage = 1; return R_(S, {cash:-15, bond:1, stress:2}, '“이런 거 사 오지 말고 밥이나 잘 챙겨 먹어.” 엄마는 타박하면서도 영양제 통을 서랍 맨 앞에 넣었다. 검진 얘기는 “다음에”로 접혔다. 달력의 다음 달에 나는 조용히 동그라미를 쳤다.'); }},
+  ]},
+
+{id:'st_2_4', m:21, exp:6, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'두 번째 모래',
+  beats:[
+    '2017년 12월. 눈 오는 밤, 약방 유리창에 서리가 껴 있었다.',
+    `${GRANDMA}는 모래시계 아래를 가리켰다. 첫 번째 조각 옆에 둘째 조각이 놓일 자리가 비어 있었다.`,
+    '“올해는 누군가를 이기려는 사람과 누군가를 놓치지 않으려는 사람 사이에서 흔들렸죠?”',
+    '“둘 다 가지려면 대가가 필요해요. 시계가 알려 주는 건 늘 그것뿐이에요.”',
+  ],
+  text:S => SF(S).momCheckup ? '“엄마를 일찍 병원에 모시고 간 그 한 걸음이 무엇을 바꿀지는 아직 몰라요.” 할머니가 말했다. 이번 한 해를 어디에 걸까?' : SF(S).momRefused ? '“밀어붙이지 못한 걸 아직 마음에 담고 있죠.” 할머니는 눈을 피하지 않았다. 이번 한 해를 어디에 걸까?' : '올 한 해, 무엇을 가장 먼저 지키겠는가?',
+  choices:[
+    {label:'“엄마를 먼저요. 일은 그다음이에요.”', sub:'조각 2 · 관계 +3', run(S){ const ch = []; fx(S, {bond:3, stress:-3}, ch); givePiece(S, ch); return {text:'“좋아요. 사람부터 챙기는 건 서두르는 것 같아도 가장 빠른 길이에요.” 할머니가 조각을 건넸다. 두 번째 조각은 첫 번째보다 더 따뜻했다.', chips:ch}; }},
+    {label:'“먼저 나를 증명하겠어요.”', sub:'조각 2 · 일 +2 · 나 +2 · 스트레스 +3', run(S){ const ch = []; fx(S, {work:2, self:2, stress:3}, ch); givePiece(S, ch); return {text:'“증명은 박수로 끝나지 않아요.” 할머니가 조각을 쥐어 주며 말했다. “하지만 해 본 사람만 그걸 알죠.” 모래시계의 위쪽이 눈에 띄게 줄어 있었다.', chips:ch}; }},
+    {label:'“소연도, 엄마도, 일도. 전부 포기하지 않을래요.”', sub:'조각 2 · 세 기둥 +1 · 스트레스 +5', run(S){ const ch = []; fx(S, {work:1, bond:1, self:1, stress:5}, ch); givePiece(S, ch); return {text:'“욕심쟁이.” 할머니가 웃었다. “그 욕심, 서른까지 들고 가 봐요. 다만 몸이 먼저 부서지지 않게.” 조각을 쥔 손에 열이 올랐다.', chips:ch}; }},
+  ]},
+
+// ════════ 3장 빌린 인생 (2018) ════════
+Object.assign({}, _saHarin, {id:'st_3_1', m:24, exp:6, place:'campus', title:'단 한 자리',
+  beats:[
+    '2018년 3월. 학과 게시판에 한 장짜리 공고가 붙었다. 한결상사 하계 인턴십, 우리 학교 배정 단 1명.',
+    '한결상사. 마흔의 사원증에 박혀 있던 그 로고. 나를 내보낸 회사의 첫 문이 여기에 있다.',
+    '공고 앞에서 하린이 휴대폰으로 찍지 않고 한 줄 한 줄 읽고 있었다. “올해부터 한 명으로 줄어든다는 거 알고 있었어요.”',
+    '“어떻게요?” “…선배한테 들었어요.” 그녀가 시선을 피했다. 우리 학교에 그런 선배가 있다는 얘기는 들은 적이 없다.',
+  ],
+  text:S => '인턴 한 자리를 두고 하린과 맞붙는다. 어떻게 준비할까?',
+  choices:[
+    {label:'포트폴리오와 직무 분석에 올인한다', sub:'일 +2 · 학식 +1 · 스트레스 +4', run(S){ SF(S).internEdge = 8; return _sa(S, {work:2, know:1, stress:4}, 0, '새벽 세 시, 내가 쓴 문장이 처음으로 실무자의 문장처럼 보였다. 마흔의 경험을 쓰지 않고, 지금의 나로 쓴 것이라 더 값졌다.', 'serious'); }},
+    {label:'현직 선배에게 커피챗을 돌린다', sub:'자금 -20 · 협상 +2', run(S){ SF(S).internEdge = 6; return _sa(S, {cash:-20, neg:2, charm:1}, 0, '커피값은 아팠지만 한 선배의 말이 남았다. “거긴 숫자보다 태도를 봐.” 회사 로비의 냄새까지 되살아났다. 나는 그 냄새를 다시 맡을 준비가 되었을까.', 'serious'); }},
+    {label:'하린에게 스터디를 제안한다', sub:'하린 관계 +2 · 승산 낮음', run(S){ SF(S).internEdge = 3; return _sa(S, {bond:1, neg:1}, 2, '“왜요?” “혼자 하면 틈이 보이잖아요.” 그녀는 한참 나를 재다가 일주일만 해 보자고 했다. 같이 앉은 테이블에서, 하린의 펜은 한 번도 멈추지 않았다.', 'surprised'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'st_3_2', m:27, exp:6, place:'cafe', title:'아는 사람처럼',
+  beats:[
+    '스터디가 끝난 늦은 밤, 학교 앞 카페. 하린이 내 노트를 보다가 무심코 말했다.',
+    '“회의록 끝에 다음 액션을 세 개로 정리하는 거, 버릇이죠? 세 번째에는 항상 사람 이름이 들어가고.”',
+    '펜이 멈췄다. 나는 지금까지 그런 형식으로 쓴 적이 없다. 그건 서른 중반이 되어서야 몸에 밴 습관이다.',
+    '하린은 컵을 내려놓고 아무 일 없다는 듯 창밖을 봤다. “우연이에요. 그냥 그렇게 쓸 것 같았어요.”',
+  ],
+  text:S => '그녀의 눈이 아주 잠깐 흔들렸다. 이 사람은 나를 어디까지 알고 있는 걸까. 어떻게 할까?',
+  choices:[
+    {label:'“언제부터 알았어요, 나를?” 정면으로 묻는다', sub:'하린 관계 -1 · 통찰 +2', run(S){ SF(S).harinSuspect = true; return _sa(S, {ins:2, stress:3}, -1, '“신입생 때부터 지켜봤으니까요. 그게 이유의 전부예요.” 대답은 매끄러웠다. 하지만 컵을 쥔 손가락 끝이 하얗게 변해 있었다.', 'serious'); }},
+    {label:'떠본다. “개인적인 감정은 없습니다. 이런 말 알아요?”', sub:'통찰 +3 · 하린 관계 -2', run(S){ SF(S).harinSuspect = true; return _sa(S, {ins:3, clarity:-2, stress:4}, -2, '숟가락이 접시에 부딪히는 소리가 났다. 하린의 얼굴에서 색이 빠졌다. “…누구한테 들었어요.” 질문이 아니라 비명에 가까웠다. 우리는 서로를 뚫어지게 보았다.', 'surprised'); }},
+    {label:'웃어넘긴다. “나 그렇게 단순해요?”', sub:'스트레스 +2 · 하린 관계 +1', run(S){ return _sa(S, {stress:2}, 1, '하린이 작게 숨을 내쉬었다. 안도 같은 것이었다. 밤길을 걸으며 생각했다. 어떤 의문은 묻지 않는 쪽이 그 사람을 지켜 주기도 한다. 그리고 나 자신을 위험하게도 한다.', 'shy'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'st_3_3', m:30, exp:5, place:'night', title:'바뀐 USB',
+  beats:[
+    '인턴 최종 프레젠테이션 전날 저녁. 전산실 공용 PC에서 USB를 뽑았다. 같은 모양의 은색 USB였다.',
+    '내 것이 아니었다. 손잡이에 작은 스티커. 아주 작은 모래시계 그림과 「S.H.R」.',
+    '파일명이 보였다. 「최종_PT_v9」. 열어 보면 그녀가 무엇을 준비했는지 전부 알 수 있다. 내일은 단 한 명만 뽑힌다.',
+    '복도 끝에서 급한 발소리가 들리기 시작했다.',
+  ],
+  text:S => '남의 USB를 손에 쥐고 있다. 발소리가 가까워진다. 어떻게 할까?',
+  choices:[
+    {label:'열어 보지 않고 바로 돌려준다', sub:'하린 관계 +3 · 나 +2', run(S){ const win = _saScore(S) + (SF(S).internEdge || 5) + rand(-10, 10) > 42; if(win){ SF(S).internWon = true; return _sa(S, {self:2, work:2}, 3, '숨을 몰아쉬며 들어온 하린에게 USB를 건넸다. “열어 봤어요?” “아니요.” 그녀는 믿지 않는 얼굴로 한참 나를 보다가 “고마워요”라고 처음 말했다. 다음 날, 인턴 합격 명단에 내 이름이 있었다.', 'tender'); } SF(S).internLost = true; return _sa(S, {self:2, stress:2}, 3, '“열어 봤어요?” “아니요.” 하린이 USB를 가슴에 안았다. 다음 날 합격 명단엔 그녀의 이름이 있었다. 복도에서 캔커피 하나가 말없이 내 손에 쥐어졌다. 졌는데 이상하게 가벼웠다.', 'tender'); }},
+    {label:'열어 본다. 딱 5분만', sub:'승산 큼 · 나 -3 · 선명도 -3', run(S){ const win = _saScore(S) + (SF(S).internEdge || 5) + 10 + rand(-10, 10) > 42; const noticed = R() < 0.35; const rd = noticed ? -3 : 0; if(win){ SF(S).internWon = true; return _sa(S, {self:-3, clarity:-3, work:2}, rd, '그녀의 슬라이드는 완벽했다. 나는 내 발표의 약한 부분을 정확히 보강했고 합격했다. ' + (noticed ? '하지만 파일 열람 기록을 확인한 하린이 복도에서 말없이 내 눈을 보았다. 그 눈에는 분노가 아니라 아주 오래된 실망이 있었다.' : '축하 인사 속에서 내내 목이 따가웠다.'), noticed ? 'sad' : 'serious'); } SF(S).internLost = true; return _sa(S, {self:-3, clarity:-3, stress:4}, rd, '반칙까지 하고도 졌다. 슬라이드를 외우기만 한 나와 달리 하린은 자기 자료의 의미까지 알고 있었다. ' + (noticed ? '기록을 확인한 그녀의 침묵이 오래 따라왔다.' : '아무도 모르지만 나는 안다.'), 'serious'); }},
+    {label:'이름만 확인하고, 발표가 끝난 뒤에 돌려준다', sub:'하린 관계 -3 · 승산 약간 +', run(S){ const win = _saScore(S) + (SF(S).internEdge || 5) + 5 + rand(-10, 10) > 42; if(win){ SF(S).internWon = true; return _sa(S, {work:2, self:-2, stress:3}, -3, '발표 직전 USB가 없어 허둥댄 하린은 평소의 정밀함을 잃었다. 내가 합격했다. 돌려주는 순간 그녀가 말했다. “일부러였죠.” 부정하지 못했다.', 'sad'); } SF(S).internLost = true; return _sa(S, {self:-2, stress:4}, -3, '돌려주려던 걸 미뤘는데 결과적으로 비겁함만 남았다. 하린은 허둥댄 와중에도 합격했다. “일부러였죠.” 그녀는 짧게 말하고 돌아섰다.', 'sad'); }},
+  ]}),
+
+{id:'st_3_4', m:33, exp:6, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'빌린 인생',
+  beats:[
+    '2018년 12월. 약방 문을 열자 모래시계 위쪽의 모래가 눈에 띄게 줄어 있었다.',
+    `${GRANDMA}는 찻잔을 내려놓지 않고 말했다. “이번엔 잔소리를 좀 해야겠어요.”`,
+    '“미래를 아는 건 선물이 아니에요. 빌린 거예요. 쓸 때마다 이자가 붙어요. 시계는 당신의 선명한 기억을 조금씩 가져가죠.”',
+    '“그리고 시계는 곁에 있는 사람도 비춰요. 가끔은 너무 밝게. 말은 여기까지.”',
+  ],
+  text:S => (SF(S).internWon ? '인턴 자리를 얻은 해다.' : SF(S).internLost ? '인턴 자리를 놓친 해다.' : '인턴을 두고 바쁘게 흘러간 한 해다.') + (SF(S).harinSuspect ? ' 하린의 눈빛이 아직 마음에 걸린다.' : '') + ' 할머니의 경고에 어떻게 답할까?',
+  choices:[
+    {label:'“앞으로는 빌린 기억을 줄일게요.”', sub:'조각 3 · 선명도 +8 · 나 +2', run(S){ SF(S).warned = true; const ch = []; fx(S, {clarity:8, self:2, stress:-3}, ch); givePiece(S, ch); return {text:'“말은 쉽죠.” 할머니가 웃었다. “하지만 쓰지 않으려 애쓰는 순간, 이미 절반은 지킨 거예요.” 세 번째 조각이 손바닥 위에서 차갑게 빛났다.', chips:ch}; }},
+    {label:'“이미 너무 많이 썼어요. 그래도 멈출 수 없어요.”', sub:'조각 3 · 일 +2 · 스트레스 +4', run(S){ SF(S).warned = true; const ch = []; fx(S, {work:2, stress:4}, ch); givePiece(S, ch); return {text:'“솔직하네요.” 할머니의 목소리가 낮아졌다. “이자는 결국 낼 때가 와요. 그날 놀라지 말아요.” 조각을 쥔 손이 무겁게 가라앉았다.', chips:ch}; }},
+    {label:'“하린이 나를 아는 것 같아요. 그것도 이자인가요?”', sub:'조각 3 · 통찰 +2', run(S){ SF(S).warned = true; const ch = []; fx(S, {ins:2, stress:2}, ch); givePiece(S, ch); return {text:'할머니는 대답하지 않고 모래시계를 뒤집었다. “이자가 아니라 거울일지도 몰라요.” 쏟아지는 모래 소리 속에서, 나는 그 말을 오래 되새겼다.', chips:ch}; }},
+  ]},
+];
+
+// ════════ 라이벌 랜덤 이벤트 ════════
+const RIVAL_EVENTS = [
+Object.assign({}, _saHarin, {id:'rv_class_rank', w:4, cd:12, cond:S => S.m >= 6 && S.m <= 100, place:'campus', title:'성적 발표',
+  text:S => { const st = rivalState(S); return st === 'ally' ? '게시판 앞, 하린이 먼저 와 서 있었다. “2등이네요. 다음엔 제가 노트를 빌려줄 수도 있어요.” 농담인지 진담인지 모를 말이었다.' : st === 'enemy' ? '“2등이네요. 아쉽게.” 하린이 지나가며 말했다. 위로가 아니라 기록처럼 들렸다.' : '학과 성적 게시판 앞. 1등 이름 옆에 서하린, 바로 아래 내 이름. 하린이 고개를 돌려 나를 봤다.'; },
+  choices:[
+    {label:'“다음 학기엔 내가 1등이야.” 선전포고한다', sub:'학식 +2 · 스트레스 +3 · 하린 관계 -1', run:S => _sa(S, {know:2, stress:3}, -1, '“근거는요?” “지금부터 만들죠.” 하린이 눈썹을 올렸다. 자존심으로 한 말이었지만 그날 밤 책상에 앉은 시간은 평소의 두 배였다.', 'serious')},
+    {label:'“축하해요. 비결이 뭐예요?” 묻는다', sub:'통찰 +1 · 하린 관계 +1', run:S => _sa(S, {ins:1, know:0.5}, 1, '“잠을 줄여요. 따라 하지 마요.” 그리고 덧붙였다. “저는 시간이 없어서 그래요.” 이상한 말이었다. 스무 살의 입에서 나올 말이 아니었다.', 'serious')},
+    {label:'노트 교환을 제안한다', sub:'학식 +1 · 하린 관계는 상황에 따라', run(S){ return rivalState(S) === 'enemy' ? _sa(S, {stress:2}, 0, '“저는 제 노트를 파는 사람이 아니에요.” 단호한 거절이었다. 그래도 그녀의 시선이 내 노트 모서리에 잠깐 머물렀다.', 'serious') : _sa(S, {know:1.5, bond:1}, 2, '하린이 내 노트를 한 장 넘기다 말했다. “정리하는 방식이 나랑 비슷하네요.” 노트를 돌려줄 때 그녀의 글씨가 한 줄 달려 있었다. 「3장 개념 보강.」', 'surprised'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_scholarship', once:true, w:4, cd:30, cond:S => S.m >= 14 && S.m <= 70, place:'campus', title:'단 한 명의 장학금',
+  beats:[
+    '성적우수 장학금, 이번 학기 단 한 명. 제출 서류 목록의 맨 아래에 같은 이름 두 개가 있다.',
+    '하린의 가정 형편은 학과에서 아는 사람만 안다. 이 장학금이 없으면 휴학을 고민해야 할지도 모른다는 소문이 있었다.',
+  ],
+  text:S => { const st = rivalState(S); return st === 'ally' ? '하린이 먼저 서류 얘기를 꺼냈다. “같이 내는 거, 어색하지 않죠?” 어색하지 않은 척하는 목소리였다.' : st === 'enemy' ? '하린은 서류 앞에서 내 쪽을 한 번도 보지 않았다. 정면 승부를 원하는 사람의 침묵이었다.' : '장학금 서류를 쓰던 도서관에서 하린과 눈이 마주쳤다. 서로 아무 말도 하지 않았다.'; },
+  choices:[
+    {label:'서류를 완벽하게 준비해 정면 승부한다', sub:'학식 +1 · 승산 보통', run(S){ const win = _saScore(S) + 6 + rand(-10, 10) > 38; return win ? _sa(S, {cash:120, know:1, stress:2}, -1, '장학금 통지서가 왔다. 120만 원. 기쁨보다 하린의 얼굴이 먼저 떠올랐다. 그녀는 복도에서 “축하해요”라고 정확하게 말했고, 그날 이후 도서관에서 보이지 않았다.', 'sad') : _sa(S, {know:1, stress:3}, 0, '장학금은 하린에게 돌아갔다. 통지서를 들고 서 있던 그녀가 나를 보았다. 이긴 얼굴이 아니었다. 안도하는 얼굴이었다. 나는 그 표정을 오래 기억했다.', 'shy'); }},
+    {label:'서류를 내지 않고 포기한다. 하린이 받게', sub:'하린 관계 +3 · 나 -1', run(S){ return _sa(S, {self:-1, stress:2}, 3, '며칠 뒤 하린이 사물함 앞에서 나를 막았다. “누가 부탁했어요? 동정은 받지 않습니다.” 목소리는 매서웠지만 손에는 합격 통지서가 구겨져 있었다. “…빚이에요. 갚을게요.”', 'shy'); }},
+    {label:'하린에게 서류 검토를 부탁한다', sub:'하린 관계 +1 · 상황에 따라 승산 변동', run(S){ const help = rivalState(S) !== 'enemy'; const win = _saScore(S) + (help ? 11 : 5) + rand(-10, 10) > 38; if(win) return _sa(S, {cash:120, know:1.5}, help ? 1 : 0, help ? '하린이 붉은 펜으로 오탈자까지 잡아 줬다. 결과는 내 승리. 통지서를 받자 그녀가 말했다. “내가 잡아 준 건 맞춤법뿐이에요. 내용은 당신 거고요.” 그 말이 위로처럼 들렸다.' : '검토를 맡기는 건 도박이었다. 하린은 날카롭게 약점만 짚었다. 그 약점을 고친 서류로 장학금을 받았다. 고마운 건지 분한 건지 알 수 없었다.', 'serious'); return _sa(S, {know:1.5}, help ? 2 : 0, '결과는 하린이었다. “미안하다고 하면 모욕이겠죠.” 그녀는 서류에 남긴 붉은 펜 자국을 보며 말했다. “다음엔 같이 이길 방법을 찾아요.”', 'tender'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_library_night', w:4, cd:10, cond:S => S.m >= 8 && S.m <= 110, place:'night', title:'새벽 두 시의 열람실',
+  beats:[
+    '새벽 두 시, 도서관 4층. 불 꺼진 열람실 끝에 스탠드 하나가 켜져 있었다.',
+    '서하린이 책 위에 엎드려 잠들어 있었다. 책상 위에는 작은 모래 타이머가 서 있다. 이미 다 흘러내린 채로.',
+  ],
+  text:S => '단정한 사람이 처음으로 흐트러진 모습이다. 입술 아래 눌린 책 모서리가 아파 보인다. 어떻게 할까?',
+  choices:[
+    {label:'겉옷을 덮어 주고 조용히 자리를 뜬다', sub:'하린 관계 +2', run:S => _sa(S, {bond:1}, 2, '돌아서는 순간 낮은 목소리가 들렸다. “…본 적 없는 거예요.” 눈은 여전히 감겨 있었다. 다음 날 내 책상에 접힌 겉옷과 젤리 하나가 놓여 있었다.', 'shy')},
+    {label:'모래 타이머를 뒤집어 놓고 간다', sub:'통찰 +1 · 하린 관계 +1', run:S => _sa(S, {ins:1, stress:-1}, 1, '모래가 다시 흐르기 시작했다. 이상하게도 그 소리가 위로처럼 들렸다. 다음 날 쪽지가 있었다. 「시간은 제가 정합니다. 고마워요.」 글씨가 조금 흔들려 있었다.', 'tender')},
+    {label:'깨워서 집에 가라고 한다', sub:'스트레스 +1', run:S => _sa(S, {stress:1, hp:1}, 0, '“깨우지 마요. 자는 시간이 아까워서 앉아 있는 거예요.” 잠에서 덜 깬 목소리가 날카로웠다. 그래도 십 분 뒤 우리는 같이 정문을 나왔다. 서로 말은 없었다.', 'serious')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_help_sab', w:5, cd:10, cond:S => S.m >= 12 && S.m <= 105, place:'campus', title:'마감 한 시간 전',
+  text:S => { const r = SS(S).rival; return r >= 2 ? '과제 마감 한 시간 전, 사물함에 포스트잇이 붙어 있었다. 「3번 식은 분모가 틀렸어요. —H」 틀림없이 하린의 필체였다.' : r <= -2 ? '조별 과제 제출 직전, 공유 폴더의 내 파일이 한 시간 전 버전으로 되돌려져 있었다. 마지막 수정자는 비어 있었다. 그런 일을 할 사람은 한 명밖에 떠오르지 않았다.' : '과제 옆자리에서 하린이 아무 말 없이 지우개 가루를 털었다. 내 답안 한 문제를 가리켰다. “이건 틀렸어요. 이유는 안 알려 줄 거예요.”'; },
+  choices:[
+    {label:'하린에게 직접 찾아간다', sub:'하린 관계는 상황에 따라', run(S){ const r = SS(S).rival; return r >= 2 ? _sa(S, {bond:1}, 2, '“고마워요.” “제 이름은 쓰지 마요. 알려 준 적 없는 거예요.” 그렇게 말하며 그녀는 귀 끝이 붉어졌다. 좋은 사람은 서투르게 좋아야 한다는 걸 처음 알았다.', 'shy') : r <= -2 ? _sa(S, {stress:3}, -1, '“증명해 보세요.” 하린은 부정하지 않았다. 그 침묵이 더 불길했다. 하지만 그녀의 시선은 끝내 내 눈을 피했다.', 'serious') : _sa(S, {ins:1}, 1, '“왜 알려 줘요?” “알려 줄 이유는 없어요. 틀린 걸 두고 보는 게 불편했을 뿐이에요.” 이유가 없다면서 이유를 말하는 사람이었다.', 'surprised'); }},
+    {label:'말없이 스스로 해결한다', sub:'일 +2 · 스트레스 +3', run:S => _sa(S, {work:2, stress:3, skill:1}, 0, '시간 안에 어떻게든 제출했다. 누구도 나를 구해 주지 않았고, 아무도 나를 무너뜨리지 못했다. 이상하게 그게 오늘의 가장 큰 수확이었다.', 'serious')},
+    {label:'작은 것으로 응수한다 (커피 한 잔)', sub:'자금 -4 · 하린 관계 +1', run:S => _sa(S, {cash:-4}, 1, '뚜껑에 「독 없음」이라고 적은 커피를 책상에 놓았다. 하린은 한참 뚜껑을 보다가 한 모금 마셨다. “…설탕 너무 많이 넣었어요.” 하지만 컵은 끝까지 비웠다.', 'tender')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_job_market', once:true, w:5, cd:30, cond:S => S.m >= 38 && S.m <= 75, place:'campus', title:'채용 박람회',
+  beats:[
+    '채용 박람회의 인파 속, 한결상사 부스 앞 긴 줄. 맨 앞에서 누군가 돌아봤다. 서하린이었다.',
+    '이력서를 꺼내던 그녀가 낮게 말했다. “거긴 줄 서지 마요. 사 년 뒤에 구조조정이 있어요. 제가 그렇게 들었어요.”',
+  ],
+  text:S => '사 년 뒤. 그날을 안다. 하지만 하린이 어떻게 그걸 알까. 어떻게 할까?',
+  choices:[
+    {label:'“누구한테 들었는데요?” 캐묻는다', sub:'통찰 +2 · 하린 관계 -1', run:S => _sa(S, {ins:2, stress:2}, -1, '“…읽은 기사가 있어요.” 대답이 한 박자 늦었다. 기사는 없었다. 나는 그녀의 거짓말을 처음으로 정확히 읽었다. 그리고 그녀가 거짓말을 못 한다는 것도.', 'serious')},
+    {label:'그래도 줄을 선다. 내 눈으로 직접 본다', sub:'일 +2 · 하린 관계 -1', run:S => _sa(S, {work:2, neg:1}, -1, '“그래요, 그럼.” 하린이 한 걸음 물러섰다. 상담 부스의 직원은 친절했다. 너무 친절해서 오히려 마흔의 로비 냄새가 났다.', 'sad')},
+    {label:'다른 회사 부스를 같이 돈다', sub:'하린 관계 +2 · 일 +1', run:S => _sa(S, {work:1, know:1, ins:1}, 2, '하린은 부스마다 한 번씩 서서 정확한 직무 이름을 불렀다. 지나치게 정확해서 소름이 돋았다. 마지막 부스에서 그녀가 말했다. “여기는 괜찮아요. 3년 뒤에 사람이 필요하거든요.”', 'surprised')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_rumor', once:true, w:4, cd:30, cond:S => S.m >= 20 && S.m <= 95, place:'campus', title:'단톡방의 소문',
+  text:S => { const st = rivalState(S); return st === 'enemy' ? '학과 단톡에 이상한 말이 돈다. 「서윤이 교수님 연구실에 자주 가는 이유가 따로 있대.」 출처를 쫓아가 보니 마지막에 하린의 후배가 있다.' : st === 'ally' ? '비슷한 소문이 돌았지만 하루 만에 사라졌다. 진원지 후배가 하린 앞에서 사과하는 걸 우연히 봤다. “정확하지 않은 건 말하지 않게 하고 싶었을 뿐이에요.”' : '내게 관한 소문이 돌았지만, 가장 먼저 부정한 사람이 서하린이었다는 말이 들렸다. 이상한 일이다.'; },
+  choices:[
+    {label:'직접 해명하고 정면 돌파한다', sub:'나 +2 · 스트레스 +3', run:S => _sa(S, {self:2, stress:3, charm:1}, 0, '질문하는 사람 앞에서 사실만 말했다. 소문은 설명하는 순간 힘을 잃었다. 떨리는 손을 숨기는 일이 그날의 가장 어려운 일이었다.', 'serious')},
+    {label:'무시한다. 시간이 해결해 준다', sub:'스트레스 +1 · 관계 -1', run:S => _sa(S, {stress:1, bond:-1}, 0, '일주일이 지나서야 소문은 시들었다. 하지만 몇몇 친구의 시선은 이미 한 칸 멀어져 있었다. 침묵은 평화가 아니라 비용이었다.', 'serious')},
+    {label:'하린에게 직접 확인한다', sub:'하린 관계 상황에 따라 · 통찰 +1', run(S){ const st = rivalState(S); return st === 'enemy' ? _sa(S, {ins:2}, 0, '“내가 했다면 이렇게 서툴지 않았을 거예요.” 이상하게 설득력 있는 대답이었다. 나는 그녀를 의심하면서도 믿었다.', 'serious') : st === 'ally' ? _sa(S, {ins:1}, 2, '“갚은 거예요. 장학금 때.” 하린이 시선을 돌렸다. “소문은 비효율적이에요. 사람을 소모하니까.” 그녀의 정의가 나를 살렸다.', 'shy') : _sa(S, {ins:1}, 1, '“저는 소문을 만들 시간 없어요.” 하린이 단호하게 말했다. 변명 같지 않았다. 그 말이 이상하게 안심이 됐다.', 'serious'); }},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_coffee', w:3, cd:14, cond:S => S.m >= 18 && S.m <= 110 && SS(S).rival >= 0, place:'cafe', title:'식은 커피',
+  beats:[
+    '시험이 끝난 날, 하린이 먼저 커피를 샀다. 말없이 한 모금을 마시다 가방을 내려놓았다.',
+    '“우리 집은요, 장마철마다 천장이 샜어요. 아버지는 아침마다 양동이를 비웠고요. 그래서 비가 싫어요.”',
+  ],
+  text:S => '처음으로 하린이 자기 이야기를 한다. 숫자와 계획이 아닌 이야기. 어떻게 답할까?',
+  choices:[
+    {label:'“나도 비 오는 날을 싫어해요.” 마흔의 이야기를 조금 꺼낸다', sub:'하린 관계 +3 · 나 +1', run:S => _sa(S, {self:1, stress:-2}, 3, '“비 오는 날 잃은 게 있어요.” “그날 누가 옆에 있어 줬어요?” “아무도.” 하린은 한참 컵을 돌렸다. “…그럼 나랑 같네요.” 비가 오지 않는 오후였는데, 우리 둘만 비를 맞은 것 같았다.', 'tender')},
+    {label:'아무 말 않고 끝까지 들어준다', sub:'스트레스 -3 · 하린 관계 +2', run:S => _sa(S, {stress:-3, bond:1}, 2, '하린은 십 분 넘게 말하고, 문득 정신을 차린 듯 입을 다물었다. “이런 얘기, 한 적 없어요.” “나도 들은 적 없는 걸로 할게요.” 그녀가 처음으로 소리 내어 웃었다.', 'tender')},
+    {label:'농담으로 분위기를 풀어 준다', sub:'매력 +1 · 하린 관계 +1', run:S => _sa(S, {charm:1, stress:-1}, 1, '“천장이 샌다니, 양동이 소리로 음악 만들 수 있었겠네.” 하린이 웃음을 삼키다 사레가 들렸다. 곧 표정을 정리했지만 눈은 아직 웃고 있었다.', 'happy')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_bet', once:true, w:4, cd:30, cond:S => S.m >= 16 && S.m <= 80, place:'cafe', title:'소원 내기',
+  beats:[
+    '“내기 하나 해요.” 하린이 시간표를 접어 건넸다.',
+    '“이번 학기 전공 평균이 높은 쪽이 소원 하나. 뭐든, 한 번.”',
+  ],
+  text:S => rivalState(S) === 'enemy' ? '하린의 제안은 도발처럼 들렸다. 하지만 눈은 진지했다. 어떻게 할까?' : '장난처럼 말했지만 하린은 제안서를 쓰듯 또박또박 말했다. 어떻게 할까?',
+  choices:[
+    {label:'받아들인다', sub:'학식 +3 · 스트레스 +4 · 승부', run(S){ const win = _saScore(S) + rand(-12, 12) > 39; return win ? _sa(S, {know:3, stress:4}, 2, '이겼다. 소원은 하나였다. “하루만 아무것도 하지 말고 쉬어요.” 하린은 한참 입술을 깨물다 정말로 도서관에 가지 않았다. 다음 날 그녀의 눈 밑 그늘이 조금 옅어져 있었다.', 'shy') : _sa(S, {know:3, stress:4}, 2, '졌다. 하린의 소원은 이상할 만큼 소박했다. “한 달 동안 같은 시간에 도서관에서 같이 공부해요.” 이유를 묻자 그녀는 고개를 돌렸다. “…혼자 있기 싫은 날이 있어서요.”', 'tender'); }},
+    {label:'거절한다. 걸 만한 게 없다', sub:'스트레스 -2 · 하린 관계 -1', run:S => _sa(S, {stress:-2}, -1, '“그렇군요.” 하린이 시간표를 접어 다시 가방에 넣었다. 아무렇지 않은 얼굴이었지만, 내기에서 진 사람 같은 어깨였다.', 'sad')},
+    {label:'조건을 바꾼다. 진 쪽이 이긴 쪽 노트를 정리해 주기', sub:'학식 +1 · 하린 관계 +1', run:S => _sa(S, {know:1.5, stress:1}, 1, '“노트 정리라니, 소원치고는 시시하네요.” “시시한 게 좋은 소원이에요.” 하린이 한참 나를 보다 악수를 청했다. 그날의 악수는 조금 길었다.', 'surprised')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_rain_alley', w:3, cd:18, cond:S => S.m >= 30 && S.m <= 112, place:'rain', title:'같은 우산',
+  text:S => '갑자기 쏟아진 비. 정문 처마 밑에서 하린이 우산 없이 서 있었다. 비를 보는 눈이 이상했다. “비 오는 날 내린 결정은 대체로 나빴어요. 그래서 오늘은 아무것도 결정하고 싶지 않아요.”',
+  choices:[
+    {label:'우산을 같이 쓴다', sub:'하린 관계 +2', run:S => _sa(S, {stress:-1}, 2, '좁은 우산 아래 하린은 한 마디도 하지 않았다. 골목에 들어서자 그녀가 속삭이듯 말했다. “이 골목, 좋아해요. 비가 그치기 직전에 제일 조용하거든요.”', 'shy')},
+    {label:'우산을 건네고 혼자 뛰어간다', sub:'하린 관계 +3 · 건강 -3', run:S => _sa(S, {hp:-3, stress:1}, 3, '“감기 걸리면 어떡해요!” 등 뒤에서 하린이 소리쳤다. 그녀가 큰 소리를 낸 건 처음이었다. 젖은 채 돌아본 처마 밑에서, 그녀는 우산을 두 손으로 꼭 쥐고 서 있었다.', 'surprised')},
+    {label:'비가 그칠 때까지 옆에서 기다린다', sub:'스트레스 -2 · 하린 관계 +2', run:S => _sa(S, {stress:-2}, 2, '십 분. 말없이 빗소리만 들었다. 비가 그치자 하린이 말했다. “당신은 비가 언제 그치는지 아는 사람 같네요.” 나는 웃지 못하고, 하늘만 올려다봤다.', 'surprised')},
+  ]}),
+
+Object.assign({}, _saHarin, {id:'rv_case_comp', once:true, w:4, cd:30, cond:S => S.m >= 40 && S.m <= 100, place:'campus', title:'전국 공모전',
+  beats:[
+    '전국 대학생 경영 공모전. 마감 3주 전, 접수 명단에 서하린 팀과 우리 팀이 나란히 있었다.',
+    '상금은 200만 원, 수상 이력은 이력서에서 한 줄 이상의 값을 한다.',
+  ],
+  text:S => '하린의 팀은 이미 방향을 잡은 모양이다. 우리는 어떻게 갈까?',
+  choices:[
+    {label:'내 아이디어로 정면 승부한다', sub:'일 +2 · 승산 보통', run(S){ const win = _saScore(S) + 6 + rand(-10, 10) > 42; return win ? _sa(S, {cash:80, work:3, stress:3}, -1, '결과 발표에서 우리 팀 이름이 호명됐다. 하린은 박수를 쳤지만 시선이 오래 나에게 머물렀다. “다음엔 같은 팀에서 보고 싶어요.” 이상한 문장이었다. 승자에게 건네는 말이 아니었다.', 'serious') : _sa(S, {work:1.5, stress:4}, 0, '수상은 하린 팀. 하지만 심사위원이 내 팀의 접근을 따로 언급했다. 하린이 말했다. “오늘의 2등은 내일의 나보다 앞에 있는 거예요.”', 'serious'); }},
+    {label:'하린에게 합동 출품을 제안한다', sub:'하린 관계 +3 · 상황에 따라 거절', run(S){ return rivalState(S) === 'enemy' ? _sa(S, {stress:3}, 0, '“팀을 합치는 건 협업이 아니라 흡수죠.” 하린은 거절했다. 하지만 서류 맨 끝에 작은 메모를 남겨 두고 갔다. 「제안 자체는 나쁘지 않았어요.」', 'serious') : _sa(S, {cash:40, work:2, bond:1}, 3, '이틀 동안 서로의 논리를 부수고 다시 세웠다. 공동 수상이었다. 상금을 반으로 나누자고 하린이 먼저 말했다. “반이 아니라 정확히 절반이요.”', 'happy'); }},
+    {label:'팀원 역할을 재배치해 승부를 건다', sub:'협상 +2 · 스트레스 +4', run(S){ const win = _saScore(S) + S.st.neg / 6 + rand(-10, 10) > 41; return win ? _sa(S, {cash:80, neg:2, work:2, stress:4}, -1, '내가 맡은 건 발표가 아니라 사람이었다. 각자의 약한 곳을 빼 주고 강한 곳에 집중시켰다. 수상 소식에 팀원들이 환호했다. 하린은 “리더십이군요”라고 한마디만 했다.', 'serious') : _sa(S, {neg:2, stress:5}, 0, '재배치는 흔들렸고, 팀 분위기는 일주일 내내 어색했다. 하린이 멀리서 나를 보았다. 이기는 법은 알지만 사람을 움직이는 법은 아직 서툴렀다.', 'serious'); }},
+  ]}),
+];
 
 // 주 스토리 4~7장 (2019~2022). 장 구성: docs/STORY.md 참조. ENGINE 구간(DOM 금지)
 const STORY_B = (() => {
@@ -2683,7 +2966,7 @@ function tryCall(S, id){
 }
 
 // 엔딩 판정과 텍스트 (ENGINE 구간 안, DOM 금지)
-const FREE_MIN = 50, FREE_SUM = 193;
+const FREE_MIN = 50, FREE_SUM = 192;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
 function finalPillars(S){
@@ -3187,7 +3470,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #34 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #35 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3215,7 +3498,7 @@ function fitFull(){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#34 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#35 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

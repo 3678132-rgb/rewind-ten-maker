@@ -37,4 +37,10 @@ node sim.mjs 1500     # 오류 {} 이고 smart 자유율 ≈ 70%, random ≈ 0% 
 
 ## 그림 (art/)
 Higgsfield `gpt_image_2_5`로 생성. 주인공 일관성은 확정 시안(age20)을 레퍼런스로 걸어 나이대별로 다시 그리게 해서 유지한다.
-`age20/22/25/27/30.jpg`(주인공 나이대별), `cover.jpg`(타이틀·회귀 엔딩), `face_*.jpg`(주인공 표정 6종), `face_<인물>_<표정>.jpg`(연애 인물 11명 × 6종), `job_<직업>[_27|_30].jpg`(직업별·나이대별 근무), `duo_<인물>.jpg`(연인과 함께 일하는 장면), `bg_shop.jpg`·`bg_alley.jpg`(배경), `lv_*.jpg`(서재우·민준·하진·태오), `mom.jpg`, `soyeon.jpg`, `grandma.jpg`.
+`age20/22/25/27/30.webp`(주인공 나이대별), `cover.webp`(타이틀·회귀 엔딩), `face_*.webp`(주인공 표정 6종), `face_<인물>_<표정>.webp`(연애 인물 11명 × 6종), `job_<직업>[_27|_30].webp`(직업별·나이대별 근무), `duo_<인물>.webp`(연인과 함께 일하는 장면), `bg_shop.webp`·`bg_alley.webp`(배경), `lv_*.webp`(서재우·민준·하진·태오), `mom.webp`, `soyeon.webp`, `grandma.webp`.
+
+## 설치형 앱(PWA)과 배포
+- `node build.mjs` 가 `index.html` 과 `sw.js`(서비스워커: 그림 목록·캐시 버전 자동 생성)를 만든다. `manifest.json`·아이콘은 저장소 루트에 있다.
+- 그림은 `tools/to_webp.py` 로 WebP로 줄인다(약 14MB → 약 6MB). 새 그림을 `art/`에 jpg/png로 넣고 이 스크립트를 돌린 뒤 `node build.mjs`.
+- **GitHub Pages**: 저장소 Settings → Pages → Branch `main` / `/ (root)` 저장. 폰 브라우저에서 열고 「홈 화면에 추가」 하면 앱처럼 실행된다.
+- 서비스워커는 화면 틀(index.html)을 인터넷이 되면 항상 최신으로 받고, 그림은 처음 쓰일 때 기기에 저장한다(두 번째부터 즉시·오프라인 가능).

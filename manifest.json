@@ -1,0 +1,17 @@
+{
+  "name": "다시, 스무 살",
+  "short_name": "다시스무살",
+  "description": "마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1230",
+  "theme_color": "#0e1230",
+  "lang": "ko",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

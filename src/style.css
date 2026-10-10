@@ -15,7 +15,7 @@ h1,h2,h3{margin:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
 /* title/setup */
 #title{text-align:center;overflow:hidden}
-.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.jpg) center top/cover no-repeat}
+.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.webp) center top/cover no-repeat}
 .tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 28px calc(34px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
 #title p{color:#e7e4ff}
 .hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}

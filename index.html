@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#0e1230"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
+<meta name="theme-color" content="#0e1230"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png"><meta name="apple-mobile-web-app-title" content="다시스무살"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><title>다시, 스무 살</title>
 <meta name="description" content="마흔에서 스무 살로 되감긴 십 년, 육성 시뮬레이션">
 <style>:root{--bg:#0e1230;--bg2:#1a1f4a;--card:#222862;--card2:#2b3275;--ink:#f3efe6;--mute:#a9acd6;--gold:#f2b84b;--gold2:#ffd98a;--rose:#ff8fa3;--mint:#7fe0c3;--sky:#8fb8ff;--bad:#ff6b6b;--line:rgba(255,255,255,.1)}
 :root[data-theme="light"]{--bg:#f6f1e7;--bg2:#ece3d0;--card:#fffaf0;--card2:#f3ead6;--ink:#262338;--mute:#6c6a85;--gold:#c98410;--gold2:#a96a00;--rose:#d9506a;--mint:#16967a;--sky:#3a62b8;--bad:#c93a3a;--line:rgba(0,0,0,.12)}
@@ -19,7 +19,7 @@ h1,h2,h3{margin:0}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:12px}
 /* title/setup */
 #title{text-align:center;overflow:hidden}
-.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.jpg) center top/cover no-repeat}
+.coverbg{position:absolute;inset:0;background:linear-gradient(rgba(14,18,48,.15),rgba(14,18,48,.55) 55%,rgba(14,18,48,.92)),url(art/cover.webp) center top/cover no-repeat}
 .tcontent{position:absolute;left:0;right:0;bottom:0;padding:0 28px calc(34px + env(safe-area-inset-bottom));text-shadow:0 2px 12px rgba(0,0,0,.6)}
 #title p{color:#e7e4ff}
 .hourglass{font-size:44px;animation:flip 6s ease-in-out infinite}
@@ -467,7 +467,7 @@ const LOVER_IDS = Object.keys(LOVERS);
 
 function meetEvent(S, id){
   const lv = LOVERS[id];
-  return {id:'meet_' + id, lover:id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus', img:'art/lv_' + id + '.jpg',
+  return {id:'meet_' + id, lover:id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus', img:'art/lv_' + id + '.webp',
     text:S => lv.intro,
     choices:[
       {label:'말을 걸어 본다', sub:'호감 +12', run(S){ const ch = []; S.love[id] = {aff:12, stage:-1, since:S.m}; S.last.bond = S.m; if(id === 'jaewoo') bump(S, 'clarity', -3, ch); push(ch, lv.name + ' 호감', 12); return {text:`${josa(lv.name, '과', '와')} 처음으로 길게 이야기했다. 어색한 인사가 어느새 웃음이 되었다.`, chips:ch}; }},
@@ -479,7 +479,7 @@ function meetEvent(S, id){
 
 function confessEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'confess_' + id, lover:id, once:true, speaker:lv.name, title:'고백', place:'night', img:'art/lv_' + id + '.jpg',
+  return {id:'confess_' + id, lover:id, once:true, speaker:lv.name, title:'고백', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “나, 너 좋아해. 사귀자.”`,
     choices:[
       {label:'받아들인다', sub:'공식 연인이 된다', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:3, stress:-6}, ch); if(id === 'jaewoo' && !v.avoided) push(ch, '※ 서재우의 습관을 지켜볼 것', 0.1); S.album.push(`${josa(lv.name, '과', '와')} 연인이 됨`); for(const o in S.love) if(o !== id && S.love[o].stage === -1) S.love[o].aff = Math.min(S.love[o].aff, 44); return {text:'“…응.” 대답은 짧았지만 가슴은 그렇지 않았다. 마흔의 나는 몰랐던 종류의 두근거림이었다.', chips:ch}; }},
@@ -489,14 +489,14 @@ function confessEvent(S, id){
 
 function trialEvent(S, id){
   const lv = LOVERS[id], v = S.love[id], t = lv.trial;
-  return {id:'trial_' + id, lover:id, once:true, speaker:lv.name, title:t.title, place:'night', img:'art/lv_' + id + '.jpg',
+  return {id:'trial_' + id, lover:id, once:true, speaker:lv.name, title:t.title, place:'night', img:'art/lv_' + id + '.webp',
     text:S => t.text,
     choices:t.choices.map(c => ({label:c.label, sub:c.sub, run(S){ const ch = []; const text = c.run(S, v, ch); return {text, chips:ch}; }}))};
 }
 
 function proposeEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'propose_' + id, lover:id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.jpg',
+  return {id:'propose_' + id, lover:id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}${id === 'jaewoo' ? '가' : '이'} 작은 상자를 열었다. “우리, 같이 살자.” 마흔의 나는 이 질문 뒤의 이십 년을 안다. 지금의 나는 어떤 대답을 하고 싶은가.`,
     choices:[
       {label:'응, 약속해', sub:'결혼 약속 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 2; S.engaged = true; fx(S, {bond:7, stress:-8}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼을 약속함`); return {text:'반지가 손가락에 들어갔다. 이번에는 도장이 아니라 손을 잡았다.', chips:ch}; }},
@@ -506,7 +506,7 @@ function proposeEvent(S, id){
 
 function breakupEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'fade_' + id, lover:id, once:true, speaker:lv.name, title:'멀어지는 마음', place:'night', img:'art/lv_' + id + '.jpg',
+  return {id:'fade_' + id, lover:id, once:true, speaker:lv.name, title:'멀어지는 마음', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}와의 연락이 뜸해진 지 오래다. 데이트도 없이 계절이 지나갔다. 오늘 그가 먼저 말했다. “우리, 이제 그만할까?”`,
     choices:[
       {label:'붙잡는다', sub:'노력으로 한 번 더', run(S){ const ch = []; v.aff = 40; v.fading = false; v.lastDate = S.m; fx(S, {stress:6}, ch); return {text:'“한 번만 더 해 보자.” 그는 한참 뒤에야 고개를 끄덕였다.', chips:ch}; }},
@@ -520,9 +520,9 @@ const JW_TRACK_LINE = {beauty:'론칭 일정', pd:'촬영 일정', writer:'방�
 const JW_REMOTE = ['writer', 'dev', 'designer'];
 function jaewooEvent(S){
   const v = S.love.jaewoo; if(!v || v.stage === -9) return null;
-  const lv = LOVERS.jaewoo, img = 'art/lv_jaewoo_work.jpg';
+  const lv = LOVERS.jaewoo, img = 'art/lv_jaewoo_work.webp';
   // 1) 입사 소식 (2008년 3월)
-  if(S.m >= 24 && !S.seen.jaewoo_hire) return {id:'jaewoo_hire', lover:'jaewoo', once:true, speaker:lv.name, title:'취업 소식', place:'cafe', img:'art/lv_jaewoo_work.jpg',
+  if(S.m >= 24 && !S.seen.jaewoo_hire) return {id:'jaewoo_hire', lover:'jaewoo', once:true, speaker:lv.name, title:'취업 소식', place:'cafe', img:'art/lv_jaewoo_work.webp',
     text:S => `${lv.name}가 졸업했다. 마흔의 내가 기억하는 대로 그는 한성상사에 입사했다. 종합상사 영업, 해외 거래처를 상대하는 자리다. “여기서 배워서 언젠가 내 회사를 세울 거야. 그때까지만 네가 좀 도와줘.” 그가 어색한 넥타이를 만지며 웃었다. ‘그때까지만’이라는 말을 나는 이십 년 동안 들었다.`,
     choices:[
       {label:'진심으로 축하한다', sub:'호감 +6', run(S){ const ch = []; addAff(S, 'jaewoo', 6, ch); return {text:'“고마워. 네가 제일 먼저 말해 줘서 기뻐.” 그의 눈이 초승달처럼 접혔다. 그 웃음을 오래 보고 싶었다.', chips:ch}; }},
@@ -614,7 +614,7 @@ function checkEvent(S, c){
   const P = {work:S.work, bond:S.bond, self:S.self};
   const bar = k => `${PILLAR[k]} ${Math.round(P[k])}/50`;
   const weakest = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
-  return {id:c.id, once:true, speaker:GRANDMA, title:c.title, place:'shop', img:'art/grandma.jpg',
+  return {id:c.id, once:true, speaker:GRANDMA, title:c.title, place:'shop', img:'art/grandma.webp',
     beats:[c.hint, c.line, `“지금의 당신은 이래요. ${bar('work')} · ${bar('bond')} · ${bar('self')}. 새 인생이 되려면 셋 다 50을 넘어야 해요.”`],
     text:S => `가장 부족한 것은 「${PILLAR[weakest]}」다. 할머니가 모래시계를 한 번 뒤집었다. 그래서 어떻게 할까?`,
     choices:[
@@ -623,7 +623,7 @@ function checkEvent(S, c){
     ]};
 }
 
-const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.jpg',
+const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.webp',
   beats:[
     '2016년 2월. 십 년의 마지막 날, 나는 다시 그 골목에 서 있었다.',
     '약방의 문은 처음처럼 열려 있었다. 카운터의 할머니는 모래시계를 쓰다듬고 있었다.',
@@ -690,7 +690,7 @@ const BAR_EXAM = {id:'bar_exam', once:true, speaker:'', title:'변호사시험',
 
 // ── 랜덤 이벤트 ───────────────────────────────────────────────
 const EVENTS = [
-  {id:'mom_call', w:5, cd:5, speaker:'엄마', title:'엄마의 전화', place:'room', img:'art/mom.jpg', text:S => '“밥은 먹고 다니니? 이번 주말에 내려올 수 있어?” 엄마의 전화다. 마흔의 나는 이 전화를 자주 흘려 넘겼다.',
+  {id:'mom_call', w:5, cd:5, speaker:'엄마', title:'엄마의 전화', place:'room', img:'art/mom.webp', text:S => '“밥은 먹고 다니니? 이번 주말에 내려올 수 있어?” 엄마의 전화다. 마흔의 나는 이 전화를 자주 흘려 넘겼다.',
    choices:[
      {label:'주말에 내려간다', sub:'관계 +4 · 자금 -10', run:S => { S.mom = clamp((S.mom || 40) + 8, 0, 100); return R_(S, {bond:4, cash:-10, stress:-6}, '엄마는 나를 보자마자 부엌으로 달려갔다. 상 위에 반찬이 가득 올라왔다. 그 위로 오래 눈물을 삼켰다.'); }},
      {label:'바쁘다고 끊는다', sub:'스트레스 -2 · 관계 -2', run:S => R_(S, {bond:-2, stress:-2}, '“그래, 바쁘면 어쩔 수 없지.” 엄마의 목소리가 작아졌다. 마흔의 나와 똑같은 선택이었다.')},
@@ -715,7 +715,7 @@ const EVENTS = [
      {label:'적극적으로 상담한다', sub:'일 + · 협상 +', run:S => R_(S, {work:2.5, neg:1.5, stress:4}, '명함을 열 장 받았다. 그중 한 장이 이후 큰 도움이 되었다.')},
      {label:'구경만 하고 나온다', sub:'스트레스 -', run:S => R_(S, {stress:-3}, '아직은 마음이 움직이지 않았다.')},
    ]},
-  {id:'friend_trouble', w:4, cd:8, cond:S => S.m >= 6, speaker:'소연', title:'소연의 고민', place:'cafe', img:'art/soyeon.jpg', text:S => '단짝 소연이 울먹이며 전화했다. 남자친구가 바람을 피운 것 같다고. 마흔의 나는 이런 때 “네가 알아서 해”라고 말했었다.',
+  {id:'friend_trouble', w:4, cd:8, cond:S => S.m >= 6, speaker:'소연', title:'소연의 고민', place:'cafe', img:'art/soyeon.webp', text:S => '단짝 소연이 울먹이며 전화했다. 남자친구가 바람을 피운 것 같다고. 마흔의 나는 이런 때 “네가 알아서 해”라고 말했었다.',
    choices:[
      {label:'밤새 곁에 있어 준다', sub:'관계 +4 · 체력 -5', run:S => R_(S, {bond:4, ins:1.5, hp:-5, stress:2}, '소연은 새벽에야 잠들었다. “너 언제 이렇게 어른이 됐어?” 나는 웃었다.')},
      {label:'스스로 결정하라고 한다', sub:'관계 -2', run:S => R_(S, {bond:-2, ins:0.5}, '“네 인생이니까.” 말은 맞았지만, 소연의 표정은 한동안 잊히지 않았다.')},
@@ -746,7 +746,7 @@ const EVENTS = [
      {label:'소개를 받는다', sub:'자금·일 +', run:S => R_(S, {cash:60, work:2, neg:1}, '작은 인연이 이력의 한 줄이 되었다.')},
      {label:'사양한다', sub:'나 +1', run:S => R_(S, {self:1}, '“고맙지만 저는 제 길을 가 보려고요.”')},
    ]},
-  {id:'prefuture', w:3, cd:15, cond:S => S.borrowed >= 2, speaker:GRANDMA, title:'꿈속의 약방', place:'shop', img:'art/grandma.jpg', text:S => '꿈에 약방이 나왔다. 모래시계 한쪽이 유난히 어둡다. 할머니가 말했다. “쉽게 얻은 건 쉽게 사라져요. 그걸 손에 쥐고 서른이 되면, 그건 당신의 인생이 아니에요.”',
+  {id:'prefuture', w:3, cd:15, cond:S => S.borrowed >= 2, speaker:GRANDMA, title:'꿈속의 약방', place:'shop', img:'art/grandma.webp', text:S => '꿈에 약방이 나왔다. 모래시계 한쪽이 유난히 어둡다. 할머니가 말했다. “쉽게 얻은 건 쉽게 사라져요. 그걸 손에 쥐고 서른이 되면, 그건 당신의 인생이 아니에요.”',
    choices:[
      {label:'미래 지식 사용을 줄인다', sub:'나 +3 · 통찰 +2', run:S => R_(S, {self:3, ins:2}, '잠에서 깨어 한참 천장을 보았다. 이제부터는 내 손으로 한다.')},
      {label:'모른 척한다', sub:'스트레스 +3', run:S => R_(S, {stress:3}, '그냥 꿈이라고 생각하기로 했다. 어쩐지 손이 시렸다.')},
@@ -756,7 +756,7 @@ const EVENTS = [
      {label:'도전한다', sub:'일·도전 + · 스트레스 +', run:S => R_(S, {work:3, dare:2.5, stress:8, cash:-10}, '결과는 절반의 성공이었다. 하지만 배운 게 많았다.')},
      {label:'안전하게 거절한다', sub:'스트레스 -2', run:S => R_(S, {stress:-2}, '아직 때가 아니라고 생각했다.')},
    ]},
-  {id:'mom_sick', w:2, cd:36, cond:S => S.m >= 30 && (S.mom || 0) < 70, speaker:'엄마', title:'엄마의 건강검진', place:'room', img:'art/mom.jpg', text:S => '엄마가 검진 결과를 숨기고 있었다. 큰 이상은 아니라지만 목소리가 달랐다. 마흔의 나는 이런 걸 나중에야 알았다.',
+  {id:'mom_sick', w:2, cd:36, cond:S => S.m >= 30 && (S.mom || 0) < 70, speaker:'엄마', title:'엄마의 건강검진', place:'room', img:'art/mom.webp', text:S => '엄마가 검진 결과를 숨기고 있었다. 큰 이상은 아니라지만 목소리가 달랐다. 마흔의 나는 이런 걸 나중에야 알았다.',
    choices:[
      {label:'당장 내려가 곁을 지킨다', sub:'관계 +5 · 일 -2', run:S => { S.mom = clamp((S.mom || 40) + 12, 0, 100); return R_(S, {bond:5, work:-2, stress:6, hp:-4}, '엄마 곁에서 이틀을 보냈다. “바쁜데 뭘 와.” 말과 달리 엄마의 손이 내 손을 꼭 쥐었다.'); }},
      {label:'전화로 안부만 전한다', sub:'일 +1', run:S => R_(S, {work:1, bond:-2}, '마음 한쪽이 계속 무거웠다.')},
@@ -955,7 +955,7 @@ let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
-const PLACE_IMG = {shop:'art/bg_shop.jpg', rain:'art/bg_alley.jpg'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
+const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
@@ -963,7 +963,7 @@ function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || 
 // 연애 인물의 표정: 이번 선택으로 바뀐 호감도에 따라 (happy·shy·tender·surprised·serious·sad)
 function loverFace(id, ch){ const lv = LOVERS[id]; const c = (ch || []).find(x => lv && x.label === lv.name + ' 호감'); const d = c ? c.d : 0;
   return d >= 8 ? 'happy' : d >= 3 ? 'shy' : d > 0 ? 'tender' : d <= -6 ? 'sad' : d < 0 ? 'serious' : 'surprised'; }
-const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.jpg" alt="" onerror="this.src='art/lv_${lover}.jpg'">` : `<img class="face" src="art/face_${faceFor(ch)}.jpg" alt="" onerror="this.style.display='none'">`;
+const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.webp" alt="" onerror="this.src='art/lv_${lover}.webp'">` : `<img class="face" src="art/face_${faceFor(ch)}.webp" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
 function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
@@ -991,7 +991,7 @@ function render(){
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
   $('h-job').textContent = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨 · 법학전문대학원생` : `${CAREERS[S.track].company} · ${rankName(S)} (${CAREERS[S.track].name})`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중 (${CAREERS[S.track].name})` : `${UNIVERSITY} ${majorOf(S).name}${S.interest ? ` · 관심: ${CAREERS[S.interest].name}` : ''}`);
-  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.jpg)`;
+  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
   $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
@@ -1027,7 +1027,7 @@ function openPicker(i){
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
 // 이벤트는 9:16 풀스크린: 일러스트가 화면을 채우고 글과 선택지는 아래 패널에 얹는다
-const PLACE_FULL = {rain:'art/cover.jpg', shop:'art/bg_shop.jpg'};
+const PLACE_FULL = {rain:'art/cover.webp', shop:'art/bg_shop.webp'};
 function evOpen(ev, inner){
   const el = $('ev'), img = ev.img || PLACE_FULL[ev.place];
   el.className = 'evcard on p-' + (ev.place || 'room');
@@ -1059,14 +1059,14 @@ const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`
 // ── 한 달 진행 ────────────────────────────────────────────────
 const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
 // 직업 그림은 나이대별: 25살(기본)·27살·30살 (인턴은 항상 기본)
-function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.jpg`; }
+function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.webp`; }
 function showAct(slotName, id, out){
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.jpg' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
+    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
-    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.jpg` : null;
-    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.jpg'}), url(art/act_job.jpg)` : jobArt ? `url(${jobArt}), url(art/act_job.jpg)` : internArt ? `url(${internArt}), url(art/act_intern.jpg)` : ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
+    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
     el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });
@@ -1099,7 +1099,7 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
-  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.jpg)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
+  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.webp)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
@@ -1122,4 +1122,7 @@ function initGame(){
 }
 try{ const t = localStorage.getItem('rewind-ten-theme'); if(t) document.documentElement.dataset.theme = t; }catch(e){}
 initTitle(); initGame();
+
+// 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
+try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
 </script></body></html>

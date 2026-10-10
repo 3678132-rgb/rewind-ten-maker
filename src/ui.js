@@ -4,7 +4,7 @@ let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
-const PLACE_IMG = {shop:'art/bg_shop.jpg', rain:'art/bg_alley.jpg'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
+const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
@@ -12,7 +12,7 @@ function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || 
 // 연애 인물의 표정: 이번 선택으로 바뀐 호감도에 따라 (happy·shy·tender·surprised·serious·sad)
 function loverFace(id, ch){ const lv = LOVERS[id]; const c = (ch || []).find(x => lv && x.label === lv.name + ' 호감'); const d = c ? c.d : 0;
   return d >= 8 ? 'happy' : d >= 3 ? 'shy' : d > 0 ? 'tender' : d <= -6 ? 'sad' : d < 0 ? 'serious' : 'surprised'; }
-const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.jpg" alt="" onerror="this.src='art/lv_${lover}.jpg'">` : `<img class="face" src="art/face_${faceFor(ch)}.jpg" alt="" onerror="this.style.display='none'">`;
+const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.webp" alt="" onerror="this.src='art/lv_${lover}.webp'">` : `<img class="face" src="art/face_${faceFor(ch)}.webp" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
 function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
@@ -40,7 +40,7 @@ function render(){
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
   $('h-job').textContent = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨 · 법학전문대학원생` : `${CAREERS[S.track].company} · ${rankName(S)} (${CAREERS[S.track].name})`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중 (${CAREERS[S.track].name})` : `${UNIVERSITY} ${majorOf(S).name}${S.interest ? ` · 관심: ${CAREERS[S.interest].name}` : ''}`);
-  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.jpg)`;
+  $('g-bg').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
   $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
@@ -76,7 +76,7 @@ function openPicker(i){
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
 // 이벤트는 9:16 풀스크린: 일러스트가 화면을 채우고 글과 선택지는 아래 패널에 얹는다
-const PLACE_FULL = {rain:'art/cover.jpg', shop:'art/bg_shop.jpg'};
+const PLACE_FULL = {rain:'art/cover.webp', shop:'art/bg_shop.webp'};
 function evOpen(ev, inner){
   const el = $('ev'), img = ev.img || PLACE_FULL[ev.place];
   el.className = 'evcard on p-' + (ev.place || 'room');
@@ -108,14 +108,14 @@ const alertSheet = (title, body, chips, btn) => new Promise(res => { openSheet(`
 // ── 한 달 진행 ────────────────────────────────────────────────
 const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhunt','job','future','exercise','journal','hobby','style','family','friends','club','date','travel','rest']);
 // 직업 그림은 나이대별: 25살(기본)·27살·30살 (인턴은 항상 기본)
-function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.jpg`; }
+function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.webp`; }
 function showAct(slotName, id, out){
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.jpg' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
+    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
-    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.jpg` : null;
-    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.jpg'}), url(art/act_job.jpg)` : jobArt ? `url(${jobArt}), url(art/act_job.jpg)` : internArt ? `url(${internArt}), url(art/act_intern.jpg)` : ACT_ART.has(id) ? `url(art/act_${id}.jpg)` : 'none';
+    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
+    el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
     el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div><div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     el.classList.add('on'); $('anx').onclick = () => { el.classList.remove('on'); res(); };
   });
@@ -148,7 +148,7 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
-  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.jpg)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
+  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.webp)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
@@ -171,3 +171,6 @@ function initGame(){
 }
 try{ const t = localStorage.getItem('rewind-ten-theme'); if(t) document.documentElement.dataset.theme = t; }catch(e){}
 initTitle(); initGame();
+
+// 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
+try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}

@@ -75,19 +75,29 @@ function openPicker(i){
 }
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
+// 이벤트는 9:16 풀스크린: 일러스트가 화면을 채우고 글과 선택지는 아래 패널에 얹는다
+const PLACE_FULL = {rain:'art/cover.jpg', shop:'art/bg_shop.jpg'};
+function evOpen(ev, inner){
+  const el = $('ev'), img = ev.img || PLACE_FULL[ev.place];
+  el.className = 'evcard on p-' + (ev.place || 'room');
+  el.style.backgroundImage = img ? `url(${img})` : 'none';
+  el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
+  $('evpanel').scrollTop = 0;
+}
+function evClose(){ $('ev').classList.remove('on'); }
 function playEvent(ev){
   return new Promise(resolve => {
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
-    const pimg = ev.img || PLACE_IMG[ev.place]; const head = (pimg ? `<div class="place img" style="background-image:url(${pimg});background-position:${ev.img ? '50% 2%' : (PLACE_POS[ev.place] || '50% 50%')}"></div>` : `<div class="place ${ev.place || 'room'}">${PLACE_ICON[ev.place] || '🏠'}</div>`) + (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
+    const head = (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
     const beats = (ev.beats || []).slice();
     const nextBeat = () => {
-      if(beats.length){ const t = beats.shift(); openSheet(head + `<div class="txt">${esc(t)}</div><button class="btn" id="nx">다음</button>`); $('nx').onclick = nextBeat; return; }
-      const cs = ev.choices; openSheet(head + `<div class="txt">${esc(ev.text(S))}</div>` + cs.map((c, k) => `<button class="ch" data-k="${k}"><b>${esc(c.label)}</b><span>${esc(c.sub || '')}</span></button>`).join(''));
-      document.querySelectorAll('.ch').forEach(b => b.onclick = () => {
+      if(beats.length){ const t = beats.shift(); evOpen(ev, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
+      const cs = ev.choices; evOpen(ev, head + `<div class="txt">${esc(ev.text(S))}</div>` + cs.map((c, k) => `<button class="ch" data-k="${k}"><b>${esc(c.label)}</b><span>${esc(c.sub || '')}</span></button>`).join(''));
+      document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
-        if(!out.text){ closeSheet(); render(); return resolve(); }
-        openSheet(head + faceImg(out.chips, ev.lover) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="nx" style="margin-top:14px">계속</button>`);
-        $('nx').onclick = () => { closeSheet(); render(); resolve(); };
+        if(!out.text){ evClose(); render(); return resolve(); }
+        evOpen(ev, head + faceImg(out.chips, ev.lover) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
     nextBeat();
@@ -138,11 +148,11 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
-  $('end').innerHTML = `<div class="ending" style="padding-top:4vh"><img class="endimg" src="art/${e.free ? 'age30' : 'cover'}.jpg" alt="" onerror="this.style.display='none'"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
+  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.jpg)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
-   <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div>`;
+   <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };
   show('end');
 }

@@ -1,5 +1,5 @@
 // 엔딩 판정과 텍스트 (ENGINE 구간 안, DOM 금지)
-const FREE_MIN = 50, FREE_SUM = 184;
+const FREE_MIN = 50, FREE_SUM = 190;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
 function finalPillars(S){

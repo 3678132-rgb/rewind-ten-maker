@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   const req = e.request; if(req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   const isPage = req.mode === 'navigate' || req.url.endsWith('/index.html');
   if(isPage){ // 화면 틀은 인터넷이 되면 항상 최신, 안 되면 캐시
-    e.respondWith(fetch(req).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put('index.html', cp)); return res; }).catch(() => caches.match('index.html')));
+    e.respondWith(fetch(req, {cache:'no-store'}).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put('index.html', cp)); return res; }).catch(() => caches.match('index.html')));
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => { if(res.ok){ const cp = res.clone(); caches.open(CACHE).then(c => c.put(req, cp)); } return res; })));

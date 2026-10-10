@@ -369,9 +369,10 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
+    $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
@@ -383,3 +384,22 @@ try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) nav
 
 // 사파리(브라우저)에서는 하단 바가 화면 위에 떠 있으므로 아래 여백을 더 준다. 홈 화면 앱은 안전 영역만큼만.
 try{ const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); if(ios && !standalone) document.documentElement.classList.add('browser'); }catch(e){}
+
+// ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
+const BUILD_NO = parseInt(('__BUILD__'.match(/#(\d+)/) || [0, 0])[1], 10);
+async function checkUpdate(manual){
+  try{
+    const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();
+    const m = txt.match(/빌드 #(\d+)/), no = m ? parseInt(m[1], 10) : 0;
+    if(no > BUILD_NO){ showUpdateBar(no); return true; }
+    if(manual) toast('최신 버전이에요 (빌드 #' + BUILD_NO + ')');
+  }catch(e){ if(manual) toast('확인하지 못했어요. 인터넷을 확인해 주세요'); }
+  return false;
+}
+function showUpdateBar(no){
+  if(document.getElementById('upbar')) return;
+  const d = document.createElement('div'); d.id = 'upbar'; d.innerHTML = `새 버전 #${no}이 있어요 <button id="up-go">업데이트</button>`; $('app').appendChild(d);
+  $('up-go').onclick = async () => { try{ const rs = await navigator.serviceWorker.getRegistrations(); for(const x of rs) await x.unregister(); const ks = await caches.keys(); for(const k of ks) await caches.delete(k); }catch(e){} location.replace(location.pathname + '?v=' + Date.now()); };
+}
+setTimeout(() => checkUpdate(false), 1500);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) checkUpdate(false); });

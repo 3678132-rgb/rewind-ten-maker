@@ -296,6 +296,9 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 
 /* 사파리(브라우저): 화면은 맨 아래까지 채우고, 버튼·탭은 접힌 하단 바 위로 올린다 */
 html.browser{--sb:calc(env(safe-area-inset-bottom,0px) + 26px)}
+
+#upbar{position:absolute;left:12px;right:12px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#161a2b;color:#fff;border-radius:14px;padding:10px 12px;font-size:13.5px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#upbar button{background:linear-gradient(135deg,#ff7b54,#f0507c);color:#fff;border-radius:10px;padding:7px 12px;font-weight:800;font-size:13px}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -306,7 +309,7 @@ html.browser{--sb:calc(env(safe-area-inset-bottom,0px) + 26px)}
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #28 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #29 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -2596,9 +2599,10 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #28 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #29 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
+    $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
@@ -2610,4 +2614,23 @@ try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) nav
 
 // 사파리(브라우저)에서는 하단 바가 화면 위에 떠 있으므로 아래 여백을 더 준다. 홈 화면 앱은 안전 영역만큼만.
 try{ const standalone = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); if(ios && !standalone) document.documentElement.classList.add('browser'); }catch(e){}
+
+// ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
+const BUILD_NO = parseInt(('#29 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+async function checkUpdate(manual){
+  try{
+    const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();
+    const m = txt.match(/빌드 #(\d+)/), no = m ? parseInt(m[1], 10) : 0;
+    if(no > BUILD_NO){ showUpdateBar(no); return true; }
+    if(manual) toast('최신 버전이에요 (빌드 #' + BUILD_NO + ')');
+  }catch(e){ if(manual) toast('확인하지 못했어요. 인터넷을 확인해 주세요'); }
+  return false;
+}
+function showUpdateBar(no){
+  if(document.getElementById('upbar')) return;
+  const d = document.createElement('div'); d.id = 'upbar'; d.innerHTML = `새 버전 #${no}이 있어요 <button id="up-go">업데이트</button>`; $('app').appendChild(d);
+  $('up-go').onclick = async () => { try{ const rs = await navigator.serviceWorker.getRegistrations(); for(const x of rs) await x.unregister(); const ks = await caches.keys(); for(const k of ks) await caches.delete(k); }catch(e){} location.replace(location.pathname + '?v=' + Date.now()); };
+}
+setTimeout(() => checkUpdate(false), 1500);
+document.addEventListener('visibilitychange', () => { if(!document.hidden) checkUpdate(false); });
 </script></body></html>

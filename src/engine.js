@@ -135,7 +135,7 @@ const ACTS = {
   future:  {cat:'돈',   icon:'🔮', name:'미래 지식 활용', desc:'20년 뒤를 아는 사람의 반칙. 큰돈이 되지만 기억이 닳고, 이 돈은 내 것이 아니다.', cost:0, hp:-2, stress:3, req:S => S.clarity < 12 ? '기억이 너무 흐려요' : null, run(S, ch, out){
     const g = Math.round(rand(120, 380) * (0.35 + S.clarity / 130)); bump(S, 'cash', g, ch); bump(S, 'clarity', -(5 + R() * 3), ch); S.borrowed++; out.note = '아는 대로 움직였을 뿐인데 통장이 불어난다. 어쩐지 손이 시리다.'; }},
   exercise:{cat:'나',   icon:'🏃', name:'운동', desc:'스무 살의 몸은 쓰면 쓸수록 돌아온다.', cost:5, hp:5, stress:-6, eff:{dare:1.2, self:1.6}},
-  journal: {cat:'나',   icon:'📓', name:'일기·상담', desc:'마흔의 내가 못 해 준 일. 마음을 말로 꺼내 놓는다.', cost:5, hp:0, stress:-10, eff:{ins:1.8, self:2.8}},
+  journal: {cat:'나',   icon:'📓', name:'일기·상담', desc:'마흔의 내가 못 해 준 일. 마음을 말로 꺼내 놓는다.', cost:5, hp:0, stress:-10, eff:{ins:1.8, self:2.8, clarity:2.5}},
   hobby:   {cat:'나',   icon:'🎧', name:'취미·문화생활', desc:'영화, 전시, 음악. 쓸모없는 시간이 사람을 만든다.', cost:12, hp:1, stress:-8, eff:{sense:2.2, self:1.8}},
   style:   {cat:'나',   icon:'💄', name:'스타일링', desc:'거울 속 스무 살을 제대로 가꿔 본다.', cost:15, hp:0, stress:-3, eff:{charm:3, sense:1.2, self:0.8}},
   family:  {cat:'관계', icon:'🏠', name:'엄마와 시간', desc:'마흔의 나는 엄마에게 늘 바빴다. 이번엔 다르게.', cost:5, hp:1, stress:-7, eff:{bond:2.6, self:0.9}, run(S, ch){ S.mom = clamp((S.mom || 40) + 5, 0, 100); }},
@@ -176,7 +176,6 @@ function settle(S){
   if(S.m - S.last.bond > 3) gauge(S, 'bond', -0.7, ch);
   if(S.m - S.last.work > 4) gauge(S, 'work', -0.5, ch);
   if(S.m - S.last.self > 4) gauge(S, 'self', -0.5, ch);
-  S.clarity = clamp(S.clarity - 0.25, 0, 100);
   for(const id in S.love){ const v = S.love[id]; if(v.stage === -9) continue; if(S.m - (v.lastDate == null ? v.since : v.lastDate) > 3){ const b = v.aff; v.aff = clamp(v.aff - (v.stage >= 1 ? 1.4 : 0.8), 0, 100); if(v.stage >= 1 && v.aff < 14) v.fading = true; } }
   S.hp = clamp(S.hp + 3, 0, 100);
   S.stress = clamp(S.stress - 2, 0, 100);

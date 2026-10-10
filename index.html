@@ -219,8 +219,6 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 @keyframes bob{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-6px)}}
 .shint{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;color:#fff;font-weight:800;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.7)}
 
-/* 홈 화면에 추가(전체 화면)한 아이폰: 아래 안전 영역(홈 인디케이터 뒤)까지 꽉 채운다 */
-@media (display-mode: standalone){#app{bottom:auto;height:100vh;min-height:-webkit-fill-available}}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -230,7 +228,7 @@ input[type=text]:focus{outline:2px solid var(--serum)}
    <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #22 · 2026.10.11</div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #23 · 2026.10.11</div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -2098,7 +2096,10 @@ function loverFace(id, ch){ const lv = LOVERS[id]; const c = (ch || []).find(x =
 const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.webp" alt="" onerror="this.src='art/lv_${lover}.webp'">` : `<img class="face" src="art/face_${faceFor(ch)}.webp" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
-function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
+// 아이폰은 화면 맨 아래(홈 인디케이터 뒤)를 페이지 배경색으로 칠한다. 화면마다 그 색을 아래쪽 색과 맞춘다
+const EDGE = {title:'#f6f8fc', setup:'#e7ecee', game:'#ecd7ac', end:'#f6f8f9'};
+function paintEdge(id){ const c = EDGE[id] || '#1d2350'; document.documentElement.style.background = c; document.body.style.background = c; const m = document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content', c); }
+function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); paintEdge(id); }
 function openSheet(html){ $('sheet').innerHTML = html; $('ov').classList.add('on'); $('sheet').scrollTop = 0; }
 function closeSheet(){ $('ov').classList.remove('on'); }
 const chipHTML = ch => (ch || []).filter(c => Math.abs(c.d) >= 0.05).map(c => `<span class="chip ${c.d > 0 ? (c.label === '스트레스' ? 'down' : 'up') : (c.label === '스트레스' ? 'up' : 'down')}">${esc(c.label)} ${c.d > 0 ? '+' : ''}${c.money ? fmtMoney(c.d) : (Math.abs(c.d) < 1 ? c.d.toFixed(1) : Math.round(c.d))}</span>`).join('');
@@ -2432,24 +2433,13 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #22 · 2026.10.11</div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #23 · 2026.10.11</div>`);
     $('x').onclick = closeSheet;
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
 }
-initTitle(); initGame(); paintIcons();
+initTitle(); initGame(); paintIcons(); paintEdge('title');
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
-
-// 아이폰 전체 화면(홈 화면 앱·전체 화면 모드)에서는 innerHeight가 아래 안전 영역을 빼고 줄 때가 있어, 실제 화면 높이로 맞춘다
-function fitFull(){
-  try{
-    const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
-    const app = $('app'), mobile = Math.min(screen.width, screen.height) < 600;
-    if(standalone && mobile){ const h = Math.max(window.innerHeight, screen.width > screen.height ? screen.width : screen.height); app.style.bottom = 'auto'; app.style.height = h + 'px'; }
-    else { app.style.bottom = ''; app.style.height = ''; }
-  }catch(e){}
-}
-fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 200));
 </script></body></html>

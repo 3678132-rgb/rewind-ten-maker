@@ -15,7 +15,10 @@ function loverFace(id, ch){ const lv = LOVERS[id]; const c = (ch || []).find(x =
 const faceImg = (ch, lover) => lover && LOVERS[lover] ? `<img class="face" src="art/face_${lover}_${loverFace(lover, ch)}.webp" alt="" onerror="this.src='art/lv_${lover}.webp'">` : `<img class="face" src="art/face_${faceFor(ch)}.webp" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
-function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
+// 아이폰은 화면 맨 아래(홈 인디케이터 뒤)를 페이지 배경색으로 칠한다. 화면마다 그 색을 아래쪽 색과 맞춘다
+const EDGE = {title:'#f6f8fc', setup:'#e7ecee', game:'#ecd7ac', end:'#f6f8f9'};
+function paintEdge(id){ const c = EDGE[id] || '#1d2350'; document.documentElement.style.background = c; document.body.style.background = c; const m = document.querySelector('meta[name=theme-color]'); if(m) m.setAttribute('content', c); }
+function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); paintEdge(id); }
 function openSheet(html){ $('sheet').innerHTML = html; $('ov').classList.add('on'); $('sheet').scrollTop = 0; }
 function closeSheet(){ $('ov').classList.remove('on'); }
 const chipHTML = ch => (ch || []).filter(c => Math.abs(c.d) >= 0.05).map(c => `<span class="chip ${c.d > 0 ? (c.label === '스트레스' ? 'down' : 'up') : (c.label === '스트레스' ? 'up' : 'down')}">${esc(c.label)} ${c.d > 0 ? '+' : ''}${c.money ? fmtMoney(c.d) : (Math.abs(c.d) < 1 ? c.d.toFixed(1) : Math.round(c.d))}</span>`).join('');
@@ -354,18 +357,7 @@ function initGame(){
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
 }
-initTitle(); initGame(); paintIcons();
+initTitle(); initGame(); paintIcons(); paintEdge('title');
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}
-
-// 아이폰 전체 화면(홈 화면 앱·전체 화면 모드)에서는 innerHeight가 아래 안전 영역을 빼고 줄 때가 있어, 실제 화면 높이로 맞춘다
-function fitFull(){
-  try{
-    const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
-    const app = $('app'), mobile = Math.min(screen.width, screen.height) < 600;
-    if(standalone && mobile){ const h = Math.max(window.innerHeight, screen.width > screen.height ? screen.width : screen.height); app.style.bottom = 'auto'; app.style.height = h + 'px'; }
-    else { app.style.bottom = ''; app.style.height = ''; }
-  }catch(e){}
-}
-fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 200));

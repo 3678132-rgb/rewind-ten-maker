@@ -215,5 +215,3 @@ input[type=text]:focus{outline:2px solid var(--serum)}
 @keyframes bob{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-6px)}}
 .shint{position:absolute;left:0;right:0;bottom:calc(8% + env(safe-area-inset-bottom));text-align:center;color:#fff;font-weight:800;font-size:16px;text-shadow:0 2px 8px rgba(0,0,0,.7)}
 
-/* 홈 화면에 추가(전체 화면)한 아이폰: 아래 안전 영역(홈 인디케이터 뒤)까지 꽉 채운다 */
-@media (display-mode: standalone){#app{bottom:auto;height:100vh;min-height:-webkit-fill-available}}

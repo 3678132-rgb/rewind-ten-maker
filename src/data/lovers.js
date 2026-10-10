@@ -43,7 +43,7 @@ const LOVER_IDS = Object.keys(LOVERS);
 
 function meetEvent(S, id){
   const lv = LOVERS[id];
-  return {id:'meet_' + id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus',
+  return {id:'meet_' + id, once:true, speaker:lv.name, title:'새로운 인연', place:'campus', img:id === 'jaewoo' ? 'art/lv_jaewoo.jpg' : null,
     text:S => lv.intro,
     choices:[
       {label:'말을 걸어 본다', sub:'호감 +12', run(S){ const ch = []; S.love[id] = {aff:12, stage:-1, since:S.m}; S.last.bond = S.m; if(id === 'jaewoo') bump(S, 'clarity', -3, ch); push(ch, lv.name + ' 호감', 12); return {text:`${josa(lv.name, '과', '와')} 처음으로 길게 이야기했다. 어색한 인사가 어느새 웃음이 되었다.`, chips:ch}; }},

@@ -185,7 +185,7 @@ const EVENTS = [
 function fixedEvents(S){
   const out = [];
   if(S.collapse){ out.push(collapseEvent(S)); }
-  if(S.m === 0) out.push(PROLOGUE);
+  if(S.m === 0 && !S.seen.prologue) out.push(PROLOGUE);
   for(const c of CHECKS) if(S.m === c.m && !S.seen[c.id]) out.push(checkEvent(S, c));
   for(const e of ERA) if(S.m === e.m && !S.seen[e.id]) out.push(Object.assign({once:true, speaker:''}, e));
   if(S.m === GRAD_M && !S.seen.graduation) out.push(GRADUATION);

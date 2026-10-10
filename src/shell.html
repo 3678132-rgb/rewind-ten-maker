@@ -5,11 +5,12 @@
 <style>/*CSS*/</style></head><body>
 <div id="app">
  <section id="title" class="screen on">
-  <div class="hourglass">⏳</div><h1>다시, 스무 살</h1>
+  <div class="coverbg"></div>
+  <div class="tcontent"><div class="hourglass">⏳</div><h1>다시, 스무 살</h1>
   <p>마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</p>
   <button class="btn" id="b-new">새로 시작</button>
   <button class="btn ghost" id="b-cont" style="margin-top:10px;display:none">이어하기</button>
-  <p class="note">저장은 이 기기에만 보관돼요.</p>
+  <p class="note">저장은 이 기기에만 보관돼요.</p></div>
  </section>
  <section id="setup" class="screen">
   <h2 style="margin-top:22px">이름</h2><input type="text" id="in-name" maxlength="6" value="서윤">
@@ -23,7 +24,7 @@
    <div class="sand"><i id="h-sand"></i></div>
    <div class="chips" id="h-chips"></div>
   </div>
-  <div class="pillars" id="pillars"></div>
+  <div class="herorow"><div class="hero"><img id="hero-img" alt="" onerror="this.style.display='none'"></div><div class="pillars" id="pillars"></div></div>
   <div class="stats" id="stats"></div>
   <h3 style="margin-top:16px">이번 달 계획</h3>
   <div class="slots" id="slots"></div>

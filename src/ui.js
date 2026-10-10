@@ -4,6 +4,12 @@ let S = null, setupSel = {origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
+const PLACE_IMG = {shop:'art/bg_shop.jpg', rain:'art/bg_alley.jpg'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
+const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
+// 이벤트 결과의 칩으로 표정을 고른다
+function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
+  return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
+const faceImg = ch => `<img class="face" src="art/face_${faceFor(ch)}.jpg" alt="" onerror="this.style.display='none'">`;
 function store(k, v){ try{ if(v === undefined) return JSON.parse(localStorage.getItem(k)); if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }catch(e){ return null; } }
 function save(){ if(S) store(SAVE_KEY, S); }
 function show(id){ document.querySelectorAll('.screen').forEach(e => e.classList.toggle('on', e.id === id)); window.scrollTo(0, 0); }
@@ -30,6 +36,7 @@ function render(){
   const left = TOTAL_MONTHS - S.m;
   $('h-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월 · ${S.name} ${ageOf(S)}세`;
   $('h-left').textContent = `남은 시간 ${left}개월`;
+  $('hero-img').style.display = ''; $('hero-img').src = `art/${heroKey(S)}.jpg`;
   $('h-sand').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   $('h-chips').innerHTML = [`💰 ${fmtMoney(S.cash)}`, `❤️ ${Math.round(S.hp)}`, `😮‍💨 ${Math.round(S.stress)}`, `🔮 ${Math.round(S.clarity)}`].map(t => `<span class="chip">${t}</span>`).join('');
   $('pillars').innerHTML = Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${S[k]}%"></i><u></u></div><b>${Math.round(S[k])}</b></div>`).join('');
@@ -68,7 +75,7 @@ function openPicker(i){
 function playEvent(ev){
   return new Promise(resolve => {
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
-    const head = `<div class="place ${ev.place || 'room'}">${PLACE_ICON[ev.place] || '🏠'}</div>` + (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
+    const pimg = ev.img || PLACE_IMG[ev.place]; const head = (pimg ? `<div class="place img" style="background-image:url(${pimg})"></div>` : `<div class="place ${ev.place || 'room'}">${PLACE_ICON[ev.place] || '🏠'}</div>`) + (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
     const beats = (ev.beats || []).slice();
     const nextBeat = () => {
       if(beats.length){ const t = beats.shift(); openSheet(head + `<div class="txt">${esc(t)}</div><button class="btn" id="nx">다음</button>`); $('nx').onclick = nextBeat; return; }
@@ -76,7 +83,7 @@ function playEvent(ev){
       document.querySelectorAll('.ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ closeSheet(); render(); return resolve(); }
-        openSheet(head + `<div class="txt">${esc(out.text)}</div><div class="chips">${chipHTML(out.chips)}</div><button class="btn" id="nx" style="margin-top:14px">계속</button>`);
+        openSheet(head + faceImg(out.chips) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="nx" style="margin-top:14px">계속</button>`);
         $('nx').onclick = () => { closeSheet(); render(); resolve(); };
       });
     };
@@ -115,7 +122,7 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
   const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
-  $('end').innerHTML = `<div class="ending" style="padding-top:8vh"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
+  $('end').innerHTML = `<div class="ending" style="padding-top:4vh"><img class="endimg" src="art/${e.free ? 'age30' : 'cover'}.jpg" alt="" onerror="this.style.display='none'"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars" style="text-align:left">${Object.keys(PILLAR).map(k => `<div class="bar ${k}"><span>${PILLAR[k]}</span><div class="t"><i style="width:${P[k]}%"></i><u></u></div><b>${Math.round(P[k])}</b></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>

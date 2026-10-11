@@ -322,3 +322,26 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .tabbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
 .abot,.evpanel{background:#f6f8f9}
 .endcard{background:linear-gradient(rgba(246,248,249,0),#f6f8f9 44px)}
+
+/* ───── 스케줄 진행: 홈 화면 위에 가운데 팝업(스테이지 제로 메이커 방식) ───── */
+.actcard{background:rgba(10,14,40,.38)}
+.actcard .apop{position:absolute;left:5.5%;right:5.5%;top:50%;transform:translateY(-50%);background:linear-gradient(180deg,#fffdf6,#fff6e4);border:4px solid #c9a24a;border-radius:26px;padding:14px;box-shadow:0 14px 40px rgba(8,12,40,.5),inset 0 0 0 2px #fff;animation:popin .28s cubic-bezier(.2,1.3,.4,1)}
+@keyframes popin{from{opacity:0;transform:translateY(-46%) scale(.92)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+.apop .aph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 4px 10px}
+.apop .aph h2{font-family:var(--f-display);font-size:19px;letter-spacing:-.4px;color:#5c3e0e;margin:0}
+.apop .ptag{background:#c9a24a;color:#fff;font-weight:800;font-size:13px;padding:5px 14px;border-radius:99px;white-space:nowrap}
+.apop .apf{position:relative;width:100%;aspect-ratio:1/1;max-height:46vh;border:3px solid #c9a24a;border-radius:20px;overflow:hidden;background-color:#fde3c4;background-image:radial-gradient(circle,#fff 2.5px,transparent 3px),radial-gradient(circle at 50% 38%,#fff8ec,#fde3c4 78%);background-size:19% 19%,100% 100%}
+.apop .apf.art{background:#1b2140}
+.apop .fart{position:absolute;inset:0;background-size:cover;background-position:center}
+.apop .fsp{position:absolute;left:8%;right:8%;top:6%;bottom:12%;animation:bob2 .9s ease-in-out infinite alternate}
+@keyframes bob2{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+.apop .fsp::after{content:"";position:absolute;left:12%;right:12%;bottom:-6%;height:12%;border-radius:50%;background:rgba(80,60,40,.18)}
+.apop .fsp img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;z-index:1}
+.apop .fsp .fa{animation:showA .9s steps(1) infinite}.apop .fsp .fb{animation:showB .9s steps(1) infinite;opacity:0}
+.apop .apbar{height:14px;margin:14px 2px 8px;border:2.5px solid #c9a24a;border-radius:99px;background:#fff;overflow:hidden}
+.apop .apbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f4a3b8,#f6b64a);transition:width 2.6s linear}
+.apop .apfoot{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px;color:#5c3e0e}
+.apop .apfoot b{font-size:15px}.apop .apfoot span{font-size:13px;font-weight:700}
+.apop .txt{font-size:14.5px;line-height:1.6;color:#4a3a22;margin:12px 4px 6px}
+.apop .chips{margin:6px 2px 0}
+.apop .btn{margin-top:12px;width:100%}

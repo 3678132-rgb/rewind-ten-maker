@@ -327,6 +327,29 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .tabbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
 .abot,.evpanel{background:#f6f8f9}
 .endcard{background:linear-gradient(rgba(246,248,249,0),#f6f8f9 44px)}
+
+/* ───── 스케줄 진행: 홈 화면 위에 가운데 팝업(스테이지 제로 메이커 방식) ───── */
+.actcard{background:rgba(10,14,40,.38)}
+.actcard .apop{position:absolute;left:5.5%;right:5.5%;top:50%;transform:translateY(-50%);background:linear-gradient(180deg,#fffdf6,#fff6e4);border:4px solid #c9a24a;border-radius:26px;padding:14px;box-shadow:0 14px 40px rgba(8,12,40,.5),inset 0 0 0 2px #fff;animation:popin .28s cubic-bezier(.2,1.3,.4,1)}
+@keyframes popin{from{opacity:0;transform:translateY(-46%) scale(.92)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+.apop .aph{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 4px 10px}
+.apop .aph h2{font-family:var(--f-display);font-size:19px;letter-spacing:-.4px;color:#5c3e0e;margin:0}
+.apop .ptag{background:#c9a24a;color:#fff;font-weight:800;font-size:13px;padding:5px 14px;border-radius:99px;white-space:nowrap}
+.apop .apf{position:relative;width:100%;aspect-ratio:1/1;max-height:46vh;border:3px solid #c9a24a;border-radius:20px;overflow:hidden;background-color:#fde3c4;background-image:radial-gradient(circle,#fff 2.5px,transparent 3px),radial-gradient(circle at 50% 38%,#fff8ec,#fde3c4 78%);background-size:19% 19%,100% 100%}
+.apop .apf.art{background:#1b2140}
+.apop .fart{position:absolute;inset:0;background-size:cover;background-position:center}
+.apop .fsp{position:absolute;left:8%;right:8%;top:6%;bottom:12%;animation:bob2 .9s ease-in-out infinite alternate}
+@keyframes bob2{from{transform:translateY(0)}to{transform:translateY(-6px)}}
+.apop .fsp::after{content:"";position:absolute;left:12%;right:12%;bottom:-6%;height:12%;border-radius:50%;background:rgba(80,60,40,.18)}
+.apop .fsp img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 100%;z-index:1}
+.apop .fsp .fa{animation:showA .9s steps(1) infinite}.apop .fsp .fb{animation:showB .9s steps(1) infinite;opacity:0}
+.apop .apbar{height:14px;margin:14px 2px 8px;border:2.5px solid #c9a24a;border-radius:99px;background:#fff;overflow:hidden}
+.apop .apbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f4a3b8,#f6b64a);transition:width 2.6s linear}
+.apop .apfoot{display:flex;justify-content:space-between;align-items:baseline;margin:0 4px;color:#5c3e0e}
+.apop .apfoot b{font-size:15px}.apop .apfoot span{font-size:13px;font-weight:700}
+.apop .txt{font-size:14.5px;line-height:1.6;color:#4a3a22;margin:12px 4px 6px}
+.apop .chips{margin:6px 2px 0}
+.apop .btn{margin-top:12px;width:100%}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -337,7 +360,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #44 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #45 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -375,7 +398,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #44 · 2026.10.11</div>
+ <div id="buildtag">빌드 #45 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -3413,23 +3436,37 @@ const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring'
 const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
-function showAct(slotName, id, out){
+function showAct(slotName, id, out, first = 0){
+  // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
     const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
-    const body = `<div class="abot"><h2>${a.icon} ${esc(actName(S, id))}</h2>${out.note ? `<div class="txt" style="margin:4px 0 8px">${esc(out.note)}</div>` : `<div class="txt" style="margin:4px 0 8px;opacity:.85">${esc(a.desc)}</div>`}<div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx" style="margin-top:14px">다음</button></div>`;
     const sp = SPRITE[id];
-    if(sp){ // 계절 배경 위에서 2.5등신 캐릭터가 계속 움직이고, 결과 카드는 그 위에 같이 나온다
+    let inner, cls = 'apf';
+    if(sp){
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp;
-      el.style.backgroundImage = `url(${seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room')})`;
-      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName} · ${esc(actName(S, id))}</span></div><div class="sprite ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>` + body;
+      inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
     } else {
-      el.style.backgroundImage = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
-      el.innerHTML = `<div class="ashade"></div><div class="atop"><span class="who">${slotName}</span></div>` + body;
+      cls += ' art';
+      const bg = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
-    el.classList.add('on'); paintEdge('card'); $('anx').onclick = () => { el.classList.remove('on'); paintEdge('game'); res(); };
+    const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
+    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}">${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
+    el.classList.add('on');
+    const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+    let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;
+    const tick = setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
+    const result = () => {
+      if(done) return; done = true; clearInterval(tick); clearTimeout(auto);
+      $('apx').innerHTML = `<div class="txt">${esc(out.note || a.desc)}</div><div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx">다음</button>`;
+      el.querySelector('.apop').onclick = null;
+      $('anx').onclick = () => { el.classList.remove('on'); res(); };
+    };
+    auto = setTimeout(result, DUR + 200);
+    el.querySelector('.apop').onclick = result;
   });
 }
 async function runMonth(){
@@ -3438,7 +3475,7 @@ async function runMonth(){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
     S.curDate = S.dateTo && S.dateTo[first] || null; const out = doAction(S, id); S.curDate = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
-    await showAct(SLOT_NAMES[first], id, out);
+    await showAct(SLOT_NAMES[first], id, out, first);
     if(out.burnout) break;
   }
   const sch = settle(S);
@@ -3476,7 +3513,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #44 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #45 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3520,7 +3557,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#44 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#45 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -11,8 +11,9 @@ const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
 const CUT_OUTFIT = new Set(__CUT_OUTFIT__); // art/cut/<인물>_<work|home>_<a|b>.webp: 상황별 옷차림 누끼
 // 상황에 맞는 옷: 집이면 홈웨어(home), 졸업 뒤 사무실·카페 같은 일터 장면이면 직업 차림(work), 그 밖엔 평상복
 function cutOutfit(ev, id){
-  if(!LOVERS[id]) return '';
   if(ev.outfit !== undefined) return ev.outfit;
+  if(!LOVERS[id]) return S && S.m >= 48 && ['soyeon', 'jisu', 'taeyun'].includes(id) ? 'w' : ''; // 친구들도 졸업 뒤엔 서른 안팎의 직장인 모습
+
   const im0 = Array.isArray(ev.img) ? ev.img[0] : ev.img, im = String(im0 || '');
   if(ev.place === 'room' || /bg_room/.test(im)) return 'home';
   if(S && S.m >= 48 && (/office/.test(im) || (ev.place === 'cafe' && !/\/(lv_|cover)/.test(im)))) return 'work';

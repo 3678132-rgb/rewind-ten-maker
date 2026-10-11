@@ -48,11 +48,15 @@ function cityEncounter(S, place, visitCh){
     if(v.stage === -9 || v.stage === -2 || v.stage > 2 || v.cpAt === S.m) continue;
     const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3.2 + v.aff / 20, kind:'lover', id, sc});
   }
-  (FR[place] || []).forEach(sc => cands.push({w:2.2, kind:'friend', sc}));
+  // 친구·동료 장면: 최근에 본 장면과 같은 사람은 덜 나오고, 같은 장면은 18개월 안에는 거의 나오지 않는다
+  S.ctSeen = S.ctSeen || {};
+  (FR[place] || []).forEach(sc => { let ok = true; try{ ok = !sc.cond || sc.cond(S); }catch(e){ ok = false; } if(!ok) return;
+    const seenAt = S.ctSeen[place + '|' + sc.title]; let w = 2.2; if(seenAt != null && S.m - seenAt < 18) w *= 0.06; if(S.ctLastWho === sc.who) w *= 0.45; cands.push({w, kind:'friend', sc}); });
   if(!cands.length) return null;
   const c = weightedPick(cands), pl = CITY_PLACES[place];
   if(c.kind === 'lover' && typeof loverStoryFor === 'function' && R() < 0.6 && S.m - (S.lsAt == null ? -9 : S.lsAt) >= 1){ const st = loverStoryFor(S, c.id); if(st){ S.lsAt = S.m; S.love[c.id].cpAt = S.m; return st; } }
   const sc = c.sc;
+  if(c.kind === 'friend'){ S.ctSeen[place + '|' + sc.title] = S.m; S.ctLastWho = sc.who; }
   if(c.kind === 'friend') return {id:`ct_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'city', img:`art/ct_${place}.webp`, cut:CP_CUT[sc.who] || null, text:S => sc.text,
     choices:[
       {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},

@@ -271,7 +271,7 @@ function openPicker(i, cat){
     openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
+      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'date' && S.married ? '불 꺼진 침실에서 배우자와 보내는 밤. 키스한다 · 볼을 만진다 · 어루만진다, 원하는 만큼만.' : id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
     }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
@@ -281,7 +281,7 @@ function openPicker(i, cat){
     const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
       const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
-      if(ts.length > 1){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
+      if(ts.length > 1 && !S.married){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
       if(id === 'jobhunt' && S.hired){ chooseJob(slot, pick => { setPlan(slot, 'jobhunt'); S.jobTo = S.jobTo || []; S.jobTo[slot] = pick; placed(); }, draw); return; }
       setPlan(slot, id); placed();
     });
@@ -518,6 +518,12 @@ function showAct(slotName, id, out, first = 0, opts = {}){
     el.querySelector('.apop').onclick = result;
   });
 }
+// 부부의 밤: 단계마다 한 번씩 고르고, 멈추면 거기서 끝난다
+async function playMarriedNight(id, out){
+  const steps = marriedNightSteps(S, id); S._nightGo = true;
+  for(const ev of steps){ if(!S._nightGo || S.ending) break; await playEvent(ev); }
+  S._nightGo = false;
+}
 async function runMonth(){
   seedMonth(S); S.lastPlan = S.plan.slice(); const skipLog = [];
   for(let i = 0; i < 3; i++){
@@ -525,6 +531,7 @@ async function runMonth(){
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
     S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     if(getSpeed() === 'skip' && !['jobhunt', 'date'].includes(id) && !out.burnout){ skipLog.push({a, out}); }
+    else if(id === 'date' && S.married && S.love[S.married] && !fell){ await playMarriedNight(S.married, out); }
     else await showAct(SLOT_NAMES[first], id, out, first);
     if(out.burnout) break;
   }

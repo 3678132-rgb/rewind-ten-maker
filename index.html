@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #99 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #100 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #99 · 2026.10.11</div>
+ <div id="buildtag">빌드 #100 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -668,10 +668,11 @@ const ACTS = {
 };
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 const grad = S => S.m >= 48; // 졸업 뒤(2020.3~)
-const actName = (S, id) => id === 'club' && grad(S) ? '퇴근 후 모임' : id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
+const actName = (S, id) => id === 'date' && S.married ? '부부의 밤' : id === 'club' && grad(S) ? '퇴근 후 모임' : id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
 
 function doAction(S, id){
   const a = ACTS[id], ch = [], out = {id, ch, note:''};
+  if(id === 'date' && S.married) S.curDate = S.married;
   if(id === 'club' && grad(S)) out.note = pick(['퇴근 후 와인 한 잔과 취미 모임. 같은 취향의 사람들과 이야기하다 보니 하루의 긴장이 풀렸다.', '러닝 크루 번개에 나갔다. 땀 흘리고 나서 마시는 맥주가 이렇게 맛있을 줄은.', '독서 모임에서 낯선 얼굴들과 한 권의 책을 두고 한참 떠들었다. 퇴근길이 가벼웠다.', '회사 밖 사람들과 만나는 저녁. 명함 대신 이름만 주고받는 자리가 오히려 편하다.']);
   if(a.cost) bump(S, 'cash', -a.cost, ch);
   if(a.pay){ const pay = Math.round(a.pay * earnedMult(S) * (id === 'cafe' ? 1 : 1)); bump(S, 'cash', pay, ch); }
@@ -1247,6 +1248,33 @@ const MARRIED_SCENES = [
   {t:'시댁(처가) 식사', x:lv => `주말에 ${lv.name}의 부모님 댁에 갔다. 상 위에 반찬이 가득했고, 질문도 가득했다. “아이는 언제쯤 생각하니?” 분위기가 순식간에 조용해졌다.`, a:['“아직은 우리 둘이 먼저예요”', '부모님은 아쉬운 표정이었지만 이해해 주셨다. 돌아오는 길에 그가 내 손을 꼭 잡았다.', {bond:1.5, self:2, stress:4}, 4], b:['웃으며 화제를 돌린다', '그는 눈치껏 도와주었지만 집으로 돌아오는 차 안은 조금 어색했다.', {stress:5}, 1]},
   {t:'함께 세우는 계획', x:lv => `${lv.name}가 가계부와 달력을 식탁 위에 펼쳤다. “올해는 뭘 하고 싶어? 네 꿈부터 말해 봐.” 마흔의 나는 이런 질문을 받아 본 적이 없다.`, a:['진심으로 내 꿈을 말한다', '그는 끝까지 들어 주고 메모했다. “그럼 내 계획에 네 꿈의 자리를 만들게.” 눈물이 날 뻔했다.', {self:3, bond:2, stress:-2}, 6], b:['“당신 꿈부터 말해 봐”라고 돌려준다', '그는 신나게 계획을 늘어놓았다. 나는 웃으며 들었다. 어딘가 내가 지워지는 느낌이 스쳤다.', {self:-1, stress:2}, 2]},
 ];
+// ── 결혼 뒤 '부부의 밤'(데이트 대신): 키스한다 → 볼을 만진다 → 어루만진다, 한 단계씩 고르고 언제든 멈출 수 있다 ──
+const NIGHT_STEPS = [
+  {t:'키스한다', stop:'오늘은 안아 주기만 한다', img:'n1', res:'kiss',
+   x:(n, j) => `불 꺼진 침실. ${n}${j('이', '가')} 침대 맡에 앉아 내 얼굴을 가만히 본다. 하루의 피로가 천천히 가라앉는다.`,
+   go:(n) => `${n}의 입술이 내 입술에 가볍게 닿았다가 떨어진다. 짧은데도 심장이 오래 뛴다.`,
+   no:(n) => `${n}의 품에 얼굴을 묻었다. 아무 말도 하지 않았는데, 오늘 하루가 전부 괜찮아졌다.`},
+  {t:'볼을 만진다', stop:'여기까지 — 손을 잡고 눕는다', img:'n3', res:'n3',
+   x:(n, j) => `${n}${j('이', '가')} 내 눈을 바라본다. 서로의 숨이 닿는 거리에서 말이 필요 없어진다.`,
+   go:(n) => `손끝으로 ${n}의 볼을 쓸어 보았다. 그가 눈을 감고 내 손에 얼굴을 기댄다. “…좋다.” 낮은 속삭임.`,
+   no:(n) => `${n}의 손을 잡고 나란히 누웠다. 천장의 작은 불빛이 별처럼 번진다.`},
+  {t:'어루만진다', stop:'여기까지 — 이마를 맞대고 잠든다', img:'n4', res:'n4',
+   x:(n, j) => `${n}${j('이', '가')} 이마를 맞대고 나직이 웃는다. 이 사람과 같은 집에서 눈을 뜬다는 게 아직도 신기하다.`,
+   go:(n) => `${n}의 머리와 등을 천천히 쓸어내렸다. 그가 한숨처럼 웃으며 나를 더 가까이 안는다. 램프가 꺼지고, 서로의 온기만 남는다.`,
+   no:(n) => `이마를 맞댄 채 잠이 들었다. 내일 아침에도 이 사람 옆에서 눈을 뜰 것이다.`},
+];
+function marriedNightSteps(S, id){
+  const lv = LOVERS[id], v = S.love[id], j = (a, b) => (/[가-힣]$/.test(lv.name) && ((lv.name.charCodeAt(lv.name.length - 1) - 0xAC00) % 28 === 0) ? b : a);
+  const img = n => [`art/ms_${id}_${n}.webp`, `art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`];
+  return NIGHT_STEPS.map((st, i) => {
+    const last = i === NIGHT_STEPS.length - 1;
+    return {id:`mnight_${id}_${S.m}_${i}`, lover:id, speaker:lv.name, title:'부부의 밤', place:'night', img:img(st.img), text:S => st.x(lv.name, j), resultImgs:[img(st.res), img(i === 0 ? 'n1' : NIGHT_STEPS[i - 1].img)],
+      choices:[
+        {label:st.t, sub:last ? '호감 ↑↑ · 스트레스 ↓↓' : '다음 단계로 · 호감↑ · 스트레스↓', run(S){ const ch = []; S._nightGo = !last; v.nights = (v.nights || 0) + 1; addAff(S, id, 2 + i, ch); fx(S, {stress:-(3 + i), bond:0.6}, ch); return {text:st.go(lv.name), chips:ch, mood:'shy'}; }},
+        {label:st.stop, sub:'호감 ↑ · 스트레스 ↓ · 체력 ↑', run(S){ const ch = []; S._nightGo = false; addAff(S, id, 1.5, ch); fx(S, {stress:-5, hp:2}, ch); return {text:st.no(lv.name), chips:ch}; }},
+      ]};
+  });
+}
 function marriedEvent(S){
   const id = S.married; if(!id) return null; const v = S.love[id]; if(!v || v.stage !== 3) return null;
   const n = v.mlife || 0; if(n >= MARRIED_SCENES.length) return null;
@@ -4320,7 +4348,7 @@ EVENTS.push(
      {label:'“오늘은 마감이 급해서 잠깐만 보자”고 말한다', sub:'일 +2 · 호감 +1 · 스트레스 +1', run:S => LV(S, 1, {work:2, stress:1}, '“미안, 오늘 마감이라 잠깐밖에 못 있어.” 그는 괜찮다며 웃었지만 꽃을 쥔 손이 조금 어색했다. 덕분에 밤에 일은 끝냈다.')},
      {label:'“놀랐잖아, 다음엔 미리 말해 줘”라고 웃으며 말한다', sub:'호감 +3 · 스트레스 -3 · 통찰 +1', run:S => LV(S, 3, {stress:-3, ins:1}, '“놀랐잖아, 다음엔 미리 말해 줘.” 웃으며 말하자 그도 머쓱하게 웃었다. 서로의 거리감을 조금 더 알게 된 저녁이었다.')},
    ]},
-  {id:'love_parents', w:4, cd:36, once:true, cond:S => hasP(S) && sinceMonths(S) >= 8 && S.m >= 40, speaker:'엄마', place:'room', img:'art/mom.webp', title:'엄마에게 소개하다',
+  {id:'love_parents', w:4, cd:36, once:true, cond:S => hasP(S) && !S.married && sinceMonths(S) >= 8 && S.m >= 40, speaker:'엄마', place:'room', img:'art/mom.webp', title:'엄마에게 소개하다',
    text:S => `엄마가 눈치를 챈 듯 전화에서 슬쩍 물었다. “요즘 만나는 사람 있니?” 마흔의 나는 이 질문에 늘 얼버무렸다. 이번엔 ${PN(S)}를 소개해도 좋을까?`,
    choices:[
      {label:'주말에 함께 내려간다', sub:'호감 +6 · 관계 +4 · 스트레스 +5 · 체력 -4 · 자금 -15', run(S){ S.mom = clamp((S.mom || 40) + 6, 0, 100); return LV(S, 6, {bond:4, stress:5, hp:-4, cash:-15}, `엄마는 ${PN(S)}에게 계속 밥을 권했다. 현관에서 엄마가 내 귀에 속삭였다. “사람 참 괜찮다. 눈이 좋아.”`); }},
@@ -4340,7 +4368,7 @@ EVENTS.push(
      {label:'지금은 일이 우선이라고 이해를 구한다', sub:'일 +2 · 호감 -4', run:S => LV(S, -4, {work:2, stress:4}, '그는 이해한다고 했지만, 이해와 서운함이 다른 곳에 있다는 걸 나는 안다.')},
      {label:'함께 일하는 시간을 만든다', sub:'호감 +3 · 일 +1', run:S => LV(S, 3, {work:1, bond:1}, '서로의 일을 도우며 보내는 저녁. 그것도 데이트가 될 수 있다는 걸 처음 알았다.')},
    ]},
-  {id:'love_future', w:3, cd:24, once:true, cond:S => hasP(S) && sinceMonths(S) >= 12, place:'night', title:'우리의 미래', speaker:'',
+  {id:'love_future', w:3, cd:24, once:true, cond:S => hasP(S) && !S.married && sinceMonths(S) >= 12, place:'night', title:'우리의 미래', speaker:'',
    text:S => `${PN(S)}와 한강 둔치에 앉았다. 문득 그가 물었다. “우리, 오 년 뒤엔 뭘 하고 있을까?” 마흔의 나는 이 질문의 답을 알고 있다. 하지만 이번엔 아직 모른다.`,
    choices:[
      {label:'서로의 꿈을 번갈아 응원하자고 말한다', sub:'호감 +7 · 통찰 +1.5 · 나 +2 · 스트레스 +3', run:S => LV(S, 7, {ins:1.5, self:2, stress:3}, `“네 꿈도 내 꿈만큼 크게 적자.” ${PV(S).warm} 둘은 서로의 수첩에 꿈 하나씩을 적어 주었다.`)},
@@ -7107,7 +7135,7 @@ function openPicker(i, cat){
     openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
+      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'date' && S.married ? '불 꺼진 침실에서 배우자와 보내는 밤. 키스한다 · 볼을 만진다 · 어루만진다, 원하는 만큼만.' : id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
     }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
@@ -7117,7 +7145,7 @@ function openPicker(i, cat){
     const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
       const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
-      if(ts.length > 1){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
+      if(ts.length > 1 && !S.married){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
       if(id === 'jobhunt' && S.hired){ chooseJob(slot, pick => { setPlan(slot, 'jobhunt'); S.jobTo = S.jobTo || []; S.jobTo[slot] = pick; placed(); }, draw); return; }
       setPlan(slot, id); placed();
     });
@@ -7354,6 +7382,12 @@ function showAct(slotName, id, out, first = 0, opts = {}){
     el.querySelector('.apop').onclick = result;
   });
 }
+// 부부의 밤: 단계마다 한 번씩 고르고, 멈추면 거기서 끝난다
+async function playMarriedNight(id, out){
+  const steps = marriedNightSteps(S, id); S._nightGo = true;
+  for(const ev of steps){ if(!S._nightGo || S.ending) break; await playEvent(ev); }
+  S._nightGo = false;
+}
 async function runMonth(){
   seedMonth(S); S.lastPlan = S.plan.slice(); const skipLog = [];
   for(let i = 0; i < 3; i++){
@@ -7361,6 +7395,7 @@ async function runMonth(){
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
     S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     if(getSpeed() === 'skip' && !['jobhunt', 'date'].includes(id) && !out.burnout){ skipLog.push({a, out}); }
+    else if(id === 'date' && S.married && S.love[S.married] && !fell){ await playMarriedNight(S.married, out); }
     else await showAct(SLOT_NAMES[first], id, out, first);
     if(out.burnout) break;
   }
@@ -7407,7 +7442,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #99 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #100 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7469,7 +7504,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#99 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#100 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

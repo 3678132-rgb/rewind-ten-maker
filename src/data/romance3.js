@@ -112,6 +112,33 @@ const MARRIED_SCENES = [
   {t:'시댁(처가) 식사', x:lv => `주말에 ${lv.name}의 부모님 댁에 갔다. 상 위에 반찬이 가득했고, 질문도 가득했다. “아이는 언제쯤 생각하니?” 분위기가 순식간에 조용해졌다.`, a:['“아직은 우리 둘이 먼저예요”', '부모님은 아쉬운 표정이었지만 이해해 주셨다. 돌아오는 길에 그가 내 손을 꼭 잡았다.', {bond:1.5, self:2, stress:4}, 4], b:['웃으며 화제를 돌린다', '그는 눈치껏 도와주었지만 집으로 돌아오는 차 안은 조금 어색했다.', {stress:5}, 1]},
   {t:'함께 세우는 계획', x:lv => `${lv.name}가 가계부와 달력을 식탁 위에 펼쳤다. “올해는 뭘 하고 싶어? 네 꿈부터 말해 봐.” 마흔의 나는 이런 질문을 받아 본 적이 없다.`, a:['진심으로 내 꿈을 말한다', '그는 끝까지 들어 주고 메모했다. “그럼 내 계획에 네 꿈의 자리를 만들게.” 눈물이 날 뻔했다.', {self:3, bond:2, stress:-2}, 6], b:['“당신 꿈부터 말해 봐”라고 돌려준다', '그는 신나게 계획을 늘어놓았다. 나는 웃으며 들었다. 어딘가 내가 지워지는 느낌이 스쳤다.', {self:-1, stress:2}, 2]},
 ];
+// ── 결혼 뒤 '부부의 밤'(데이트 대신): 키스한다 → 볼을 만진다 → 어루만진다, 한 단계씩 고르고 언제든 멈출 수 있다 ──
+const NIGHT_STEPS = [
+  {t:'키스한다', stop:'오늘은 안아 주기만 한다', img:'n1', res:'kiss',
+   x:(n, j) => `불 꺼진 침실. ${n}${j('이', '가')} 침대 맡에 앉아 내 얼굴을 가만히 본다. 하루의 피로가 천천히 가라앉는다.`,
+   go:(n) => `${n}의 입술이 내 입술에 가볍게 닿았다가 떨어진다. 짧은데도 심장이 오래 뛴다.`,
+   no:(n) => `${n}의 품에 얼굴을 묻었다. 아무 말도 하지 않았는데, 오늘 하루가 전부 괜찮아졌다.`},
+  {t:'볼을 만진다', stop:'여기까지 — 손을 잡고 눕는다', img:'n3', res:'n3',
+   x:(n, j) => `${n}${j('이', '가')} 내 눈을 바라본다. 서로의 숨이 닿는 거리에서 말이 필요 없어진다.`,
+   go:(n) => `손끝으로 ${n}의 볼을 쓸어 보았다. 그가 눈을 감고 내 손에 얼굴을 기댄다. “…좋다.” 낮은 속삭임.`,
+   no:(n) => `${n}의 손을 잡고 나란히 누웠다. 천장의 작은 불빛이 별처럼 번진다.`},
+  {t:'어루만진다', stop:'여기까지 — 이마를 맞대고 잠든다', img:'n4', res:'n4',
+   x:(n, j) => `${n}${j('이', '가')} 이마를 맞대고 나직이 웃는다. 이 사람과 같은 집에서 눈을 뜬다는 게 아직도 신기하다.`,
+   go:(n) => `${n}의 머리와 등을 천천히 쓸어내렸다. 그가 한숨처럼 웃으며 나를 더 가까이 안는다. 램프가 꺼지고, 서로의 온기만 남는다.`,
+   no:(n) => `이마를 맞댄 채 잠이 들었다. 내일 아침에도 이 사람 옆에서 눈을 뜰 것이다.`},
+];
+function marriedNightSteps(S, id){
+  const lv = LOVERS[id], v = S.love[id], j = (a, b) => (/[가-힣]$/.test(lv.name) && ((lv.name.charCodeAt(lv.name.length - 1) - 0xAC00) % 28 === 0) ? b : a);
+  const img = n => [`art/ms_${id}_${n}.webp`, `art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`];
+  return NIGHT_STEPS.map((st, i) => {
+    const last = i === NIGHT_STEPS.length - 1;
+    return {id:`mnight_${id}_${S.m}_${i}`, lover:id, speaker:lv.name, title:'부부의 밤', place:'night', img:img(st.img), text:S => st.x(lv.name, j), resultImgs:[img(st.res), img(i === 0 ? 'n1' : NIGHT_STEPS[i - 1].img)],
+      choices:[
+        {label:st.t, sub:last ? '호감 ↑↑ · 스트레스 ↓↓' : '다음 단계로 · 호감↑ · 스트레스↓', run(S){ const ch = []; S._nightGo = !last; v.nights = (v.nights || 0) + 1; addAff(S, id, 2 + i, ch); fx(S, {stress:-(3 + i), bond:0.6}, ch); return {text:st.go(lv.name), chips:ch, mood:'shy'}; }},
+        {label:st.stop, sub:'호감 ↑ · 스트레스 ↓ · 체력 ↑', run(S){ const ch = []; S._nightGo = false; addAff(S, id, 1.5, ch); fx(S, {stress:-5, hp:2}, ch); return {text:st.no(lv.name), chips:ch}; }},
+      ]};
+  });
+}
 function marriedEvent(S){
   const id = S.married; if(!id) return null; const v = S.love[id]; if(!v || v.stage !== 3) return null;
   const n = v.mlife || 0; if(n >= MARRIED_SCENES.length) return null;

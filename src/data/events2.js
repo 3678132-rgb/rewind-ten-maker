@@ -52,7 +52,7 @@ EVENTS.push(
      {label:'“오늘은 마감이 급해서 잠깐만 보자”고 말한다', sub:'일 +2 · 호감 +1 · 스트레스 +1', run:S => LV(S, 1, {work:2, stress:1}, '“미안, 오늘 마감이라 잠깐밖에 못 있어.” 그는 괜찮다며 웃었지만 꽃을 쥔 손이 조금 어색했다. 덕분에 밤에 일은 끝냈다.')},
      {label:'“놀랐잖아, 다음엔 미리 말해 줘”라고 웃으며 말한다', sub:'호감 +3 · 스트레스 -3 · 통찰 +1', run:S => LV(S, 3, {stress:-3, ins:1}, '“놀랐잖아, 다음엔 미리 말해 줘.” 웃으며 말하자 그도 머쓱하게 웃었다. 서로의 거리감을 조금 더 알게 된 저녁이었다.')},
    ]},
-  {id:'love_parents', w:4, cd:36, once:true, cond:S => hasP(S) && sinceMonths(S) >= 8 && S.m >= 40, speaker:'엄마', place:'room', img:'art/mom.webp', title:'엄마에게 소개하다',
+  {id:'love_parents', w:4, cd:36, once:true, cond:S => hasP(S) && !S.married && sinceMonths(S) >= 8 && S.m >= 40, speaker:'엄마', place:'room', img:'art/mom.webp', title:'엄마에게 소개하다',
    text:S => `엄마가 눈치를 챈 듯 전화에서 슬쩍 물었다. “요즘 만나는 사람 있니?” 마흔의 나는 이 질문에 늘 얼버무렸다. 이번엔 ${PN(S)}를 소개해도 좋을까?`,
    choices:[
      {label:'주말에 함께 내려간다', sub:'호감 +6 · 관계 +4 · 스트레스 +5 · 체력 -4 · 자금 -15', run(S){ S.mom = clamp((S.mom || 40) + 6, 0, 100); return LV(S, 6, {bond:4, stress:5, hp:-4, cash:-15}, `엄마는 ${PN(S)}에게 계속 밥을 권했다. 현관에서 엄마가 내 귀에 속삭였다. “사람 참 괜찮다. 눈이 좋아.”`); }},
@@ -72,7 +72,7 @@ EVENTS.push(
      {label:'지금은 일이 우선이라고 이해를 구한다', sub:'일 +2 · 호감 -4', run:S => LV(S, -4, {work:2, stress:4}, '그는 이해한다고 했지만, 이해와 서운함이 다른 곳에 있다는 걸 나는 안다.')},
      {label:'함께 일하는 시간을 만든다', sub:'호감 +3 · 일 +1', run:S => LV(S, 3, {work:1, bond:1}, '서로의 일을 도우며 보내는 저녁. 그것도 데이트가 될 수 있다는 걸 처음 알았다.')},
    ]},
-  {id:'love_future', w:3, cd:24, once:true, cond:S => hasP(S) && sinceMonths(S) >= 12, place:'night', title:'우리의 미래', speaker:'',
+  {id:'love_future', w:3, cd:24, once:true, cond:S => hasP(S) && !S.married && sinceMonths(S) >= 12, place:'night', title:'우리의 미래', speaker:'',
    text:S => `${PN(S)}와 한강 둔치에 앉았다. 문득 그가 물었다. “우리, 오 년 뒤엔 뭘 하고 있을까?” 마흔의 나는 이 질문의 답을 알고 있다. 하지만 이번엔 아직 모른다.`,
    choices:[
      {label:'서로의 꿈을 번갈아 응원하자고 말한다', sub:'호감 +7 · 통찰 +1.5 · 나 +2 · 스트레스 +3', run:S => LV(S, 7, {ins:1.5, self:2, stress:3}, `“네 꿈도 내 꿈만큼 크게 적자.” ${PV(S).warm} 둘은 서로의 수첩에 꿈 하나씩을 적어 주었다.`)},

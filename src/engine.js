@@ -152,10 +152,11 @@ const ACTS = {
 };
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 const grad = S => S.m >= 48; // 졸업 뒤(2020.3~)
-const actName = (S, id) => id === 'club' && grad(S) ? '퇴근 후 모임' : id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
+const actName = (S, id) => id === 'date' && S.married ? '부부의 밤' : id === 'club' && grad(S) ? '퇴근 후 모임' : id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
 
 function doAction(S, id){
   const a = ACTS[id], ch = [], out = {id, ch, note:''};
+  if(id === 'date' && S.married) S.curDate = S.married;
   if(id === 'club' && grad(S)) out.note = pick(['퇴근 후 와인 한 잔과 취미 모임. 같은 취향의 사람들과 이야기하다 보니 하루의 긴장이 풀렸다.', '러닝 크루 번개에 나갔다. 땀 흘리고 나서 마시는 맥주가 이렇게 맛있을 줄은.', '독서 모임에서 낯선 얼굴들과 한 권의 책을 두고 한참 떠들었다. 퇴근길이 가벼웠다.', '회사 밖 사람들과 만나는 저녁. 명함 대신 이름만 주고받는 자리가 오히려 편하다.']);
   if(a.cost) bump(S, 'cash', -a.cost, ch);
   if(a.pay){ const pay = Math.round(a.pay * earnedMult(S) * (id === 'cafe' ? 1 : 1)); bump(S, 'cash', pay, ch); }

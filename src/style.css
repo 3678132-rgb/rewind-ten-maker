@@ -306,7 +306,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .tabbar{background:rgba(255,255,255,.84);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 
 /* 장 시작 카드 */
-.evcard.chapter{background:radial-gradient(circle at 50% 30%,#2b3a8c,#12162e 70%)}
+.evcard.chapter{background-color:#12162e;background-image:radial-gradient(circle at 50% 30%,#2b3a8c,#12162e 70%)}
 .chapcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#fff;padding:0 28px}
 .chapcard small{letter-spacing:.3em;opacity:.8;font-weight:700}.chapcard b{font-size:20px;letter-spacing:.2em;color:#ffd98a}.chapcard h1{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.2}.chapcard p{opacity:.8;margin:6px 0 22px;font-weight:600}
 .chapcard .btn{width:180px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);box-shadow:none;color:#fff}

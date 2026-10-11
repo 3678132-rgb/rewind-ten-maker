@@ -311,7 +311,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .tabbar{background:rgba(255,255,255,.84);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 
 /* 장 시작 카드 */
-.evcard.chapter{background:radial-gradient(circle at 50% 30%,#2b3a8c,#12162e 70%)}
+.evcard.chapter{background-color:#12162e;background-image:radial-gradient(circle at 50% 30%,#2b3a8c,#12162e 70%)}
 .chapcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#fff;padding:0 28px}
 .chapcard small{letter-spacing:.3em;opacity:.8;font-weight:700}.chapcard b{font-size:20px;letter-spacing:.2em;color:#ffd98a}.chapcard h1{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.2}.chapcard p{opacity:.8;margin:6px 0 22px;font-weight:600}
 .chapcard .btn{width:180px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.5);box-shadow:none;color:#fff}
@@ -403,7 +403,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #56 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #57 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -441,7 +441,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #56 · 2026.10.11</div>
+ <div id="buildtag">빌드 #57 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -4135,7 +4135,7 @@ function playEvent(ev){
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
-    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = 'none'; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
+    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = ''; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
     else nextBeat();
   });
 }
@@ -4234,7 +4234,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #56 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #57 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4279,7 +4279,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#56 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#57 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

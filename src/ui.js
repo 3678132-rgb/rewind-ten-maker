@@ -346,7 +346,7 @@ function playEvent(ev){
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
-    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = 'none'; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
+    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = ''; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
     else nextBeat();
   });
 }

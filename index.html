@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #95 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #96 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #95 · 2026.10.11</div>
+ <div id="buildtag">빌드 #96 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -667,10 +667,12 @@ const ACTS = {
   rest:    {cat:'휴식', icon:'🛌', name:'휴식', desc:'아무것도 하지 않을 권리.', cost:0, hp:18, stress:-12, eff:{}},
 };
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
-const actName = (S, id) => id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
+const grad = S => S.m >= 48; // 졸업 뒤(2020.3~)
+const actName = (S, id) => id === 'club' && grad(S) ? '퇴근 후 모임' : id === 'jobhunt' && S.hired ? '이직 활동' : id === 'job' && S.hired ? jobOf(S).name : id === 'intern' && CAREERS[S.interest] ? CAREERS[S.interest].company + ' 인턴' : ACTS[id].name;
 
 function doAction(S, id){
   const a = ACTS[id], ch = [], out = {id, ch, note:''};
+  if(id === 'club' && grad(S)) out.note = pick(['퇴근 후 와인 한 잔과 취미 모임. 같은 취향의 사람들과 이야기하다 보니 하루의 긴장이 풀렸다.', '러닝 크루 번개에 나갔다. 땀 흘리고 나서 마시는 맥주가 이렇게 맛있을 줄은.', '독서 모임에서 낯선 얼굴들과 한 권의 책을 두고 한참 떠들었다. 퇴근길이 가벼웠다.', '회사 밖 사람들과 만나는 저녁. 명함 대신 이름만 주고받는 자리가 오히려 편하다.']);
   if(a.cost) bump(S, 'cash', -a.cost, ch);
   if(a.pay){ const pay = Math.round(a.pay * earnedMult(S) * (id === 'cafe' ? 1 : 1)); bump(S, 'cash', pay, ch); }
   if(a.run) a.run(S, ch, out);
@@ -1833,25 +1835,26 @@ function milestoneEvent(S){
     ]};
   // 키스는 바로 하지 않는다: 먼저 눈이 마주치는 장면(눈맞춤 그림·한 줄)에서 한 번 눌러야 키스 그림이 나온다
   if(key === 'kiss'){ ev.beats = [(GAZE_LINES[id] || GAZE_LINES._)(lv.name)]; const g = [`art/ms_${id}_gaze.webp`, `art/ms_${id}_kiss.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_kiss.webp`, g]; } // 눈맞춤 그림에서 고르고, 받아들이면 키스 그림이 나온다
-  // 첫날밤: 수줍은 순간(칭찬·입맞춤·닿는 손끝)을 한 번 거친 뒤 선택한다
-  if(key === 'night'){ ev.beats = [(NIGHT_LINES[id] || NIGHT_LINES._)(lv.name) + ' 흘러내린 가운 사이로 드러난 어깨에 그의 입술이 살짝 닿는다. 등 뒤를 감싸는 손이 따뜻하다. 이불을 끌어안은 내 얼굴이 더 붉어진다. “부끄러워하는 것도 예뻐.” 그가 귓가에 낮게 속삭인다.']; const g = [`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_night.webp`, g]; }
+  // 첫날밤: 짧은 네 컷(그림이 매번 바뀐다) → 선택. 받아들이면 첫날밤 그림, 미루면 마지막 컷에 머문다
+  if(key === 'night'){ const f = n => [`art/ms_${id}_${n}.webp`, `art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`], last = [`art/ms_${id}_n4.webp`, `art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`];
+    ev.beats = (NIGHT_BEATS[id] || NIGHT_BEATS._)(lv.name); ev.beatImgs = [f('n1'), [`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`], f('n3'), last, last]; ev.resultImgs = [`art/ms_${id}_night.webp`, last]; }
   return ev;
 }
-// 첫날밤 직전: 수줍은 순간. 칭찬과 입맞춤, 닿는 손끝까지만 — 불이 꺼지는 데서 끊는다
-const NIGHT_LINES = {
-  _:n => `얇은 잠옷 위에 가디건을 걸친 채 침대 끝에 앉았다. 볼이 뜨겁다. ${n}가 한참 말없이 나를 보다가 낮게 말했다. “예뻐. 진짜… 어떻게 말해야 할지 모르겠을 만큼.” 고개를 숙이자 그의 손끝이 내 머리카락을 귀 뒤로 넘기고, 뺨을 아주 천천히 쓸었다. 숨을 고르는 사이, 입술이 이마에 닿았다가 눈가로, 그리고 입술로 내려온다. 그의 손이 내 손등을 감싸 쥐었다. “무서우면 바로 말해.”`,
-  jaewoo:n => `담요를 벗어 놓은 재우가 내 앞에 무릎을 굽히고 앉는다. “…예쁘다. 와, 나 지금 말이 안 나온다.” 평소 그렇게 말이 많던 사람이 웃다가 말을 잃는다. 부끄러워 눈을 내리깔자 그의 손가락이 턱끝을 살짝 들어 올렸다. “보여 줘, 얼굴. 나 이거 오래 보고 싶어.” 이마, 눈가, 입술 위로 숨결이 내려앉고, 그의 손이 내 어깨의 가디건을 조심스럽게 바로잡아 준다. “…진짜 괜찮아? 안 괜찮으면 지금 말해.”`,
-  minjun:n => `민준이 눈을 몇 번이나 깜박이다가, 귀 끝까지 빨개져서 겨우 입을 연다. “…예뻐요. 정말로. 도면에도 못 그릴 만큼.” 내가 먼저 웃음을 터뜨리자 그도 어쩔 줄 몰라 따라 웃는다. 떨리는 손끝이 내 손을 감싸고, 조심조심 뺨에 닿는다. “만져도… 돼요?” 고개를 끄덕이자 그의 입술이 이마에 닿았다가 천천히 내려온다. 아주 서툴고 아주 다정하게.`,
-  hajin:n => `하진이 시계를 풀어 탁자에 내려놓는다. 그 소리가 유난히 크게 들린다. “…이런 건 계획에 넣은 적이 없는데, 지금 이 순간은 전부 기억하고 싶다.” 낮은 목소리로 그가 말했다. “예쁘네. 숨을 쉬는 걸 잊을 정도로.” 내가 눈을 못 마주치자 그가 웃으며 내 손가락 끝에 입을 맞춘다. 손등, 손목, 그리고 이마. 평소처럼 직설적이지만 손길은 놀랄 만큼 조심스럽다. “거절은 언제든 가능해. 지금도.”`,
-  taeoh:n => `태오가 카메라를 끝내 가방 안에 넣어 둔다. “오늘은 못 찍을 것 같아. 눈에 담아 두는 게 더 아까워서.” 램프 불빛이 내 어깨 위로 번진다. 그가 숨을 삼키고 말했다. “…예뻐. 그 말밖에 안 나와.” 그의 손가락이 내 머리카락 끝을 천천히 쓸어 넘긴다. 사진을 찍던 그 눈길로, 이번에는 아무것도 남기지 않고 그냥 나를 본다. 이마에, 뺨에, 그리고 입술에 닿는 입맞춤이 느리다.`,
-  raon:n => `라온이 모자와 마스크를 침대 모서리에 던져 놓고, 평소의 장난기를 어디다 두고 왔는지 조용하다. “…나 오늘 팬들한테 한 번도 못 보여 준 얼굴인 거 알지?” 그가 쑥스럽게 웃다가 내 얼굴을 보고 말을 잃는다. “예뻐요. 아니, 예뻐. 존댓말 못 하겠어.” 귀가 새빨갛다. 손끝이 내 뺨에 닿았다가 머뭇거리며 떨어지고, 다시 닿는다. “…한 번만, 안아도 돼?”`,
-  jihu:n => `지후가 넥타이를 느슨하게 풀어 놓고, 평소의 건조한 목소리로 말하려다 실패한다. “…예쁘네요. 제 어휘가 이렇게 부족한 줄 오늘 알았습니다.” 얼굴이 달아오른 내가 웃자 그의 표정이 풀린다. “웃지 마요, 집중이 안 됩니다.” 그가 내 손을 가만히 잡아 자기 가슴 위에 올린다. 심장이 엄청나게 빨리 뛰고 있다. 이마와 눈가에 닿는 입맞춤이 서두르지 않는다.`,
-  dohyun:n => `도현이 불을 반쯤 줄이고 돌아서서 나를 본다. 늘 큰소리 내던 사람이 한참 말이 없다. “…컷. 아니, 지금 이건 컷 못 하겠다.” 어색하게 웃고는 낮게 덧붙였다. “예뻐. 카메라로는 이 느낌 못 담아.” 거친 손이 내 뺨을 의외로 가볍게 감싼다. 이마, 코끝, 그리고 입술. 숨이 섞이는 거리에서 그가 속삭인다. “싫으면 바로 말해. 난 NG라고 해도 괜찮아.”`,
-  sian:n => `시안이 말을 고르다가 고르지 못하고, 처음으로 있는 그대로 말한다. “…예뻐요. 형용사를 쓰면 거짓말 같아서, 그냥 이 말만 할게요.” 펜 대신 내 손가락을 한 마디씩 만지작거린다. 내가 얼굴을 숙이자 그가 숨을 내쉬며 이마를 맞댄다. “이 장면은 어떤 문장으로도 안 옮겨질 것 같아요.” 입술이 이마에, 눈가에, 그리고 아주 조용히 입술 위에 닿는다.`,
-  seunghyun:n => `승현이 마스크도 모자도 벗고, 카메라 앞에서는 한 번도 보인 적 없는 얼굴로 앉아 있다. “…연기가 아니라서 대사를 못 외우겠어요.” 그가 쑥스럽게 웃는다. “예뻐요. 진짜로. 이 말은 NG 없이 한 번에 하고 싶었는데, 떨리네요.” 내 손을 두 손으로 감싸 쥐고 이마에 가져다 댄다. 입술이 손등에, 뺨에, 입가에 닿는다. “…천천히 해요. 나, 서두르는 사람 아니에요.”`,
-  geonwoo:n => `건우가 정장 재킷을 의자에 걸고, 넥타이를 한참 만지작거리다가 내려놓는다. “…진지하게 말씀드립니다. 예쁘십니다.” 그러고는 스스로도 웃음이 터진다. “죄송합니다, 지금 이 말투가 맞는지 모르겠습니다.” 굳은 어깨가 풀린 그가 조용히 손을 내밀어 내 뺨에 닿는다. “동의 없이는 아무것도 하지 않겠습니다. 허락해 주시겠습니까?” 고개를 끄덕이자 입맞춤이 이마에서 시작한다.`,
-  yuchan:n => `유찬이 노트북을 덮고, 방 불빛을 직접 낮춘다. “…예뻐요. 아, 이건 예외 처리가 안 되네요. 평소 말투가 안 나와요.” 귀까지 빨간 그가 쑥스럽게 웃는다. 서툰 손끝이 내 머리카락을 쓸어 넘기고, 뺨을 지나, 손등에서 멈춘다. “…저 지금 심장이 서버 터지는 소리 나요.” 웃음이 터진 사이 이마에, 입술에 따뜻한 입맞춤이 내려앉는다.`,
-  ujin:n => `우진이 내 어깨 위로 흘러내린 가디건을 아주 조심스럽게 다시 걸쳐 준다. “…이 색이 이렇게 잘 어울릴 줄 몰랐어요. 예뻐요. 정말로.” 색을 고르던 눈빛으로 그가 나를 오래 본다. “어떤 원단도 이 느낌은 못 내요.” 손끝이 내 뺨의 홍조를 따라 천천히 움직이고, 머리카락 한 가닥을 귀 뒤로 넘긴다. 그의 입술이 이마에, 눈꺼풀에, 입술에 차례로 닿는다.`,
+// 첫날밤 직전: 수줍은 순간. 짧은 대사 네 컷(탭할 때마다 그림이 바뀐다) — 칭찬과 입맞춤, 닿는 손끝까지만, 불이 낮아지는 데서 끊는다
+const NIGHT_BEATS = {
+  _:n => [`${n}가 한참 말없이 나를 보다가 낮게 말했다. “예뻐. 진짜… 말이 안 나올 만큼.”`, '고개를 숙이자 그의 손끝이 내 머리카락을 귀 뒤로 넘기고, 뺨을 아주 천천히 쓸었다.', '이마에 닿은 숨결. 눈을 감자 이마와 이마가 맞닿았다. “무서우면 바로 말해.”', '램프 불빛이 낮아진다. 깍지 낀 손이 따뜻하고, 그의 입술이 흘러내린 가운 위 어깨에 살짝 닿는다.'],
+  jaewoo:n => ['재우가 내 앞에 무릎을 굽히고 앉는다. “…예쁘다. 와, 나 지금 말이 안 나온다.” 말 많던 사람이 웃다가 말을 잃는다.', '부끄러워 눈을 내리깔자 그의 손가락이 턱끝을 살짝 들어 올렸다. “보여 줘, 얼굴. 오래 보고 싶어.”', '이마, 눈가, 그리고 이마와 이마. 숨결이 닿는다. “…진짜 괜찮아? 안 괜찮으면 지금 말해.”', '램프가 낮아진다. 그의 손이 내 어깨의 가운을 조심스럽게 바로잡고, 입술이 어깨에 닿았다 떨어진다.'],
+  minjun:n => ['민준이 눈을 몇 번이나 깜박이다가 귀 끝까지 빨개져서 겨우 말했다. “…예뻐요. 도면에도 못 그릴 만큼.”', '내가 먼저 웃자 그도 어쩔 줄 모르고 따라 웃는다. 떨리는 손끝이 내 뺨에 닿는다. “만져도… 돼요?”', '고개를 끄덕이자 이마가 맞닿았다. 아주 서툴고 아주 다정한 숨결.', '램프가 꺼질 듯 낮아진다. 맞잡은 손바닥이 땀에 젖었는데, 놓고 싶지 않다.'],
+  hajin:n => ['하진이 시계를 풀어 탁자에 내려놓는다. 그 소리가 유난히 크다. “예쁘네. 숨 쉬는 걸 잊을 정도로.”', '내가 눈을 못 마주치자 그가 웃으며 내 손끝에 입을 맞춘다. 손등, 손목, 그리고 이마.', '“거절은 언제든 가능해. 지금도.” 직설적인 말투인데 손길은 놀랄 만큼 조심스럽다.', '야경이 번지는 창가. 그가 램프를 낮추자 방이 따뜻한 어둠으로 물든다.'],
+  taeoh:n => ['태오가 카메라를 가방 안에 넣는다. “오늘은 못 찍을 것 같아. 눈에 담아 두는 게 더 아까워서.”', '램프 불빛이 내 어깨 위로 번진다. 그가 숨을 삼키고 말했다. “…예뻐. 그 말밖에 안 나와.”', '그의 손가락이 내 머리카락 끝을 천천히 쓸어 넘긴다. 이마에 닿는 입맞춤이 느리다.', '창밖에 별이 쏟아진다. 깍지 낀 손 위로 불빛이 천천히 낮아진다.'],
+  raon:n => ['라온이 모자와 마스크를 던져 놓고, 평소의 장난기를 어디다 두고 왔는지 조용하다. “예뻐요. 아니, 예뻐. 존댓말 못 하겠어.”', '귀가 새빨갛다. 손끝이 내 뺨에 닿았다가 머뭇거리며 떨어지고, 다시 닿는다.', '“…한 번만, 안아도 돼?” 고개를 끄덕이자 그의 이마가 내 이마에 닿았다.', '별장 창밖의 불빛이 흐려진다. 그의 어깨에 기대자 심장 소리가 크게 들린다.'],
+  jihu:n => ['지후가 넥타이를 느슨하게 풀고, 건조한 목소리로 말하려다 실패한다. “…예쁘네요. 제 어휘가 이렇게 부족한 줄 몰랐습니다.”', '내가 웃자 그의 표정이 풀린다. “웃지 마요, 집중이 안 됩니다.”', '그가 내 손을 가만히 잡아 자기 가슴 위에 올린다. 심장이 엄청나게 빨리 뛴다. 이마에 입맞춤이 닿았다.', '도시의 야경이 창에 번진다. 램프가 낮아지고, 맞잡은 손이 따뜻하다.'],
+  dohyun:n => ['도현이 불을 반쯤 줄이고 돌아서서 나를 본다. 늘 큰소리 내던 사람이 한참 말이 없다. “…컷. 아니, 이건 컷 못 하겠다.”', '“예뻐. 카메라로는 이 느낌 못 담아.” 거친 손이 내 뺨을 의외로 가볍게 감싼다.', '이마, 코끝. 숨이 섞이는 거리에서 그가 속삭인다. “싫으면 말해. 난 NG라고 해도 괜찮아.”', '한옥 창호지 너머로 불빛이 잦아든다. 맞잡은 손이 오래 놓이지 않는다.'],
+  sian:n => ['시안이 말을 고르다 고르지 못하고 처음으로 있는 그대로 말한다. “…예뻐요. 형용사를 쓰면 거짓말 같아서.”', '펜 대신 내 손가락을 한 마디씩 만지작거린다. 내가 얼굴을 숙이자 그가 이마를 맞댔다.', '“이 장면은 어떤 문장으로도 안 옮겨질 것 같아요.” 입술이 이마에, 눈가에 조용히 닿는다.', '파도 소리가 창가까지 올라온다. 램프가 낮아지고, 깍지 낀 손이 따뜻하다.'],
+  seunghyun:n => ['승현이 모자를 벗고, 카메라 앞에서는 보인 적 없는 얼굴로 앉아 있다. “…연기가 아니라서 대사를 못 외우겠어요.”', '“예뻐요. 이 말은 NG 없이 한 번에 하고 싶었는데, 떨리네요.” 내 손을 두 손으로 감싸 이마에 가져다 댄다.', '입술이 손등에, 뺨에, 입가에 닿는다. “…천천히 해요. 나, 서두르는 사람 아니에요.”', '별장 거실의 조명이 낮아진다. 어깨에 기대자 그의 숨이 천천히 고르게 가라앉는다.'],
+  geonwoo:n => ['건우가 재킷을 의자에 걸고 넥타이를 한참 만지작거린다. “…진지하게 말씀드립니다. 예쁘십니다.” 그러곤 스스로도 웃음이 터진다.', '“죄송합니다, 지금 이 말투가 맞는지 모르겠습니다.” 굳은 어깨가 풀린 그가 조용히 내 뺨에 손을 얹는다.', '“동의 없이는 아무것도 하지 않겠습니다. 허락해 주시겠습니까?” 고개를 끄덕이자 입맞춤이 이마에서 시작한다.', '한옥 창 너머 등롱 불빛이 흔들린다. 램프가 낮아지고 맞잡은 손이 따뜻하다.'],
+  yuchan:n => ['유찬이 노트북을 덮고 방 불빛을 직접 낮춘다. “…예뻐요. 아, 이건 예외 처리가 안 되네요.” 귀까지 빨갛다.', '서툰 손끝이 내 머리카락을 쓸어 넘기고, 뺨을 지나 손등에서 멈춘다. “저 지금 심장이 서버 터지는 소리 나요.”', '웃음이 터진 사이 이마에, 입술에 따뜻한 입맞춤이 내려앉는다.', '해운대 파도 소리 너머로 호텔 불빛이 흐려진다. 나란히 앉아 깍지 낀 손이 놓이지 않는다.'],
+  ujin:n => ['우진이 내 어깨 위로 흘러내린 가운을 조심스럽게 바로 걸쳐 준다. “…이 색이 이렇게 잘 어울릴 줄 몰랐어요. 예뻐요.”', '색을 고르던 눈빛으로 오래 본다. “어떤 원단도 이 느낌은 못 내요.” 손끝이 내 뺨의 홍조를 따라 움직인다.', '머리카락 한 가닥을 귀 뒤로 넘기고, 입술이 이마에, 눈꺼풀에 차례로 닿는다.', '파리의 창밖 불빛이 번진다. 램프가 낮아지고, 맞잡은 손이 따뜻하다.'],
 };
 const GAZE_LINES = {
   _:n => `${n}와 눈이 마주쳤다. 말이 끊기고, 시간이 느려진다. 그의 시선이 내 눈에서 입술로 천천히 내려갔다가 다시 올라온다. 숨소리만 들리는 거리.`,
@@ -7104,7 +7107,7 @@ function openPicker(i, cat){
     openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
+      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
     }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
@@ -7296,6 +7299,8 @@ function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m 
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
 const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
 for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
+// 졸업 뒤에는 학교 대신 도시 배경에서 움직인다
+const CITY_ACT_BG = {exercise:'ct_river', friends:'ct_mall', club:'ct_night', date:'ct_cinema', travel:'ct_river', cafe:'ct_books', tutor:'ct_office'};
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
@@ -7322,7 +7327,7 @@ function showAct(slotName, id, out, first = 0, opts = {}){
       // 직업 일: 큰 일러스트 대신 직업별 2.5등신 캐릭터(두 장이 번갈아 움직인다). 직업 세트가 없으면 직장인 → 기본 순서로 대체
       const jobSet = sp === 'job' ? (id === 'intern' ? 'job_intern' : S.hired && CAREERS[S.track] ? `job_${S.track}` : 'job_i') : null;
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : jobSet || sp + outfitSuffix(S, id);
-      const sbg = sp === 'job' ? 'art/bg_office.webp' : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+      const sbg = sp === 'job' ? 'art/bg_office.webp' : grad(S) && CITY_ACT_BG[id] ? `art/${CITY_ACT_BG[id]}.webp` : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
       const fb = jobSet ? ['job_w', 'job'] : [];
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       const fbA = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_a.webp`).join('|'), fbB = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_b.webp`).join('|');
@@ -7402,7 +7407,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #95 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #96 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7464,7 +7469,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#95 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#96 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

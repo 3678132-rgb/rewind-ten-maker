@@ -271,7 +271,7 @@ function openPicker(i, cat){
     openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
-      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
+      return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
     }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
@@ -463,6 +463,8 @@ function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m 
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
 const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
 for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
+// 졸업 뒤에는 학교 대신 도시 배경에서 움직인다
+const CITY_ACT_BG = {exercise:'ct_river', friends:'ct_mall', club:'ct_night', date:'ct_cinema', travel:'ct_river', cafe:'ct_books', tutor:'ct_office'};
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
@@ -489,7 +491,7 @@ function showAct(slotName, id, out, first = 0, opts = {}){
       // 직업 일: 큰 일러스트 대신 직업별 2.5등신 캐릭터(두 장이 번갈아 움직인다). 직업 세트가 없으면 직장인 → 기본 순서로 대체
       const jobSet = sp === 'job' ? (id === 'intern' ? 'job_intern' : S.hired && CAREERS[S.track] ? `job_${S.track}` : 'job_i') : null;
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : jobSet || sp + outfitSuffix(S, id);
-      const sbg = sp === 'job' ? 'art/bg_office.webp' : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+      const sbg = sp === 'job' ? 'art/bg_office.webp' : grad(S) && CITY_ACT_BG[id] ? `art/${CITY_ACT_BG[id]}.webp` : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
       const fb = jobSet ? ['job_w', 'job'] : [];
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       const fbA = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_a.webp`).join('|'), fbB = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_b.webp`).join('|');

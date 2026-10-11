@@ -9,10 +9,11 @@ function contactsOf(S){
     {id:'soyeon', kind:'friend', name:'소연', sub:'단짝 친구', img:'art/soyeon.webp'},
     {id:'mom', kind:'mom', name:'엄마', sub:'엄마', img:'art/mom.webp'},
   ];
-  for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9) continue;
+  for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9 || v.stage === -2) continue;
     const partner = v.stage >= 1;
     out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
-  return out;
+  const lov = out.filter(o => o.kind === 'partner' || o.kind === 'crush').sort((a, b) => S.love[b.id].aff - S.love[a.id].aff); // 호감 높은 순
+  return out.filter(o => o.kind !== 'partner' && o.kind !== 'crush').concat(lov);
 }
 const hashM = (S, id) => { let h = S.m * 7; for(const c of id) h += c.charCodeAt(0); return h; };
 

@@ -5,6 +5,7 @@ LOVE_STAGE['3'] = '결혼';
 function loveStatus(S, id){
   const v = S.love[id]; if(!v) return '';
   if(v.stage === 3) return '결혼';
+  if(v.stage === -2) return '거절함';
   if(v.stage === -9) return v.marriedAt != null ? '이혼' : '이별';
   if(v.stage === 2) return '결혼 약속';
   if(v.stage === 1) return S.secret && S.secret[id] ? '연애 · 비밀' : '연애';
@@ -27,7 +28,7 @@ function secretConfessEvent(S, id){
   return {id:'confess_' + id, lover:id, once:true, speaker:lv.name, title:'흔들리는 마음', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “너한테 이미 소중한 사람이 있다는 거 알아. 그래도, 나 너 좋아해.” 머릿속에 ${P.name}의 얼굴이 스쳤다. 마흔의 나는 한 번도 이런 갈림길 앞에 서 본 적이 없다.`,
     choices:[
-      {label:'정중히 거절한다', sub:`${P.name}에게 충실 · 호감 -8`, run(S){ const ch = []; addAff(S, id, -8, ch); fx(S, {self:2, bond:1}, ch); return {text:'“미안해요. 마음만 고맙게 받을게요.” 그는 잠시 말이 없다가 고개를 끄덕였다. 돌아서는 뒷모습이 오래 남았다.', chips:ch}; }},
+      {label:'정중히 거절한다', sub:`${P.name}에게 충실 · 호감 -8`, run(S){ const ch = []; addAff(S, id, -8, ch); v.stage = -2; v.rejectedAt = S.m; fx(S, {self:2, bond:1}, ch); return {text:'“미안해요. 마음만 고맙게 받을게요.” 그는 잠시 말이 없다가 고개를 끄덕였다. 돌아서는 뒷모습이 오래 남았다.', chips:ch}; }},
       {label:'아무에게도 말하지 않고 만난다', sub:'비밀 연애 · 들킬 위험↑', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; v.secret = true; S.secret = S.secret || {}; S.secret[id] = true; addSusp(S, 10); fx(S, {bond:2, stress:6, self:-2}, ch); S.album.push(`${josa(lv.name, '과', '와')} 비밀 연애를 시작함`); return {text:`나는 고개를 끄덕였다. 설렘과 죄책감이 동시에 밀려왔다. ${lv.name}의 손을 잡은 순간, 이건 비밀이 되어야 한다는 걸 알았다.`, chips:ch}; }},
       {label:`${P.name}와의 관계부터 정리한다`, sub:'이별 후 새로 시작', run(S){ const ch = []; const pid = S.partner; endRelation(S, pid, ch); v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:-3, stress:8, self:1}, ch); S.album.push(`${josa(P.name, '과', '와')} 이별하고 ${josa(lv.name, '과', '와')} 연인이 됨`); return {text:`${P.name}에게 먼저 이별을 말했다. 아프지만 거짓으로 두 사람을 만나는 것보다는 나았다. 그런 뒤 ${lv.name}에게 대답했다.`, chips:ch}; }},
     ]};

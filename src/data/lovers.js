@@ -133,7 +133,7 @@ function confessEvent(S, id){
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “나, 너 좋아해. 사귀자.”`,
     choices:[
       {label:'받아들인다', sub:'공식 연인이 된다', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:3, stress:-6}, ch); if(id === 'jaewoo' && !v.avoided) push(ch, '※ 서재우의 습관을 지켜볼 것', 0.1); S.album.push(`${josa(lv.name, '과', '와')} 연인이 됨`); for(const o in S.love) if(o !== id && S.love[o].stage === -1) S.love[o].aff = Math.min(S.love[o].aff, 44); return {text:'“…응.” 대답은 짧았지만 가슴은 그렇지 않았다. 마흔의 나는 몰랐던 종류의 두근거림이었다.', chips:ch}; }},
-      {label:'아직은 아니라고 한다', sub:'호감 -10', run(S){ const ch = []; addAff(S, id, -10, ch); v.refused = (v.refused || 0) + 1; return {text:'“시간을 조금만 줘.” 그는 고개를 끄덕였다. 기다려 줄 사람인지는 모르겠다.', chips:ch}; }},
+      {label:'아직은 아니라고 한다', sub:'호감 -10 · 한동안 연락이 끊긴다', run(S){ const ch = []; addAff(S, id, -10, ch); v.refused = (v.refused || 0) + 1; v.stage = -2; v.rejectedAt = S.m; return {text:'“시간을 조금만 줘.” 그는 고개를 끄덕였다. 기다려 줄 사람인지는 모르겠다.', chips:ch}; }},
     ]};
 }
 
@@ -229,5 +229,5 @@ function loveEvent(S){
     if(v.stage === 1 && !sec && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && !sec && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return romance3Event(S) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
+  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || romance3Event(S) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
 }

@@ -273,19 +273,27 @@ function showCareer(){
   $('x').onclick = closeSheet;
 }
 function showLove(){
-  const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]);
+  const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]).sort((a, b) => ((S.love[a].stage === -9) - (S.love[b].stage === -9)) || S.love[b].aff - S.love[a].aff); // 호감 높은 순 (끝난 사람은 아래)
   const row = id => { const lv = LOVERS[id], v = S.love[id];
     if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫' : '') + (S.partner === id && v.stage >= 1 && v.stage < 3 ? ' ❤' : '');
     const dt = dateTargets(S).includes(id);
-    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${tag} · 호감 ${Math.round(v.aff)}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
+    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${tag} · 호감 ${Math.round(v.aff)}</small>${v.stage === -9 || v.stage === -2 ? '' : `<small class="lk">취향 ${likeNames(id)}</small>`}<div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}${[-1, 1, 2].includes(v.stage) ? `<button class="mini bk" data-bk="${id}">${v.stage === -1 ? '연락 끊기' : '헤어지기'}</button>` : ''}</span></div>`; };
   openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(인연 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
     const dtb = e.target.closest && e.target.closest('[data-dt]'); if(dtb){ e.stopPropagation(); return planDateWith(dtb.dataset.dt); }
+    const bkb = e.target.closest && e.target.closest('[data-bk]'); if(bkb){ e.stopPropagation(); return confirmBreak(bkb.dataset.bk); }
     if(b.classList.contains('off')) return;
     const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+}
+// 헤어지자고(연락을 끊겠다고) 말하기: 확인 후 이별. 그 사람은 한참 뒤 미련으로 다시 연락해 올 수 있다
+function confirmBreak(id){
+  const lv = LOVERS[id], v = S.love[id], first = v.stage === -1;
+  openSheet(sheetHead(first ? '연락을 끊을까요?' : '헤어질까요?', `${lv.name} · ${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`) + `<div class="txt">${first ? '더 이상 그 사람과 이어지지 않아요. 아직 마음이 남았다면 신중하게.' : '“우리, 여기까지 하자.” 이 말을 하면 관계가 끝나요. 시간이 지나면 그가 다시 연락해 올지도 몰라요.'}</div><button class="btn" id="bk-go" style="background:#e5486a;box-shadow:none">${first ? '연락을 끊는다' : '헤어지자고 말한다'}</button><button class="btn ghost sm" id="bk-no" style="margin-top:8px">아니, 그대로 둔다</button>`);
+  $('x').onclick = $('bk-no').onclick = () => showLove();
+  $('bk-go').onclick = async () => { const ch = []; breakUp(S, id, ch); save(); closeSheet(); await playEvent({id:'bk_' + id + '_' + S.m, speaker:lv.name, title:first ? '끊어진 연락' : '이별', place:'night', img:`art/lv_${id}.webp`, cut:id, text:S => first ? `${lv.name}의 번호를 차단했다. 메신저 목록에서 이름이 사라지자 마음이 조금 비었다.` : `“우리, 여기까지 하자.” ${lv.name}는 한참 말이 없다가 고개를 끄덕였다. “…알겠어. 네가 그렇게 정했다면.” 뒷모습이 멀어질 때까지 나는 서 있었다.`, choices:[{label:'돌아선다', sub:'', run(S){ return {text:'바람이 차가웠다. 이별은 늘 처음처럼 아프다.', chips:ch, mood:'sad'}; }}]}); render(); showLove(); };
 }
 // 연애 시트에서 곧바로 이번 달 빈 칸에 이 사람과의 데이트를 넣는다
 function planDateWith(id){

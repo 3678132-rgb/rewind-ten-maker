@@ -414,6 +414,8 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .evcut{position:absolute;left:50%;bottom:0;height:90%;max-width:98%;object-fit:contain;object-position:50% 100%;transform:translateX(-50%);z-index:1;filter:drop-shadow(0 8px 14px rgba(10,14,40,.4));animation:cutin .4s ease-out}
 .evcard .evpanel{z-index:3}
 @keyframes cutin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%)}}
+.lcard .lk{color:#8a6bd6;font-weight:600}
+.lcard .mini.bk{font-size:11px;padding:4px 9px;border-radius:99px;background:#eef0f6;color:#6b7390;border:0;font-weight:700;white-space:nowrap}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -424,7 +426,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #66 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #68 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -462,7 +464,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #66 · 2026.10.11</div>
+ <div id="buildtag">빌드 #68 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -567,6 +569,7 @@ const LOVE_STAGE = {'-9':'끝', '-1':'썸', '1':'연인', '2':'결혼 약속'};
 const loveOf = S => S.love;
 function addAff(S, id, d, ch){
   const v = S.love[id]; if(!v) return; const lv = LOVERS[id];
+  if(d > 0 && typeof likeFit === 'function') d *= 0.75 + 0.5 * likeFit(S, id); // 좋아하는 능력치가 높을수록 호감이 빨리 오른다
   const b = v.aff; v.aff = clamp(v.aff + d, 0, 100); push(ch, lv.name + ' 호감', v.aff - b);
 }
 function dateTarget(S){
@@ -794,7 +797,7 @@ function confessEvent(S, id){
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “나, 너 좋아해. 사귀자.”`,
     choices:[
       {label:'받아들인다', sub:'공식 연인이 된다', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:3, stress:-6}, ch); if(id === 'jaewoo' && !v.avoided) push(ch, '※ 서재우의 습관을 지켜볼 것', 0.1); S.album.push(`${josa(lv.name, '과', '와')} 연인이 됨`); for(const o in S.love) if(o !== id && S.love[o].stage === -1) S.love[o].aff = Math.min(S.love[o].aff, 44); return {text:'“…응.” 대답은 짧았지만 가슴은 그렇지 않았다. 마흔의 나는 몰랐던 종류의 두근거림이었다.', chips:ch}; }},
-      {label:'아직은 아니라고 한다', sub:'호감 -10', run(S){ const ch = []; addAff(S, id, -10, ch); v.refused = (v.refused || 0) + 1; return {text:'“시간을 조금만 줘.” 그는 고개를 끄덕였다. 기다려 줄 사람인지는 모르겠다.', chips:ch}; }},
+      {label:'아직은 아니라고 한다', sub:'호감 -10 · 한동안 연락이 끊긴다', run(S){ const ch = []; addAff(S, id, -10, ch); v.refused = (v.refused || 0) + 1; v.stage = -2; v.rejectedAt = S.m; return {text:'“시간을 조금만 줘.” 그는 고개를 끄덕였다. 기다려 줄 사람인지는 모르겠다.', chips:ch}; }},
     ]};
 }
 
@@ -890,7 +893,7 @@ function loveEvent(S){
     if(v.stage === 1 && !sec && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && !sec && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return romance3Event(S) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
+  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || romance3Event(S) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
 }
 
 // 썸 스토리: 만난 사람과 접점을 만들어 가는 장면들 (고백 전까지). 장면 4개 × 11명. ENGINE 구간(DOM 금지)
@@ -1072,6 +1075,7 @@ LOVE_STAGE['3'] = '결혼';
 function loveStatus(S, id){
   const v = S.love[id]; if(!v) return '';
   if(v.stage === 3) return '결혼';
+  if(v.stage === -2) return '거절함';
   if(v.stage === -9) return v.marriedAt != null ? '이혼' : '이별';
   if(v.stage === 2) return '결혼 약속';
   if(v.stage === 1) return S.secret && S.secret[id] ? '연애 · 비밀' : '연애';
@@ -1094,7 +1098,7 @@ function secretConfessEvent(S, id){
   return {id:'confess_' + id, lover:id, once:true, speaker:lv.name, title:'흔들리는 마음', place:'night', img:'art/lv_' + id + '.webp',
     text:S => `${lv.name}의 목소리가 평소보다 낮았다. “너한테 이미 소중한 사람이 있다는 거 알아. 그래도, 나 너 좋아해.” 머릿속에 ${P.name}의 얼굴이 스쳤다. 마흔의 나는 한 번도 이런 갈림길 앞에 서 본 적이 없다.`,
     choices:[
-      {label:'정중히 거절한다', sub:`${P.name}에게 충실 · 호감 -8`, run(S){ const ch = []; addAff(S, id, -8, ch); fx(S, {self:2, bond:1}, ch); return {text:'“미안해요. 마음만 고맙게 받을게요.” 그는 잠시 말이 없다가 고개를 끄덕였다. 돌아서는 뒷모습이 오래 남았다.', chips:ch}; }},
+      {label:'정중히 거절한다', sub:`${P.name}에게 충실 · 호감 -8`, run(S){ const ch = []; addAff(S, id, -8, ch); v.stage = -2; v.rejectedAt = S.m; fx(S, {self:2, bond:1}, ch); return {text:'“미안해요. 마음만 고맙게 받을게요.” 그는 잠시 말이 없다가 고개를 끄덕였다. 돌아서는 뒷모습이 오래 남았다.', chips:ch}; }},
       {label:'아무에게도 말하지 않고 만난다', sub:'비밀 연애 · 들킬 위험↑', run(S){ const ch = []; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; v.secret = true; S.secret = S.secret || {}; S.secret[id] = true; addSusp(S, 10); fx(S, {bond:2, stress:6, self:-2}, ch); S.album.push(`${josa(lv.name, '과', '와')} 비밀 연애를 시작함`); return {text:`나는 고개를 끄덕였다. 설렘과 죄책감이 동시에 밀려왔다. ${lv.name}의 손을 잡은 순간, 이건 비밀이 되어야 한다는 걸 알았다.`, chips:ch}; }},
       {label:`${P.name}와의 관계부터 정리한다`, sub:'이별 후 새로 시작', run(S){ const ch = []; const pid = S.partner; endRelation(S, pid, ch); v.stage = 1; v.since2 = S.m; v.lastDate = S.m; S.partner = id; fx(S, {bond:-3, stress:8, self:1}, ch); S.album.push(`${josa(P.name, '과', '와')} 이별하고 ${josa(lv.name, '과', '와')} 연인이 됨`); return {text:`${P.name}에게 먼저 이별을 말했다. 아프지만 거짓으로 두 사람을 만나는 것보다는 나았다. 그런 뒤 ${lv.name}에게 대답했다.`, chips:ch}; }},
     ]};
@@ -1758,6 +1762,47 @@ function milestoneEvent(S){
     ]};
 }
 
+// 연애 보강: 고백을 거절한 상대 · 이별한 상대의 미련 연락, 직접 이별하기, 남주별 취향 능력치. ENGINE 구간(DOM 금지)
+LOVE_STAGE['-2'] = '거절';
+// ── 남주별로 좋아하는 능력치 2개: 주인공의 능력치가 높을수록 호감이 빨리 오른다 ──
+const LOVE_LIKES = {
+  jaewoo:['neg', 'dare'], minjun:['sense', 'ins'], hajin:['dare', 'skill'], taeoh:['sense', 'ins'], raon:['know', 'ins'],
+  jihu:['neg', 'know'], dohyun:['dare', 'skill'], sian:['sense', 'ins'], seunghyun:['charm', 'dare'], geonwoo:['know', 'ins'], yuchan:['skill', 'know'], ujin:['sense', 'charm'],
+};
+const likeNames = id => (LOVE_LIKES[id] || []).map(k => STAT[k]).join(' · ');
+function likeFit(S, id){ const ks = LOVE_LIKES[id]; if(!ks) return 0.5; const avg = ks.reduce((t, k) => t + (S.st[k] || 0), 0) / ks.length; return clamp(avg / 65, 0, 1); }
+// ── 이별 ──
+function breakUp(S, id, ch){
+  const v = S.love[id], lv = LOVERS[id]; if(!v) return;
+  const was = v.stage;
+  endRelation(S, id, ch); v.stage = -9; v.endedBy = 'me'; v.endedAt = S.m; v.regretN = 0;
+  fx(S, was === -1 ? {self:1, stress:2} : {bond:-3, stress:6, self:1.5}, ch);
+  S.album.push(was === -1 ? `${lv.name}에게 연락을 끊음` : `${josa(lv.name, '과', '와')} 헤어짐`);
+  promoteSecret(S);
+}
+// ── 미련: 거절당한/이별한 상대가 다시 연락해 온다 (가끔) ──
+function regretCandidate(S){
+  for(const id of LOVER_IDS){ const v = S.love[id]; if(!v) continue;
+    const since = v.stage === -2 ? v.rejectedAt : (v.stage === -9 && v.endedBy === 'me' && v.marriedAt == null ? v.endedAt : null);
+    if(since == null || v.regretDone) continue;
+    if(S.m - since < 6 || S.m - (v.regretAt == null ? -99 : v.regretAt) < 8) continue;
+    return id; }
+  return null;
+}
+function regretEvent(S){
+  const id = regretCandidate(S); if(!id || R() > 0.4) return null;
+  const v = S.love[id], lv = LOVERS[id], rej = v.stage === -2, off = officialOf(S), taken = off && off !== id;
+  return {id:`regret_${id}_${S.m}`, lover:id, speaker:lv.name, title:'다시 온 연락', place:'night', img:`art/lv_${id}.webp`, cut:id,
+    text:S => rej
+      ? `${lv.name}에게서 문자가 왔다. “…잘 지내? 그때 네 대답을 듣고도 계속 생각이 나. 한 번만 만나 줄 수 있어?” 거절했던 사람이다. 마음은 어떨까.`
+      : `${lv.name}에게서 오랜만에 연락이 왔다. “…내가 많이 부족했어. 헤어지고 나서야 알겠더라. 다시 얘기해 볼 수 있을까?” 내가 먼저 끊었던 사람이다.`,
+    choices:[
+      {label:'한 번 만나 본다', sub:'다시 썸 · 호감↑', run(S){ const ch = []; v.regretAt = S.m; v.stage = -1; v.since = S.m; v.aff = Math.max(v.aff, 28); v.rom = Math.min(v.rom || 0, 2); v.rejectedAt = null; addAff(S, id, 4, ch); fx(S, {stress:2}, ch); return {text:`${lv.name}는 약속 장소에 먼저 와 있었다. 어색한 인사 뒤에 한참 말이 없었다. 시간은 많은 걸 바꾸기도, 아무것도 바꾸지 못하기도 한다.`, chips:ch, mood:'shy'}; }},
+      taken ? {label:'아무도 모르게 만난다', sub:`${LOVERS[off].name} 몰래 · 들킬 위험↑`, run(S){ const ch = []; v.regretAt = S.m; v.stage = 1; v.since2 = S.m; v.lastDate = S.m; v.aff = Math.max(v.aff, 45); v.secret = true; v.rejectedAt = null; S.secret = S.secret || {}; S.secret[id] = true; addSusp(S, 10); fx(S, {stress:6, self:-2, bond:1}, ch); S.album.push(`${josa(lv.name, '과', '와')} 몰래 다시 만나기 시작함`); return {text:'“아무한테도 말하지 마.” 우리는 같은 말을 동시에 꺼냈다. 설렘 뒤로 죄책감이 따라붙었다.', chips:ch}; }} : null,
+      {label:'이제 정리한다', sub:'더 이상 연락하지 않는다', run(S){ const ch = []; v.regretDone = true; v.stage = -9; v.endedBy = 'me'; v.endedAt = S.m; fx(S, {self:2}, ch); return {text:'“…미안해요. 이제 정말 끝이에요.” 답장은 오지 않았다. 번호를 지우고 나니 마음이 가벼워졌다.', chips:ch, mood:'serious'}; }},
+    ].filter(Boolean)};
+}
+
 // 캠퍼스 산책: 교내 장소별 우연한 만남 장면 (ENGINE 구간 안, DOM 금지)
 // 장소 키: class 강의실 · library 도서관 · shop 매점/학생식당 · club 동아리실 · field 운동장 · garden 정원/뒤뜰 벤치
 
@@ -1985,7 +2030,7 @@ function campusEncounter(S, place, visitCh){
   const cands = [];
   for(const id of Object.keys(LV)){
     const set = LV[id][place]; if(!set || !LOVERS[id]) continue; const v = S.love[id], lv = LOVERS[id];
-    if(v){ if(v.stage === -9 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
+    if(v){ if(v.stage === -9 || v.stage === -2 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
     else if(!S.seen['meet_' + id] && !lv.career && S.m >= lv.meet - 8 && S.m < CAMPUS_END) cands.push({w:4.5, kind:'meet', id}); // 첫 만남이 이 장소에서 앞당겨진다
   }
   (FR[place] || []).forEach((sc, idx) => cands.push({w:2.2, kind:'friend', sc, idx}));
@@ -3793,10 +3838,11 @@ function contactsOf(S){
     {id:'soyeon', kind:'friend', name:'소연', sub:'단짝 친구', img:'art/soyeon.webp'},
     {id:'mom', kind:'mom', name:'엄마', sub:'엄마', img:'art/mom.webp'},
   ];
-  for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9) continue;
+  for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9 || v.stage === -2) continue;
     const partner = v.stage >= 1;
     out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
-  return out;
+  const lov = out.filter(o => o.kind === 'partner' || o.kind === 'crush').sort((a, b) => S.love[b.id].aff - S.love[a.id].aff); // 호감 높은 순
+  return out.filter(o => o.kind !== 'partner' && o.kind !== 'crush').concat(lov);
 }
 const hashM = (S, id) => { let h = S.m * 7; for(const c of id) h += c.charCodeAt(0); return h; };
 
@@ -4290,19 +4336,27 @@ function showCareer(){
   $('x').onclick = closeSheet;
 }
 function showLove(){
-  const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]);
+  const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]).sort((a, b) => ((S.love[a].stage === -9) - (S.love[b].stage === -9)) || S.love[b].aff - S.love[a].aff); // 호감 높은 순 (끝난 사람은 아래)
   const row = id => { const lv = LOVERS[id], v = S.love[id];
     if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫' : '') + (S.partner === id && v.stage >= 1 && v.stage < 3 ? ' ❤' : '');
     const dt = dateTargets(S).includes(id);
-    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${tag} · 호감 ${Math.round(v.aff)}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
+    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${tag} · 호감 ${Math.round(v.aff)}</small>${v.stage === -9 || v.stage === -2 ? '' : `<small class="lk">취향 ${likeNames(id)}</small>`}<div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}${[-1, 1, 2].includes(v.stage) ? `<button class="mini bk" data-bk="${id}">${v.stage === -1 ? '연락 끊기' : '헤어지기'}</button>` : ''}</span></div>`; };
   openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(인연 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
     const dtb = e.target.closest && e.target.closest('[data-dt]'); if(dtb){ e.stopPropagation(); return planDateWith(dtb.dataset.dt); }
+    const bkb = e.target.closest && e.target.closest('[data-bk]'); if(bkb){ e.stopPropagation(); return confirmBreak(bkb.dataset.bk); }
     if(b.classList.contains('off')) return;
     const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+}
+// 헤어지자고(연락을 끊겠다고) 말하기: 확인 후 이별. 그 사람은 한참 뒤 미련으로 다시 연락해 올 수 있다
+function confirmBreak(id){
+  const lv = LOVERS[id], v = S.love[id], first = v.stage === -1;
+  openSheet(sheetHead(first ? '연락을 끊을까요?' : '헤어질까요?', `${lv.name} · ${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`) + `<div class="txt">${first ? '더 이상 그 사람과 이어지지 않아요. 아직 마음이 남았다면 신중하게.' : '“우리, 여기까지 하자.” 이 말을 하면 관계가 끝나요. 시간이 지나면 그가 다시 연락해 올지도 몰라요.'}</div><button class="btn" id="bk-go" style="background:#e5486a;box-shadow:none">${first ? '연락을 끊는다' : '헤어지자고 말한다'}</button><button class="btn ghost sm" id="bk-no" style="margin-top:8px">아니, 그대로 둔다</button>`);
+  $('x').onclick = $('bk-no').onclick = () => showLove();
+  $('bk-go').onclick = async () => { const ch = []; breakUp(S, id, ch); save(); closeSheet(); await playEvent({id:'bk_' + id + '_' + S.m, speaker:lv.name, title:first ? '끊어진 연락' : '이별', place:'night', img:`art/lv_${id}.webp`, cut:id, text:S => first ? `${lv.name}의 번호를 차단했다. 메신저 목록에서 이름이 사라지자 마음이 조금 비었다.` : `“우리, 여기까지 하자.” ${lv.name}는 한참 말이 없다가 고개를 끄덕였다. “…알겠어. 네가 그렇게 정했다면.” 뒷모습이 멀어질 때까지 나는 서 있었다.`, choices:[{label:'돌아선다', sub:'', run(S){ return {text:'바람이 차가웠다. 이별은 늘 처음처럼 아프다.', chips:ch, mood:'sad'}; }}]}); render(); showLove(); };
 }
 // 연애 시트에서 곧바로 이번 달 빈 칸에 이 사람과의 데이트를 넣는다
 function planDateWith(id){
@@ -4466,7 +4520,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #66 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #68 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4511,7 +4565,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#66 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#68 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

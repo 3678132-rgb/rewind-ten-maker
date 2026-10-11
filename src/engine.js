@@ -100,6 +100,7 @@ const LOVE_STAGE = {'-9':'끝', '-1':'썸', '1':'연인', '2':'결혼 약속'};
 const loveOf = S => S.love;
 function addAff(S, id, d, ch){
   const v = S.love[id]; if(!v) return; const lv = LOVERS[id];
+  if(d > 0 && typeof likeFit === 'function') d *= 0.75 + 0.5 * likeFit(S, id); // 좋아하는 능력치가 높을수록 호감이 빨리 오른다
   const b = v.aff; v.aff = clamp(v.aff + d, 0, 100); push(ch, lv.name + ' 호감', v.aff - b);
 }
 function dateTarget(S){

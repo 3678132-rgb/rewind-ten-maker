@@ -38,7 +38,7 @@ function campusEncounter(S, place, visitCh){
   const cands = [];
   for(const id of Object.keys(LV)){
     const set = LV[id][place]; if(!set || !LOVERS[id]) continue; const v = S.love[id], lv = LOVERS[id];
-    if(v){ if(v.stage === -9 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
+    if(v){ if(v.stage === -9 || v.stage === -2 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
     else if(!S.seen['meet_' + id] && !lv.career && S.m >= lv.meet - 8 && S.m < CAMPUS_END) cands.push({w:4.5, kind:'meet', id}); // 첫 만남이 이 장소에서 앞당겨진다
   }
   (FR[place] || []).forEach((sc, idx) => cands.push({w:2.2, kind:'friend', sc, idx}));

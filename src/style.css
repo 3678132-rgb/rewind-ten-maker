@@ -409,3 +409,5 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .evcut{position:absolute;left:50%;bottom:0;height:90%;max-width:98%;object-fit:contain;object-position:50% 100%;transform:translateX(-50%);z-index:1;filter:drop-shadow(0 8px 14px rgba(10,14,40,.4));animation:cutin .4s ease-out}
 .evcard .evpanel{z-index:3}
 @keyframes cutin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%)}}
+.lcard .lk{color:#8a6bd6;font-weight:600}
+.lcard .mini.bk{font-size:11px;padding:4px 9px;border-radius:99px;background:#eef0f6;color:#6b7390;border:0;font-weight:700;white-space:nowrap}

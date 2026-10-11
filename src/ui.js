@@ -270,7 +270,7 @@ function showDex(){
 const PLACE_FULL = {rain:'art/cover.webp', shop:'art/bg_shop.webp'};
 const seasonPlace = ev => ev.place === 'campus' ? 'campus' : ev.place === 'room' ? 'room' : null;
 function evOpen(ev, inner){
-  const el = $('ev'), sp = seasonPlace(ev), img0 = ev.img === 'art/rival_harin.webp' && S && S.m >= 48 ? 'art/rival_harin_work.webp' : ev.img, img = img0 || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
+  const el = $('ev'), sp = seasonPlace(ev), img0 = ev.img === 'art/rival_harin.webp' && S ? (S.m >= 96 ? 'art/rival_harin_late.webp' : S.m >= 48 ? 'art/rival_harin_work.webp' : ev.img) : ev.img, img = img0 || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
   el.className = 'evcard on p-' + (ev.place || 'room'); paintEdge('card');
   el.style.backgroundImage = img ? `url(${img})` : 'none';
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
@@ -289,7 +289,7 @@ function playEvent(ev){
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' && S.m >= 48 ? 'harin_w' : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };

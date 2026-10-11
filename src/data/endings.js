@@ -2,9 +2,9 @@
 const FREE_MIN = 50, FREE_SUM = 192;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
-const borrowPenalty = S => Math.min(24, (S.borrowed || 0) * 2.2) * (S.story && S.story.f && S.story.f.clockFree ? 0.5 : 1); // 미래 지식을 쓴 만큼 '일' 기둥에서 빠진다(내 손으로 만든 몫이 아니라서)
+const BORROW_END = 10; // 미래 지식을 이만큼 이상 쓰고 자유 조건을 채우면 ‘빌려 쓴 자유’ 엔딩
 function finalPillars(S){
-  const w = S.work - borrowPenalty(S);
+  const w = S.work;
   let b = S.bond; const j = S.love.jaewoo;
   if(S.partner === 'jaewoo' && j && !j.fixed) b -= 18;
   return {work:clamp(w, 0, 100), bond:clamp(b, 0, 100), self:S.self};
@@ -38,6 +38,7 @@ function computeEnding(S){
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};
   const lov = loverOf(S), secretNow = Object.keys(S.secret || {}).some(i => S.secret[i] && S.love[i] && S.love[i].stage >= 1);
   if(isFree(P)){
+    if((S.borrowed || 0) >= BORROW_END) return 'free_borrowed';
     if(S.divorced && !S.married) return 'free_divorced';
     if(S.married && P.bond >= 62) return 'free_wedding';
     if(lov && P.bond >= 58) return 'free_love_' + lov;
@@ -48,7 +49,6 @@ function computeEnding(S){
     if((S.engaged || S.married) && P.bond >= 70) return 'free_wedding';
     return 'free_balance';
   }
-  if(isFree(raw)) return 'free_borrowed'; // 미래 지식을 빌려 쓴 몫 때문에 일 기둥이 모자라지만, 끝까지 잘 살아낸 자유
   const lowest = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
   if(P.work < 35 && P.bond < 35 && P.self < 35) return 'ret_all';
   if((S.lastDisc != null && P.bond < 50) || S.divorced || (exLovers(S) >= 3 && P.bond < 55) || (S.married && P.bond < 50)) return 'ret_bond';
@@ -72,7 +72,7 @@ const ENDINGS = {
   ret_self: {free:false, icon:'🌫️', title:'무너진 사람', sub:'회귀 · 마음의 실패',
     letter:`돌아온 ${'{name}'}에게.\n\n성과도 관계도 있었지만, 너는 끝내 너를 돌보지 못했어. 마흔의 우리가 무너졌던 이유가 일도 사람도 아니었다는 걸 이제 알겠지. 가장 늦게 챙긴 것이 가장 먼저 챙겼어야 할 것이었어.\n\n한 번 더 해 볼래?`},
   free_borrowed: {free:true, icon:'⏳', title:'빌려 쓴 자유', sub:'자유 시계 · 빌린 인생의 대가',
-    letter:`서른 살의 ${'{name}'}에게.\n\n십 년 동안 정말 잘 살았어. 일도, 사람도, 너 자신도 어느 하나 무너지지 않았지. 다만 몇 번쯤은 미래를 아는 힘에 기댔고, 시계는 그 몫만큼 모래를 가져갔어. 그건 네가 만든 게 아니라 빌린 거라서, 이 자유에는 한 줌의 빚이 남아 있어.\n\n그래도 괜찮아. 빌린 순간 위에 네가 쌓은 시간은 진짜니까. 시계는 이제 네 것이다. 다음에는 조금만 덜 빌려 보자.`},
+    letter:`서른 살의 ${'{name}'}에게.\n\n십 년 동안 정말 잘 살았어. 일도, 사람도, 너 자신도 어느 하나 무너지지 않았지. 다만 열 번도 넘게 미래를 아는 힘에 기댔고, 시계는 그 몫만큼 모래를 가져갔어. 그건 네가 만든 게 아니라 빌린 거라서, 이 자유에는 한 줌의 빚이 남아 있어.\n\n그래도 괜찮아. 빌린 순간 위에 네가 쌓은 시간은 진짜니까. 시계는 이제 네 것이다. 다음에는 조금만 덜 빌려 보자.`},
   ret_debt: {free:false, icon:'💸', title:'멈춘 시계', sub:'회귀 · 파산',
     letter:`돌아온 ${'{name}'}에게.\n\n빚이 모든 걸 삼켰어. 시간을 되돌려도 돈 앞에서는 속수무책일 때가 있지. 다음엔 생활의 바닥을 먼저 단단히 다져 보자.\n\n한 번 더 해 볼래?`},
   ret_all: {free:false, icon:'🌧️', title:'다시, 비 오는 골목', sub:'회귀 · 모든 것의 부족',

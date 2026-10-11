@@ -46,7 +46,7 @@ function campusEncounter(S, place, visitCh){
   const c = weightedPick(cands);
   if(c.kind === 'meet') return meetEvent(S, c.id);
   const sc = c.sc, pl = CAMPUS_PLACES[place];
-  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, cut:CP_CUT[sc.who] || null, // 장소 배경 위에 대화 상대가 누끼로 선다 text:S => sc.text,
+  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, cut:CP_CUT[sc.who] || null, text:S => sc.text,
     choices:[
       {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
       {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch, mood:'shy'}; }},

@@ -384,7 +384,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #49 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #53 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -422,7 +422,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #49 · 2026.10.11</div>
+ <div id="buildtag">빌드 #53 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -2918,6 +2918,10 @@ function storyDue(S){
 if(typeof RIVAL_EVENTS !== 'undefined') EVENTS.push(...RIVAL_EVENTS);
 if(typeof CRISIS_EVENTS !== 'undefined') EVENTS.push(...CRISIS_EVENTS);
 
+// 주요 장면 일러스트(art/sc_<이벤트id>.webp): 메인 스토리 40장면 + 위기 10장면. 인물 초상 대신 그 장면의 한 컷이 풀스크린으로 깔린다.
+const SCENE_ART = new Set(['cr_friend_loan', 'cr_layoff_rumor', 'cr_mom_fall', 'cr_overwork_collapse', 'cr_phishing_mom', 'cr_rent_hike', 'cr_robbery', 'cr_rumor', 'cr_secret_leak', 'cr_work_mistake', 'st_10_1', 'st_10_2', 'st_10_3', 'st_10_4', 'st_1_1', 'st_1_2', 'st_1_3', 'st_1_4', 'st_2_1', 'st_2_2', 'st_2_3', 'st_2_4', 'st_3_1', 'st_3_2', 'st_3_3', 'st_3_4', 'st_4_1', 'st_4_2', 'st_4_3', 'st_4_4', 'st_5_1', 'st_5_2', 'st_5_3', 'st_5_4', 'st_6_1', 'st_6_2', 'st_6_3', 'st_6_4', 'st_7_1', 'st_7_2', 'st_7_3', 'st_7_4', 'st_8_1', 'st_8_2', 'st_8_3', 'st_8_4', 'st_9_1', 'st_9_2', 'st_9_3', 'st_9_4']);
+for(const e of [].concat(STORY, typeof CRISIS_EVENTS !== 'undefined' ? CRISIS_EVENTS : [])) if(SCENE_ART.has(e.id)) e.img = 'art/sc_' + e.id + '.webp';
+
 // 전화하기 (ENGINE 구간 안, DOM 금지): 친구·엄마·썸·연인에게 짧은 통화. 활동 칸은 쓰지 않고 한 달에 2번까지, 같은 사람은 달마다 한 번.
 const CALLS_PER_MONTH = 2;
 const callsLeft = S => (S.calls && S.calls.m === S.m) ? Math.max(0, CALLS_PER_MONTH - S.calls.n) : CALLS_PER_MONTH;
@@ -3546,7 +3550,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #49 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #53 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3590,7 +3594,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#49 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#53 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -16,6 +16,22 @@ const exLovers = S => Object.keys(S.love).filter(i => S.love[i].stage === -9).le
 const CAREER_END = {pd:'free_creator', writer:'free_creator', director:'free_creator', actor:'free_actor', lawyer:'free_lawyer', dev:'free_tech', startup:'free_tech', beauty:'free_style', designer:'free_style', stylist:'free_style', brandceo:'free_style'};
 // 예전 엔딩 이름 → 지금 이름 (도감 기록 이어받기)
 const END_ALIAS = {free_beauty:'free_style', free_designer:'free_style', free_stylist:'free_style', free_brandceo:'free_style', free_pd:'free_creator', free_writer:'free_creator', free_director:'free_creator', free_dev:'free_tech', free_startup:'free_tech', free_home:'free_wedding', free_soul:'free_balance', free_hopper:'free_balance', free_scholar:'free_balance', free_charm:'free_balance', free_dare:'free_balance', free_ins:'free_balance', free_many:'free_balance', free_single:'free_balance', ret_cold:'ret_bond', ret_exposed:'ret_bond', ret_divorce:'ret_bond', ret_breakups:'ret_bond', ret_burnout:'ret_self', ret_nojob:'ret_work', ret_hopper:'ret_work', ret_workaholic:'ret_work', ret_bookish:'ret_work'};
+// 직업군 엔딩은 플레이어의 실제 직업에 따라 제목·편지·그림이 달라진다(도감에서는 한 칸)
+const CAREER_VAR = {
+  pd:{icon:"🎥", title:"현장을 움직이는 사람", sub:"자유 시계 · 프로덕션 PD", letter:"서른 살의 {name}에게.\n\n촬영장에서 백 명의 이름을 외우던 그 눈빛이 아직도 선해. 폭우 속에서도 컷을 외치던 너를 보며 생각했어. 마흔의 우리는 이렇게 큰 판을 움직여 본 적이 없었다고.\n\n시계는 이제 네 것이다. 오늘 밤 촬영은 일찍 끝내렴."},
+  writer:{icon:"✍️", title:"이야기를 쓰는 사람", sub:"자유 시계 · 드라마 작가", letter:"서른 살의 {name}에게.\n\n네가 쓴 한 줄 때문에 누군가가 밤새 울었대. 마흔의 우리가 쓰고 싶어서 서랍 속에 넣어 두었던 이야기들이 이제 화면 속에 살아 있어. 마감의 밤들이 헛되지 않았구나.\n\n시계는 이제 네 것이다."},
+  director:{icon:"🎬", title:"끝까지 책임지는 사람", sub:"자유 시계 · 영화감독", letter:"서른 살의 {name}에게.\n\n레디, 액션. 네 목소리가 현장을 가르던 날 객석 맨 뒤에서 오래 앉아 있었어. 조연출 시절 남의 컷을 메우던 손이 이제는 한 편의 영화를 끝까지 이끄는구나. 마흔의 우리는 한 번도 크레딧 맨 뒤에 이름을 올려 본 적이 없었지.\n\n시계는 이제 네 것이다."},
+  actor:{icon:"🌟", title:"스크린 속의 나", sub:"자유 시계 · 연예인", letter:"서른 살의 {name}에게.\n\n카메라 앞에서 눈을 반짝이는 네 모습을 보며 오래 웃었어. 마흔의 우리는 누가 보지 않는 곳에서 늘 숨죽이고 살았잖아. 이제 너는 보이는 사람이 되었구나. 그래도 가끔은 아무도 보지 않는 곳에서 쉬어 가렴.\n\n시계는 이제 네 것이다."},
+  lawyer:{icon:"⚖️", title:"원칙을 지키는 사람", sub:"자유 시계 · 로펌 변호사", letter:"서른 살의 {name}에게.\n\n눈을 감으라는 유혹 앞에서 눈을 뜨고 서 있었던 네가 자랑스러워. 누군가의 가장 힘든 날을 함께 견디는 일이 얼마나 무거운지 알면서도, 너는 그 자리에 섰구나.\n\n시계는 이제 네 것이다."},
+  dev:{icon:"🖥️", title:"세상을 만드는 사람", sub:"자유 시계 · IT 개발자", letter:"서른 살의 {name}에게.\n\n네가 만든 서비스를 지금 수십만 명이 쓰고 있어. 아는 미래를 따르지 않고 밤새 코드를 쳤던 그 새벽들이 모두 여기에 쌓였구나. 이건 온전히 네 것이다.\n\n시계도 이제 네 것이다."},
+  startup:{icon:"🚀", title:"작은 팀의 큰 꿈", sub:"자유 시계 · 스타트업 창업가", letter:"서른 살의 {name}에게.\n\n투자 심사장에서 떨리던 손을 알아. 적자 속에서도 팀원들 월급날을 먼저 챙기던 너를 봤어. 마흔의 우리는 안정이라는 말에 숨었지만, 이제 너는 불확실함 위에 서서 웃는구나.\n\n시계는 이제 네 것이다."},
+  beauty:{icon:"💄", title:"브랜드를 만드는 사람", sub:"자유 시계 · 뷰티 마케터", letter:"서른 살의 {name}에게.\n\n루미에르 코스메틱의 신제품 캠페인에서 네 이름이 가장 먼저 불린다는 소식을 들었어. 마흔의 우리는 한 번도 브랜드의 얼굴이 되어 본 적이 없지. 사람의 하루에 작은 설렘을 건네는 일을 네가 해냈구나.\n\n시계는 이제 네 것이다."},
+  designer:{icon:"👗", title:"계절을 먼저 말하는 사람", sub:"자유 시계 · 패션 디자이너", letter:"서른 살의 {name}에게.\n\n네 컬렉션이 무대에 오르던 날, 객석에서 숨을 죽이고 있었어. 마흔의 우리는 늘 옷을 고르며 남의 시선을 신경 썼지. 이제 너는 남이 입고 싶은 옷을 만드는구나.\n\n시계는 이제 네 것이다."},
+  stylist:{icon:"💇", title:"이미지를 바꾸는 사람", sub:"자유 시계 · 스타일리스트", letter:"서른 살의 {name}에게.\n\n레드카펫 앞에서 마지막 매무새를 만져 주던 네 손을 봤어. 사람들은 옷을 입은 사람만 기억하지만, 그 사람을 빛나게 한 사람이 누구인지 나는 알아. 마흔의 우리는 늘 남의 시선 뒤에 숨었는데, 이제 너는 남이 빛나도록 돕는 사람이 되었구나.\n\n시계는 이제 네 것이다."},
+  brandceo:{icon:"🏷️", title:"내 이름을 건 브랜드", sub:"자유 시계 · 브랜드 대표", letter:"서른 살의 {name}에게.\n\n포장 상자에 네 이름이 찍혀 있었어. 남의 브랜드를 키우던 사람이 이제 자기 브랜드의 첫 매장 문을 여는구나. 매출 그래프가 흔들리던 밤마다 네가 되뇌던 말을 기억해. “그래도 이건 내 거야.”\n\n시계는 이제 네 것이다."},
+};
+// 지금 플레이어의 직업에 맞춘 엔딩 내용(직업군 엔딩이 아니면 그대로)
+const endingView = (S, id) => { const e = ENDINGS[id], v = S && S.track && CAREER_END[S.track] === id && S.hired ? CAREER_VAR[S.track] : null; return v ? Object.assign({}, e, v, {track:S.track}) : e; };
 function computeEnding(S){
   if(S.ending) return END_ALIAS[S.ending] || S.ending;
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};

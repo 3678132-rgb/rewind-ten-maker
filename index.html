@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #109 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #111 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #109 · 2026.10.11</div>
+ <div id="buildtag">빌드 #111 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -6546,13 +6546,14 @@ const STORY_C = (() => {
   {id:'st_10_4', m:118, exp:1, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'시계의 마지막 쓰임',
    beats:[
     '서른 생일을 앞둔 마지막 달. 약방의 모래시계가 내 손바닥 위에서 따뜻하게 맥박 쳤다.',
-    '“이제 정해야 해요. 이 시계를 어떻게 쓸지.” 할머니의 목소리가 모래알처럼 부드럽게 흩어졌다.',
-    '“자유롭게 보내 줄 수도 있고, 곁에 둘 수도 있어요. 어느 쪽이든 후회는 있어요. 다만 후회의 모양이 달라질 뿐.”',
+    '“이 시계가 당신을 스무 살로 되감아 준 힘이에요. 이제 그 힘을 어떻게 할지 정해야 해요.”',
+    '“놓아주면 되감기는 여기서 끝나요. 지금까지 빌려 쓴 미래도 정산되고, 앞으로는 당신의 시간만 흘러요. 곁에 두면 힘은 남지만, 다음 사람을 위해 간직하는 몫을 지게 돼요.”',
+    '“어느 쪽이든 후회는 있어요. 다만 후회의 모양이 달라질 뿐.”',
    ],
-   text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택을 한다. 이 시계는 누구의 것이어야 할까?`; },
+   text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택이다. 되감기의 힘을 놓아줄까, 곁에 둘까?`; },
    choices:[
-    {label:'시계를 놓아준다. 나는 지금의 삶을 믿는다', sub:'자유 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
-    {label:'시계를 곁에 둔다. 다음 사람을 위해 남겨 둔다', sub:'보존 · 통찰 +3 · 스트레스 +2', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
+    {label:'시계를 놓아준다 — 되감기를 끝낸다', sub:'빌린 인생 감점이 절반으로 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
+    {label:'시계를 곁에 둔다 — 힘을 간직한다', sub:'통찰 +3 · 스트레스 +2 · 엔딩에 시계가 남는다', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
    ]},
   ];
 })();
@@ -6756,7 +6757,7 @@ function tryCall(S, id){
 const FREE_MIN = 50, FREE_SUM = 192;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
-const borrowPenalty = S => Math.min(24, (S.borrowed || 0) * 2.2); // 미래 지식을 쓴 만큼 '일' 기둥에서 빠진다(내 손으로 만든 몫이 아니라서)
+const borrowPenalty = S => Math.min(24, (S.borrowed || 0) * 2.2) * (S.story && S.story.f && S.story.f.clockFree ? 0.5 : 1); // 미래 지식을 쓴 만큼 '일' 기둥에서 빠진다(내 손으로 만든 몫이 아니라서)
 function finalPillars(S){
   const w = S.work - borrowPenalty(S);
   let b = S.bond; const j = S.love.jaewoo;
@@ -7443,7 +7444,7 @@ function showEnding(){
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    ${borrowPenalty(S) >= 1 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 써서 ‘일’ 기둥에서 ${Math.round(borrowPenalty(S))}점이 빠졌어요 (원래 ${Math.round(S.work)} → ${Math.round(P.work)}).${id === 'ret_borrowed' ? ' 빌리지 않았다면 자유 시계였을 거예요.' : ''}</p>` : ''}
-   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
+   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 되감기는 거기서 끝났고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 언젠가 다음 사람이 문을 열 때까지.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };
@@ -7457,7 +7458,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #109 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #111 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7519,7 +7520,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#109 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#111 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -576,7 +576,7 @@ function showEnding(){
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    ${borrowPenalty(S) >= 1 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 써서 ‘일’ 기둥에서 ${Math.round(borrowPenalty(S))}점이 빠졌어요 (원래 ${Math.round(S.work)} → ${Math.round(P.work)}).${id === 'ret_borrowed' ? ' 빌리지 않았다면 자유 시계였을 거예요.' : ''}</p>` : ''}
-   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
+   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 되감기는 거기서 끝났고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 언젠가 다음 사람이 문을 열 때까지.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };

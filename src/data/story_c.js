@@ -187,13 +187,14 @@ const STORY_C = (() => {
   {id:'st_10_4', m:118, exp:1, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'시계의 마지막 쓰임',
    beats:[
     '서른 생일을 앞둔 마지막 달. 약방의 모래시계가 내 손바닥 위에서 따뜻하게 맥박 쳤다.',
-    '“이제 정해야 해요. 이 시계를 어떻게 쓸지.” 할머니의 목소리가 모래알처럼 부드럽게 흩어졌다.',
-    '“자유롭게 보내 줄 수도 있고, 곁에 둘 수도 있어요. 어느 쪽이든 후회는 있어요. 다만 후회의 모양이 달라질 뿐.”',
+    '“이 시계가 당신을 스무 살로 되감아 준 힘이에요. 이제 그 힘을 어떻게 할지 정해야 해요.”',
+    '“놓아주면 되감기는 여기서 끝나요. 지금까지 빌려 쓴 미래도 정산되고, 앞으로는 당신의 시간만 흘러요. 곁에 두면 힘은 남지만, 다음 사람을 위해 간직하는 몫을 지게 돼요.”',
+    '“어느 쪽이든 후회는 있어요. 다만 후회의 모양이 달라질 뿐.”',
    ],
-   text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택을 한다. 이 시계는 누구의 것이어야 할까?`; },
+   text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택이다. 되감기의 힘을 놓아줄까, 곁에 둘까?`; },
    choices:[
-    {label:'시계를 놓아준다. 나는 지금의 삶을 믿는다', sub:'자유 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
-    {label:'시계를 곁에 둔다. 다음 사람을 위해 남겨 둔다', sub:'보존 · 통찰 +3 · 스트레스 +2', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
+    {label:'시계를 놓아준다 — 되감기를 끝낸다', sub:'빌린 인생 감점이 절반으로 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
+    {label:'시계를 곁에 둔다 — 힘을 간직한다', sub:'통찰 +3 · 스트레스 +2 · 엔딩에 시계가 남는다', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
    ]},
   ];
 })();

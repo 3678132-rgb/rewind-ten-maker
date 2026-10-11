@@ -458,7 +458,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #75 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #76 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -496,7 +496,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #75 · 2026.10.11</div>
+ <div id="buildtag">빌드 #76 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -6781,7 +6781,7 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
-const HERO_JOB = new Set(["age25_actor","age25_beauty","age25_brandceo","age25_designer","age25_dev","age25_director","age25_pd","age25_startup","age25_stylist","age25_writer","age27_beauty","age27_brandceo","age27_designer","age27_dev","age27_director","age27_pd","age27_startup","age27_stylist","age27_writer","age30_actor","age30_beauty","age30_brandceo","age30_designer","age30_dev","age30_director","age30_pd","age30_startup","age30_stylist","age30_writer"]); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
+const HERO_JOB = new Set(["age25_actor","age25_beauty","age25_brandceo","age25_designer","age25_dev","age25_director","age25_pd","age25_startup","age25_stylist","age25_writer","age27_actor","age27_beauty","age27_brandceo","age27_designer","age27_dev","age27_director","age27_pd","age27_startup","age27_stylist","age27_writer","age30_actor","age30_beauty","age30_brandceo","age30_designer","age30_dev","age30_director","age30_pd","age30_startup","age30_stylist","age30_writer"]); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
 const HERO_RIPE = new Set(["age22","age25","age27","age30"]); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(["dt_dohyun_1","dt_dohyun_2","dt_dohyun_3","dt_geonwoo_1","dt_geonwoo_2","dt_geonwoo_3","dt_hajin_1","dt_hajin_2","dt_hajin_3","dt_jaewoo_1","dt_jaewoo_2","dt_jaewoo_3","dt_jihu_1","dt_jihu_2","dt_jihu_3","dt_minjun_1","dt_minjun_2","dt_minjun_3","dt_raon_1","dt_raon_2","dt_raon_3","dt_seunghyun_1","dt_seunghyun_2","dt_seunghyun_3","dt_sian_1","dt_sian_2","dt_sian_3","dt_taeoh_1","dt_taeoh_2","dt_taeoh_3","dt_ujin_1","dt_ujin_2","dt_ujin_3","dt_yuchan_1","dt_yuchan_2","dt_yuchan_3"]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const ripeNow = S => !!S && Object.values(S.love || {}).some(v => v && v.intimate);
@@ -7323,7 +7323,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #75 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #76 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7368,7 +7368,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#75 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#76 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

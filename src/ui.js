@@ -324,9 +324,11 @@ function showAct(slotName, id, out, first = 0){
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
     const sp = SPRITE[id];
-    let inner, cls = 'apf';
+    let inner, cls = 'apf', frameBg = '';
     if(sp){
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
+      const bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room');
+      cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
     } else {
       cls += ' art';
@@ -334,7 +336,7 @@ function showAct(slotName, id, out, first = 0){
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
-    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}">${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
+    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
     el.classList.add('on');
     const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
     let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;

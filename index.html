@@ -374,6 +374,10 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .hud-top .gear{margin-top:2px}
 .side-l{top:calc(176px + env(safe-area-inset-top))}
 @media (max-height:720px){.side-l{top:calc(168px + env(safe-area-inset-top))}}
+.apop .apf.ill{background-color:#e9dcc8;background-size:cover!important;background-position:center top}
+.apop .apf.ill .fsp{top:14%;bottom:7%;left:6%;right:6%}
+.apop .apf.ill .fsp::after{bottom:-3%;background:rgba(30,20,10,.25)}
+.apop .apf.ill .fsp img{filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -384,7 +388,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #53 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #54 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -422,7 +426,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #53 · 2026.10.11</div>
+ <div id="buildtag">빌드 #54 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -3481,9 +3485,11 @@ function showAct(slotName, id, out, first = 0){
     const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
     const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
     const sp = SPRITE[id];
-    let inner, cls = 'apf';
+    let inner, cls = 'apf', frameBg = '';
     if(sp){
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
+      const bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room');
+      cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
     } else {
       cls += ' art';
@@ -3491,7 +3497,7 @@ function showAct(slotName, id, out, first = 0){
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
-    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}">${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
+    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
     el.classList.add('on');
     const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
     let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;
@@ -3550,7 +3556,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #53 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #54 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3594,7 +3600,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#53 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#54 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

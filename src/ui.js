@@ -390,10 +390,15 @@ function fitFull(){
   try{
     const root = document.documentElement, app = $('app');
     const ios = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const sh = Math.max(screen.height, screen.width), gap = Math.round(sh - window.innerHeight);
+    // 가장 큰 화면 높이(하단 바 뒤까지)를 lvh 프로브로 잰다. 안 되면 기기 화면 높이를 쓴다.
+    let big = Math.max(screen.height, screen.width);
+    try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:100vh;height:100lvh;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); const h = pr.getBoundingClientRect().height; pr.remove(); if(h > 100) big = Math.max(h, big, window.innerHeight); }catch(e){}
+    const gap = Math.round(big - window.innerHeight);
+    window.__fit = {inner:window.innerHeight, big:Math.round(big), screen:screen.height, gap};
     if(ios && Math.min(screen.width, screen.height) < 600 && gap > 4 && gap < 140 && window.innerHeight > window.innerWidth){
-      app.style.bottom = 'auto'; app.style.height = sh + 'px'; root.style.setProperty('--sb', gap + 'px');
+      app.style.bottom = 'auto'; app.style.height = Math.round(big) + 'px'; root.style.setProperty('--sb', gap + 'px');
     } else { app.style.bottom = ''; app.style.height = ''; root.style.removeProperty('--sb'); }
+    const d = document.getElementById('fitdiag'); if(d) d.textContent = `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}`;
   }catch(e){}
 }
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);

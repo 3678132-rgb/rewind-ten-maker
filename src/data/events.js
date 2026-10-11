@@ -269,7 +269,7 @@ EVENTS.push(
      {label:'스케치와 날짜로 증명한다', sub:'일 + · 스트레스 +', run:S => R_(S, {work:2.5, ins:1.5, stress:6}, '작업 노트와 날짜가 증거가 되었다. 논란은 하루 만에 가라앉았다.')},
      {label:'조용히 넘어간다', sub:'일 - · 스트레스 +', run:S => R_(S, {work:-1.5, stress:5}, '말없이 지나갔지만 오해는 오래 떠돌았다.')},
    ]},
-  {id:'office_rumor', w:5, cd:10, cond:S => { const p = S.partner; return !!p && !!LOVERS[p] && !!LOVERS[p].career && S.hired && LOVERS[p].career === S.track; }, title:'사내 소문', place:'cafe', text:S => `${LOVERS[S.partner].name}와의 사이가 회사에 소문이 났다. 복도에서 시선이 따갑다. 어떻게 할까?`,
+  {id:'office_rumor', w:5, cd:10, cond:S => { const p = S.partner; return !!p && !!LOVERS[p] && !!LOVERS[p].career && S.hired && lvOnTrack(LOVERS[p], S); }, title:'사내 소문', place:'cafe', text:S => `${LOVERS[S.partner].name}와의 사이가 회사에 소문이 났다. 복도에서 시선이 따갑다. 어떻게 할까?`,
    choices:[
      {label:'당당하게 공개한다', sub:'관계 + · 일 -1', run:S => R_(S, {bond:3, work:-1, self:2}, '“네, 만나고 있어요.” 짧은 한마디에 수군거림은 오히려 잦아들었다.')},
      {label:'일에 집중해 증명한다', sub:'일 +2 · 스트레스 +', run:S => R_(S, {work:2.5, stress:6}, '소문보다 성과가 더 크게 말했다. 대신 퇴근 후엔 기운이 없었다.')},

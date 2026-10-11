@@ -2,7 +2,7 @@
 const CALLS_PER_MONTH = 2;
 const callsLeft = S => (S.calls && S.calls.m === S.m) ? Math.max(0, CALLS_PER_MONTH - S.calls.n) : CALLS_PER_MONTH;
 const calledThisMonth = (S, id) => !!(S.callAt && S.callAt[id] === S.m);
-const CALL_WORK = {beauty:'캠페인 자료', pd:'촬영 일정', writer:'대본', actor:'연기 연습', lawyer:'사건 기록', dev:'배포 일정', designer:'컬렉션 도안'};
+const CALL_WORK = {beauty:'캠페인 자료', pd:'촬영 일정', writer:'대본', actor:'연기 연습', lawyer:'사건 기록', dev:'배포 일정', designer:'컬렉션 도안', director:'콘티', stylist:'스타일링 보드', brandceo:'출시 샘플', startup:'피치덱'};
 
 function contactsOf(S){
   const out = [

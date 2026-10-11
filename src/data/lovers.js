@@ -167,7 +167,7 @@ function breakupEvent(S, id){
 
 
 // ── 서재우: 졸업 후 종합상사(한성상사) 영업맨. 입사 → 야근과 접대 → 주재원 발령 ───────
-const JW_TRACK_LINE = {beauty:'론칭 일정', pd:'촬영 일정', writer:'방영 일정', actor:'촬영 스케줄', lawyer:'맡은 사건', dev:'서비스 출시', designer:'컬렉션 일정'};
+const JW_TRACK_LINE = {beauty:'론칭 일정', pd:'촬영 일정', writer:'방영 일정', actor:'촬영 스케줄', lawyer:'맡은 사건', dev:'서비스 출시', designer:'컬렉션 일정', director:'촬영 일정', stylist:'스타일링 일정', brandceo:'제품 출시 일정', startup:'투자 미팅'};
 const JW_REMOTE = ['writer', 'dev', 'designer'];
 function jaewooEvent(S){
   const v = S.love.jaewoo; if(!v || v.stage === -9) return null;
@@ -222,7 +222,7 @@ function jaewooEvent(S){
 function loveEvent(S){
   const L = S.love;
   const jw = jaewooEvent(S); if(jw) return jw;
-  for(const id of LOVER_IDS){ const lv = LOVERS[id]; if(L[id] || S.seen['meet_' + id]) continue; const ok = lv.career ? (S.track === lv.career && S.hired && S.hiredAt != null && S.m >= S.hiredAt + 2) : S.m >= lv.meet; if(ok) return meetEvent(S, id); }
+  for(const id of LOVER_IDS){ const lv = LOVERS[id]; if(L[id] || S.seen['meet_' + id]) continue; const ok = lv.career ? (lvOnTrack(lv, S) && S.hired && S.hiredAt != null && S.m >= S.hiredAt + 2) : S.m >= lv.meet; if(ok) return meetEvent(S, id); }
   for(const id of LOVER_IDS){ const v = L[id]; if(!v) continue;
     const sec = S.secret && S.secret[id];
     if(v.stage >= 1 && v.stage <= 2 && v.fading && !sec && !S.seen['fade_' + id]) return breakupEvent(S, id);
@@ -230,5 +230,5 @@ function loveEvent(S){
     if(v.stage === 1 && !sec && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && !sec && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || romance3Event(S) || (typeof specialDue !== 'undefined' && specialDue(S)) || (typeof loverStoryEvent !== 'undefined' && loverStoryEvent(S)) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
+  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || (typeof menFightEvent !== 'undefined' && menFightEvent(S)) || romance3Event(S) || (typeof specialDue !== 'undefined' && specialDue(S)) || (typeof loverStoryEvent !== 'undefined' && loverStoryEvent(S)) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
 }

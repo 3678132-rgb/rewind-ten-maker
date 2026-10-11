@@ -64,7 +64,7 @@ function rom2Event(S){
   if(!v || !sc2 || v.stage < 1 || v.stage > 2 || (S.secret && S.secret[id])) return null;
   const n = v.rom2 || 0; if(n >= sc2.length) return null;
   if(S.m - Math.max(v.since2 || 0, v.lastRom2 == null ? -9 : v.lastRom2) < (n ? ROM2_GAP : 2)) return null;
-  const lv = LOVERS[id], sc = sc2[n], duo = S.track === lv.career;
+  const lv = LOVERS[id], sc = sc2[n], duo = lvOnTrack(lv, S);
   return {id:`rom2_${id}_${n + 1}`, lover:id, speaker:lv.name, title:sc[0], place:sc[4], img:duo ? `art/duo_${id}.webp` : `art/lv_${id}.webp`,
     text:S => sc[1],
     choices:[

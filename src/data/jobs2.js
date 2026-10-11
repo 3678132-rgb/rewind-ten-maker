@@ -53,3 +53,6 @@ function finishSwitch(S, pn, mul, txt, ch, fast){
   S.album.push(`${comp.name}(${c.name})로 이직 — 월급 ${Math.round(c.pay * comp.pay * mul)}만`);
   push(ch, '월급', Math.round(c.pay * comp.pay * mul)); return {text:`${txt}\n\n${comp.name}의 ${c.ranks[0]}로 새 출발한다. 월급은 ${Math.round(c.pay * comp.pay * mul)}만원.`, chips:ch};
 }
+// 전환 직업의 직장 연인: 원래 직업의 상대와 같은 일터 사람으로 이어진다
+LOVERS.dohyun.alt = ['director']; LOVERS.jihu.alt = ['brandceo']; LOVERS.ujin.alt = ['stylist'];
+const lvOnTrack = (lv, S) => !!lv.career && (lv.career === S.track || (lv.alt || []).includes(S.track));

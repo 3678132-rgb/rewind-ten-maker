@@ -60,7 +60,7 @@ function discoveryEvent(S){
   const oid = hid || date2; if(!oid || (S.susp || 0) < 38) return null;
   if(S.seen['disc_' + pid + '_' + S.m] || S.m - (S.lastDisc == null ? -99 : S.lastDisc) < 6) return null;
   if(R() > (S.susp - 25) / 120) return null;
-  const pv = S.love[pid], p = LOVERS[pid], o = LOVERS[oid], c = callOf(S, pid), married = S.married === pid;
+  const pv = S.love[pid], p = LOVERS[pid], o = LOVERS[oid], c = callOf(S, pid), married = S.married === pid; S.discPair = {a:pid, b:oid, m:S.m};
   return {id:`disc_${pid}_${S.m}`, lover:pid, speaker:p.name, title:married ? '식탁 위의 휴대폰' : '밝혀진 비밀', place:'night', img:'art/lv_' + pid + '.webp',
     text:S => `${p.name}${married ? '가 식탁에 내 휴대폰을 올려놓고 말했다.' : '가 약속 장소에 먼저 와 있었다. 손에는 내 사진첩이 아닌, 누군가와 찍힌 사진이 들려 있었다.'} “${o.name}, 누구야?” 목소리가 낮고 흔들렸다. 변명이 입술 끝까지 올라왔다.`,
     choices:[

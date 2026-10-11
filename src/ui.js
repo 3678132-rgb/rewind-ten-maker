@@ -333,7 +333,7 @@ function openPhone(){
 }
 const meter = (cls, label, v) => `<div class="meter ${cls || ''}"><span>${label}</span><div class="bar"><i style="width:${clamp(v, 0, 100)}%"></i></div><b>${Math.round(v)}</b></div>`;
 function showStats(){
-  openSheet(sheetHead('능력치', `${S.name} · ${ageOf(S)}세`) + '<h3>컨디션</h3>' + meter('', '체력', S.hp) + meter('', '스트레스', S.stress) + meter('', '선명도', S.clarity) + `<h3>세 기둥 (각 50 이상, 합 190 이상이면 자유)</h3>${(S.borrowed || 0) >= 1 ? `<div class="sub" style="color:#b3541e">⏳ 미래 지식 ${S.borrowed}번 사용 (${BORROW_END}번 이상이면 ‘빌려 쓴 자유’ 엔딩, 선명도도 깎여요)</div>` : ''}` + Object.keys(PILLAR).map(k => meter(k, PILLAR[k], S[k])).join('') + '<h3>능력치</h3>' + STAT_KEYS.map(k => meter('', STAT[k], S.st[k])).join('') + `<div class="foot">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
+  openSheet(sheetHead('능력치', `${S.name} · ${ageOf(S)}세`) + '<h3>컨디션</h3>' + meter('', '체력', S.hp) + meter('', '스트레스', S.stress) + meter('', '선명도', S.clarity) + `<h3>세 기둥 (각 50 이상, 합 190 이상이면 자유)</h3>${(S.borrowed || 0) >= 1 ? `<div class="sub" style="color:#b3541e">⏳ 미래 지식 ${S.borrowed}번 사용 (쓸수록 기억 선명도가 깎여요)</div>` : ''}` + Object.keys(PILLAR).map(k => meter(k, PILLAR[k], S[k])).join('') + '<h3>능력치</h3>' + STAT_KEYS.map(k => meter('', STAT[k], S.st[k])).join('') + `<div class="foot">빌린 인생 ${S.borrowed} · 생활비 월 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
   $('x').onclick = closeSheet;
 }
 function showCareer(){
@@ -578,7 +578,7 @@ function showEnding(){
   const seen = seenEndings(); if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
-   ${(S.borrowed || 0) >= 6 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 썼어요${(S.borrowed || 0) >= BORROW_END ? ' — 열 번 이상이라 ‘빌려 쓴 자유’ 엔딩이 됐어요.' : ` (${BORROW_END}번 이상이면 ‘빌려 쓴 자유’ 엔딩)`}</p>` : ''}
+   
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 되감기는 거기서 끝났고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 엔딩 뒤 ‘2회차’ 버튼으로 이어서 걸을 수 있다.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    ${S.story && S.story.f && S.story.f.clockKeep ? `<button class="btn" id="b-round2" style="margin-bottom:8px">⏳ ${(S.round || 1) + 1}회차 시작 — 시계를 곁에 둔 채 이어서</button><p class="sub">지난 능력치의 절반과 시계 조각 2개를 가지고 2016년부터 다시 걷는다.</p>` : ''}<button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;

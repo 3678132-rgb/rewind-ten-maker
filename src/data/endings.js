@@ -2,7 +2,6 @@
 const FREE_MIN = 50, FREE_SUM = 192;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
-const BORROW_END = 10; // 미래 지식을 이만큼 이상 쓰고 자유 조건을 채우면 ‘빌려 쓴 자유’ 엔딩
 function finalPillars(S){
   const w = S.work;
   let b = S.bond; const j = S.love.jaewoo;
@@ -13,10 +12,10 @@ function isFree(P){ return P.work >= FREE_MIN && P.bond >= FREE_MIN && P.self >=
 
 const loverOf = S => S.partner && S.love[S.partner] && S.love[S.partner].stage >= 1 && !(S.secret && S.secret[S.partner]) ? S.partner : null;
 const exLovers = S => Object.keys(S.love).filter(i => S.love[i].stage === -9).length;
-// 엔딩은 30개: 자유 24(연인 12·직업군 5·삶 7) + 회귀 6
+// 엔딩은 29개: 자유 23(연인 12·직업군 5·삶 6) + 회귀 6
 const CAREER_END = {pd:'free_creator', writer:'free_creator', director:'free_creator', actor:'free_actor', lawyer:'free_lawyer', dev:'free_tech', startup:'free_tech', beauty:'free_style', designer:'free_style', stylist:'free_style', brandceo:'free_style'};
 // 예전 엔딩 이름 → 지금 이름 (도감 기록 이어받기)
-const END_ALIAS = {ret_borrowed:'free_borrowed', free_beauty:'free_style', free_designer:'free_style', free_stylist:'free_style', free_brandceo:'free_style', free_pd:'free_creator', free_writer:'free_creator', free_director:'free_creator', free_dev:'free_tech', free_startup:'free_tech', free_home:'free_wedding', free_soul:'free_balance', free_hopper:'free_balance', free_scholar:'free_balance', free_charm:'free_balance', free_dare:'free_balance', free_ins:'free_balance', free_many:'free_balance', free_single:'free_balance', ret_cold:'ret_bond', ret_exposed:'ret_bond', ret_divorce:'ret_bond', ret_breakups:'ret_bond', ret_burnout:'ret_self', ret_nojob:'ret_work', ret_hopper:'ret_work', ret_workaholic:'ret_work', ret_bookish:'ret_work'};
+const END_ALIAS = {ret_borrowed:'free_balance', free_borrowed:'free_balance', free_beauty:'free_style', free_designer:'free_style', free_stylist:'free_style', free_brandceo:'free_style', free_pd:'free_creator', free_writer:'free_creator', free_director:'free_creator', free_dev:'free_tech', free_startup:'free_tech', free_home:'free_wedding', free_soul:'free_balance', free_hopper:'free_balance', free_scholar:'free_balance', free_charm:'free_balance', free_dare:'free_balance', free_ins:'free_balance', free_many:'free_balance', free_single:'free_balance', ret_cold:'ret_bond', ret_exposed:'ret_bond', ret_divorce:'ret_bond', ret_breakups:'ret_bond', ret_burnout:'ret_self', ret_nojob:'ret_work', ret_hopper:'ret_work', ret_workaholic:'ret_work', ret_bookish:'ret_work'};
 // 직업군 엔딩은 플레이어의 실제 직업에 따라 제목·편지·그림이 달라진다(도감에서는 한 칸)
 const CAREER_VAR = {
   pd:{icon:"🎥", title:"현장을 움직이는 사람", sub:"자유 시계 · 프로덕션 PD", letter:"서른 살의 {name}에게.\n\n촬영장에서 백 명의 이름을 외우던 그 눈빛이 아직도 선해. 폭우 속에서도 컷을 외치던 너를 보며 생각했어. 마흔의 우리는 이렇게 큰 판을 움직여 본 적이 없었다고.\n\n시계는 이제 네 것이다. 오늘 밤 촬영은 일찍 끝내렴."},
@@ -38,7 +37,6 @@ function computeEnding(S){
   const P = finalPillars(S), raw = {work:S.work, bond:S.bond, self:S.self};
   const lov = loverOf(S), secretNow = Object.keys(S.secret || {}).some(i => S.secret[i] && S.love[i] && S.love[i].stage >= 1);
   if(isFree(P)){
-    if((S.borrowed || 0) >= BORROW_END) return 'free_borrowed';
     if(S.divorced && !S.married) return 'free_divorced';
     if(S.married && P.bond >= 62) return 'free_wedding';
     if(lov && P.bond >= 58) return 'free_love_' + lov;
@@ -71,8 +69,6 @@ const ENDINGS = {
     letter:`돌아온 ${'{name}'}에게.\n\n일에도 마음에도 충실했지만, 곁에 사람을 두는 법은 다시 배우지 못했구나. 마흔의 이혼 서류 앞에서 느꼈던 그 외로움이 똑같이 찾아왔지. 이번엔 이유를 알 거야.\n\n한 번 더 해 볼래?`},
   ret_self: {free:false, icon:'🌫️', title:'무너진 사람', sub:'회귀 · 마음의 실패',
     letter:`돌아온 ${'{name}'}에게.\n\n성과도 관계도 있었지만, 너는 끝내 너를 돌보지 못했어. 마흔의 우리가 무너졌던 이유가 일도 사람도 아니었다는 걸 이제 알겠지. 가장 늦게 챙긴 것이 가장 먼저 챙겼어야 할 것이었어.\n\n한 번 더 해 볼래?`},
-  free_borrowed: {free:true, icon:'⏳', title:'빌려 쓴 자유', sub:'자유 시계 · 빌린 인생의 대가',
-    letter:`서른 살의 ${'{name}'}에게.\n\n십 년 동안 정말 잘 살았어. 일도, 사람도, 너 자신도 어느 하나 무너지지 않았지. 다만 열 번도 넘게 미래를 아는 힘에 기댔고, 시계는 그 몫만큼 모래를 가져갔어. 그건 네가 만든 게 아니라 빌린 거라서, 이 자유에는 한 줌의 빚이 남아 있어.\n\n그래도 괜찮아. 빌린 순간 위에 네가 쌓은 시간은 진짜니까. 시계는 이제 네 것이다. 다음에는 조금만 덜 빌려 보자.`},
   ret_debt: {free:false, icon:'💸', title:'멈춘 시계', sub:'회귀 · 파산',
     letter:`돌아온 ${'{name}'}에게.\n\n빚이 모든 걸 삼켰어. 시간을 되돌려도 돈 앞에서는 속수무책일 때가 있지. 다음엔 생활의 바닥을 먼저 단단히 다져 보자.\n\n한 번 더 해 볼래?`},
   ret_all: {free:false, icon:'🌧️', title:'다시, 비 오는 골목', sub:'회귀 · 모든 것의 부족',

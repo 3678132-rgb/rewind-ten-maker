@@ -316,3 +316,9 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .hud-line{display:block}.hud-line b{display:block;font-size:14px;white-space:nowrap}.hud-line span{display:block;font-size:11px;white-space:nowrap;opacity:.9}
 .hud-bar,.hud-sub{display:none}
 .hud-top{justify-content:flex-start}.hud-top .gear:nth-of-type(1){margin-left:auto}
+
+/* 사파리 하단 바 자리(--sb)는 페이지가 그릴 수 없는 영역이라, 바로 위 경계까지 바와 같은 색으로 꽉 채워 이음새를 없앤다 */
+#title::after{height:calc(30% + var(--sb));background:linear-gradient(0deg,#f6f8fc 0,#f6f8fc var(--sb),rgba(246,248,252,.92) calc(var(--sb) + 10%),rgba(246,248,252,.55) calc(var(--sb) + 20%),rgba(246,248,252,0) 100%)}
+.tabbar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}
+.abot,.evpanel{background:#f6f8f9}
+.endcard{background:linear-gradient(rgba(246,248,249,0),#f6f8f9 44px)}

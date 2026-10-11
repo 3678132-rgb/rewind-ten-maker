@@ -439,3 +439,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .ctgo i{font-style:normal;font-size:22px}.ctgo span{display:flex;flex-direction:column;min-width:0}.ctgo b{font-size:14px}.ctgo small{font-size:11.5px;color:#6a7396;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ctshop{flex:none;width:46px;border-radius:14px;background:#fff3e0;border:2px solid #ffd9a8;font-size:20px}
 .ctrows{grid-template-columns:minmax(0,1fr)}.ctrow{min-width:0}.ctgo{min-width:0;overflow:hidden}.ctgo small{max-width:100%}
+/* 지도 핀: 전역 button:active 의 transform 이 translate(-50%,-50%) 를 덮어써 눌렀을 때 핀이 튀어 클릭이 빗나가던 문제 */
+.cpin:active:not(:disabled){transform:translate(-50%,-50%) scale(.96)}
+.cpin.l:active:not(:disabled){transform:translate(-30%,-50%) scale(.96)}
+.cpin.r:active:not(:disabled){transform:translate(-72%,-50%) scale(.96)}

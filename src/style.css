@@ -404,3 +404,8 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .chapcard .btn{width:200px;min-height:50px;background:rgba(255,255,255,.92);color:#1c2250;border:0;box-shadow:0 6px 22px rgba(0,0,0,.4);font-size:16px;font-weight:800;letter-spacing:.1em}
 @keyframes chfade{from{opacity:0}to{opacity:1}}
 @keyframes chup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* 대화 상대 누끼 */
+.evcard .evshade{z-index:0}
+.evcut{position:absolute;left:50%;bottom:0;height:90%;max-width:98%;object-fit:contain;object-position:50% 100%;transform:translateX(-50%);z-index:1;filter:drop-shadow(0 8px 14px rgba(10,14,40,.4));animation:cutin .4s ease-out}
+.evcard .evpanel{z-index:3}
+@keyframes cutin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%)}}

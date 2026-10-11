@@ -324,7 +324,8 @@ function evOpen(ev, inner){
   if(imgKey && el.dataset.img && el.dataset.img !== imgKey){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
   el.dataset.img = imgKey || '';
   el.style.backgroundImage = img ? (Array.isArray(img) ? img : [img]).map(u => `url(${u})`).join(', ') : 'none';
-  el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
+  const cut = ev.cut ? `<img class="evcut" src="art/cut/${ev.cut}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : ''; // 대화 상대: 배경 일러스트 위에 누끼로 선다
+  el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}${cut}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }
 function evClose(){ $('ev').classList.remove('on'); paintEdge('game'); }
@@ -343,7 +344,7 @@ function playEvent(ev){
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(out.mood === 'shy' && ev.cut ? Object.assign({}, ev, {cutVar:'b'}) : ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };

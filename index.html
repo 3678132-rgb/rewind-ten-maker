@@ -419,7 +419,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #59 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #60 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -457,7 +457,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #59 · 2026.10.11</div>
+ <div id="buildtag">빌드 #60 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -1519,13 +1519,18 @@ const MILE_C = {
   },
 };
 
+
+
+
 // 연인 마일스톤: 손 잡기 → 첫 키스 → 둘만의 여행 → 첫날밤(성인 이벤트, 암시 묘사). ENGINE 구간(DOM 금지)
 // 장면 글은 intimacy_a/b/c.js (MILE_A/B/C: 인물별 {hand,kiss,trip,night:{title,text,yes:[라벨,결과],wait:[라벨,결과]}})
 const MILE = Object.assign({}, typeof MILE_A !== 'undefined' ? MILE_A : {}, typeof MILE_B !== 'undefined' ? MILE_B : {}, typeof MILE_C !== 'undefined' ? MILE_C : {});
-const MILE_ORDER = ['hand', 'kiss', 'trip', 'night'];
-const MILE_NAME = {hand:'손 잡기', kiss:'첫 키스', trip:'둘만의 여행', night:'첫날밤'};
-const MILE_PLACE = {hand:'night', kiss:'night', trip:'campus', night:'night'};
-const MILE_SUB = {hand:'다가간다 · 호감 크게 ↑', kiss:'받아들인다 · 호감↑ 관계↑', trip:'떠난다 · 자금 -30 · 스트레스 -10', night:'함께한다 · 호감↑ 관계↑ · 성인 이벤트(암시 묘사)'};
+// 추가편(성인 연인의 일상): intimacy2_a/b/c.js (MILE2_A/B/C: 인물별 {live, deep})
+for(const M2 of [typeof MILE2_A !== 'undefined' ? MILE2_A : {}, typeof MILE2_B !== 'undefined' ? MILE2_B : {}, typeof MILE2_C !== 'undefined' ? MILE2_C : {}]) for(const id in M2) MILE[id] = Object.assign({}, MILE[id], M2[id]);
+const MILE_ORDER = ['hand', 'kiss', 'trip', 'night', 'live', 'deep'];
+const MILE_NAME = {hand:'손 잡기', kiss:'첫 키스', trip:'둘만의 여행', night:'첫날밤', live:'동거 시작', deep:'함께하는 밤'};
+const MILE_PLACE = {hand:'night', kiss:'night', trip:'campus', night:'night', live:'room', deep:'night'};
+const MILE_SUB = {hand:'다가간다 · 호감 크게 ↑', kiss:'받아들인다 · 호감↑ 관계↑', trip:'떠난다 · 자금 -30 · 스트레스 -10', night:'함께한다 · 호감↑ 관계↑ · 성인 이벤트(암시 묘사)', live:'함께 산다 · 호감↑ 관계↑ 스트레스↓', deep:'함께한다 · 호감↑ 관계↑ · 성인 이벤트(암시 묘사)'};
 function mileDue(S, id){
   const v = S.love[id], M = MILE[id]; if(!v || !M) return null;
   if(v.stage !== -1 && v.stage !== 1 && v.stage !== 2) return null;
@@ -1539,6 +1544,8 @@ function mileDue(S, id){
   if(key === 'kiss') return v.aff >= 45 && since >= 1 ? key : null;
   if(key === 'trip') return v.aff >= 58 && since >= 3 && S.cash >= 30 ? key : null;
   if(key === 'night') return v.aff >= 72 && since >= 6 && !v.fading ? key : null;
+  if(key === 'live') return v.aff >= 80 && since >= 10 && !v.fading && S.m - (v.lastMile == null ? -9 : v.lastMile) >= 4 ? key : null;
+  if(key === 'deep') return v.aff >= 86 && since >= 14 && !v.fading && S.m - (v.lastMile == null ? -9 : v.lastMile) >= 4 ? key : null;
   return null;
 }
 function milestoneEvent(S){
@@ -1554,7 +1561,9 @@ function milestoneEvent(S){
         if(key === 'hand'){ addAff(S, id, 8, ch); fx(S, {bond:1.5, stress:-2}, ch); }
         else if(key === 'kiss'){ addAff(S, id, 10, ch); fx(S, {bond:2, stress:-3, self:1}, ch); }
         else if(key === 'trip'){ v.tripAt = S.m; addAff(S, id, 12, ch); fx(S, {cash:-30, bond:3, stress:-10, hp:5}, ch); if(S.secret && S.secret[id]) S.susp = Math.min(100, (S.susp || 0) + 8); }
-        else { v.intimate = true; addAff(S, id, 10, ch); fx(S, {bond:4, stress:-6, self:1}, ch); }
+        else if(key === 'night'){ v.intimate = true; addAff(S, id, 10, ch); fx(S, {bond:4, stress:-6, self:1}, ch); }
+        else if(key === 'live'){ v.cohab = true; addAff(S, id, 8, ch); fx(S, {bond:4, stress:-5, self:1}, ch); }
+        else { addAff(S, id, 6, ch); fx(S, {bond:3, stress:-6}, ch); }
         return {text:sc.yes[1], chips:ch, mood:'tender'}; }},
       {label:sc.wait[0], sub:'조금 더 천천히 · 3개월 뒤 다시', run(S){
         const v = S.love[id], ch = []; v.lastMile = S.m; v.mileWait = S.m + 3; addAff(S, id, 3, ch); fx(S, {self:1.5}, ch);
@@ -4261,7 +4270,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #59 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #60 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4306,7 +4315,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#59 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#60 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

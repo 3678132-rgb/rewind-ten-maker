@@ -435,7 +435,7 @@ function playEvent(ev){
     const beats = (ev.beats || []).slice();
     const mc = /^st_(\d+)_1$/.exec(ev.id);
     // 대사마다 일러스트가 바뀌는 이벤트(오프닝 등): beatImgs[i] 가 i번째 대사의 그림, 선택지 화면은 마지막 그림을 이어 쓴다
-    const bimgs = ev.beatImgs || null; let bi = 0; if(bimgs) bimgs.forEach(u => { const im = new Image(); im.src = u; });
+    const bimgs = ev.beatImgs || null; let bi = 0; if(bimgs) bimgs.forEach(u => [].concat(u).forEach(x => { const im = new Image(); im.src = x; }));
     const nextBeat = () => {
       if(beats.length){ const t = beats.shift(), ev2 = bimgs ? Object.assign({}, ev, {img: bimgs[Math.min(bi, bimgs.length - 1)]}) : ev; bi++; evOpen(ev2, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
       if(bimgs) ev = Object.assign({}, ev, {img: bimgs[bimgs.length - 1]});

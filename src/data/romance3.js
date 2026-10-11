@@ -91,12 +91,20 @@ function weddingEvent(S){
   if(!v || v.stage !== 2 || S.married || S.m < 58) return null;
   if(S.m - (v.engagedAt == null ? S.m : v.engagedAt) < 5) return null;
   const lv = LOVERS[id];
-  return {id:'wedding_' + id, lover:id, once:true, speaker:lv.name, title:'결혼식', place:'campus', img:'art/lv_' + id + '.webp',
+  const ev = {id:'wedding_' + id, lover:id, once:true, speaker:lv.name, title:'결혼식', place:'campus', img:`art/wd_${id}.webp`,
     text:S => `하얀 드레스와 환한 햇빛. ${lv.name}가 입장하는 나를 보며 눈시울을 붉혔다. 마흔의 내가 이혼 서류에 도장을 찍던 날과 같은 달력 위에 서 있는데, 오늘은 전혀 다른 날이다. 그래도 문득 두려움이 스쳤다. 이 사람과 십 년, 이십 년을 살 수 있을까.`,
     choices:[
       {label:'두려움까지 안고 약속한다', sub:'결혼 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 3; v.marriedAt = S.m; S.married = id; fx(S, {bond:8, stress:-6, self:1}, ch); addAff(S, id, 8, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼`); return {text:`“네, 평생 함께하겠습니다.” 하객들의 박수 속에서 나는 처음으로 서약이 아닌 선택이라는 단어를 떠올렸다. ${lv.name}의 손은 따뜻했다.`, chips:ch}; }},
       {label:'혼인신고는 조금 더 미룬다', sub:'동거 상태 · 관계 소폭', run(S){ const ch = []; v.stage = 3; v.marriedAt = S.m; v.pending = true; S.married = id; fx(S, {bond:5, self:2, stress:-3}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼(혼인신고는 나중에)`); return {text:'“식은 올리되, 서류는 우리가 준비되었을 때.” 그는 잠깐 놀랐지만 웃으며 고개를 끄덕였다. 조금 느슨한 약속이 오히려 숨 쉴 틈이 되었다.', chips:ch}; }},
     ]};
+  // 신부 대기실 → 입장 → 서약: 그림이 바뀌며 이어진다
+  const vow = [`art/wd_${id}.webp`, `art/lv_${id}.webp`];
+  ev.beats = [
+    `신부 대기실. 거울 속에 하얀 웨딩드레스를 입은 내가 서 있다. 소연이 베일을 매만지다가 훌쩍였다. “야, 울지 마. 나 화장 번지잖아.” 정작 우는 건 소연이다. 마흔의 나는 이 방에 서 본 적이 없다. 손끝에 닿는 레이스가 낯설게 따뜻하다.`,
+    `문이 열리고 버진로드 끝의 빛이 쏟아졌다. 꽃잎이 깔린 길 위로 한 걸음씩. 하객석에서 엄마가 손수건으로 입을 가리는 게 보인다. 그 끝에서 ${lv.name}${id === 'jaewoo' ? '가' : '이'} 숨을 삼키고 서 있다. 눈이 마주치자 그가 입 모양으로 말했다. “예뻐.”`,
+  ];
+  ev.beatImgs = [[`art/wd_dress.webp`, `art/lv_${id}.webp`], [`art/wd_aisle.webp`, `art/lv_${id}.webp`], vow];
+  return ev;
 }
 const MARRIED_SCENES = [
   {t:'신혼의 아침', x:lv => `${lv.name}가 서툰 솜씨로 아침을 차려 놓았다. 계란은 탔고 국은 짰다. 그런데 이상하게 웃음이 났다. 같은 집에서 눈을 뜬다는 일이 이렇게 낯설고 따뜻하다.`, a:['“맛있어, 내일은 내가 할게”', '그는 안심한 듯 웃었다. 서로 번갈아 아침을 차리기로 약속했다.', {bond:2, stress:-3}, 5], b:['웃으며 먹되 레시피를 알려 준다', '그는 투덜대면서도 메모를 했다. 부엌에서 오래 웃었다.', {bond:1.2, self:1}, 3]},

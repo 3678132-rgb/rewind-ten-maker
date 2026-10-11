@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #91 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #92 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #91 · 2026.10.11</div>
+ <div id="buildtag">빌드 #92 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -853,14 +853,32 @@ function trialEvent(S, id){
     choices:t.choices.map(c => ({label:c.label, sub:c.sub, run(S){ const ch = []; const text = c.run(S, v, ch); return {text, chips:ch}; }}))};
 }
 
+// 프로포즈 장면 도입(그림 한 장 + 한 줄): 인물마다 장소와 방식이 다르다
+const PROPOSE_LINES = {
+  _:n => `${n}가 걸음을 멈추고 주머니에서 작은 상자를 꺼냈다. 손이 떨리고 있다. “오래 연습했는데, 하나도 생각이 안 나.” 뚜껑이 열리자 작은 반지가 불빛을 받아 반짝였다.`,
+  jaewoo:n => `퇴근길 한강 다리 위, 재우가 갑자기 무릎을 꿇는다. “나 지금 계획서에도 없는 짓 하는 거 알지?” 눈이 사라지도록 웃던 얼굴이 처음으로 울 것 같다. 열린 상자 안에서 반지가 야경을 받아 반짝인다.`,
+  minjun:n => `민준이 책상 위 작은 건축 모형을 내 앞으로 밀었다. “지붕, 열어 봐요.” 조심스레 지붕을 들어 올리자 모형 안방에 반지가 놓여 있었다. 그가 귀 끝까지 빨개져서 말했다. “이 집에서, 같이 살아 줄래요?”`,
+  hajin:n => `노을이 번지는 옥상. 하진이 노트북을 덮고 대신 작은 상자를 열었다. “계획표에 없던 일정이 하나 생겼어. 평생짜리.” 평소처럼 직설적인 말투인데 손끝이 떨리고 있다.`,
+  taeoh:n => `새벽 바닷가, 푸른 빛이 막 번지는 시간. 태오가 카메라를 내려놓고 모래 위에 무릎을 꿇었다. “이건 사진으로 못 남겨요. 그래서 직접 물어보는 거예요.” 상자 속 반지가 첫 햇살을 받았다.`,
+  raon:n => `불 꺼진 공연장, 객석 한가운데로 조명 한 줄기가 내려온다. 라온이 마스크를 내리고 작은 상자를 내밀었다. “무대 위에선 한 번도 안 떨었는데. 오늘은 존댓말도 안 나와. 나랑 결혼해 줄래?”`,
+  jihu:n => `고층 레스토랑의 창가 자리, 야경 위로 지후가 반지 케이스를 조용히 열었다. “제가 할 수 있는 가장 정확한 말을 준비했습니다. 저와 결혼해 주시겠습니까.” 단정한 목소리가 끝에서 흔들렸다.`,
+  dohyun:n => `텅 빈 영화관, 스크린에서 엔딩 크레딧 같은 은은한 빛이 쏟아진다. 도현이 옆자리에서 작은 상자를 열었다. “이 장면은 NG 안 내고 싶다. …내 다음 시즌에도 네가 주인공이었으면 해.”`,
+  sian:n => `늦은 밤 서재, 원고지 위에 반지 상자가 놓여 있다. 시안이 펜을 내려놓고 말했다. “마지막 문장을 쓰려는데, 혼자서는 안 써지더라고요. 같이 써 줄래요, 이 이야기의 끝까지.”`,
+  seunghyun:n => `별장 정원에 작은 전구들이 켜져 있다. 승현이 마스크를 벗고 한쪽 무릎을 꿇었다. “대본에 없는 대사를 할게요. 연기가 아니에요. …저와 결혼해 줄래요?”`,
+  geonwoo:n => `한옥 마당, 등롱 아래에서 건우가 정장을 단정히 하고 무릎을 꿇었다. “계약서처럼 정확하게 말씀드리겠습니다. 조건은 하나, 평생입니다. …승낙해 주시겠습니까.” 말끝이 서툴게 흔들렸다.`,
+  yuchan:n => `밤의 거실, 모니터 불빛 속에서 유찬이 키보드 옆에 작은 상자를 올려놓았다. “…저 지금 예외 처리가 하나도 안 돼요. 그냥 말할게요. 같이 살아요, 우리.” 귀가 새빨갛다.`,
+  ujin:n => `아틀리에, 직접 지은 하얀 드레스가 걸린 앞에서 우진이 상자를 열었다. “이 옷을 입을 사람이 한 명밖에 안 떠올랐어요. 반지는 맞는 치수로 골랐고요.” 그의 눈이 색을 고를 때처럼 조용히 빛난다.`,
+};
 function proposeEvent(S, id){
   const lv = LOVERS[id], v = S.love[id];
-  return {id:'propose_' + id, lover:id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.webp',
-    text:S => `${lv.name}${id === 'jaewoo' ? '가' : '이'} 작은 상자를 열었다. “우리, 같이 살자.” 마흔의 나는 이 질문 뒤의 이십 년을 안다. 지금의 나는 어떤 대답을 하고 싶은가.`,
+  const ev = {id:'propose_' + id, lover:id, once:true, speaker:lv.name, title:'평생의 약속', place:'night', img:'art/lv_' + id + '.webp',
+    text:S => `“우리, 같이 살자.” 마흔의 나는 이 질문 뒤의 이십 년을 안다. 지금의 나는 어떤 대답을 하고 싶은가.`,
     choices:[
       {label:'응, 약속해', sub:'결혼 약속 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 2; S.engaged = true; v.engagedAt = S.m; fx(S, {bond:7, stress:-8}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼을 약속함`); return {text:'반지가 손가락에 들어갔다. 이번에는 도장이 아니라 손을 잡았다.', chips:ch}; }},
       {label:'나를 먼저 세우고 싶어', sub:'관계는 유지 · 나 +4', run(S){ const ch = []; addAff(S, id, -8, ch); fx(S, {self:4}, ch); return {text:'그는 잠시 말이 없다가 상자를 닫았다. “기다릴게.” 그 말이 고마웠고 조금 무거웠다.', chips:ch}; }},
     ]};
+  const pimg = [`art/pr_${id}.webp`, `art/lv_${id}.webp`]; ev.img = pimg; ev.beats = [(PROPOSE_LINES[id] || PROPOSE_LINES._)(lv.name)]; ev.beatImgs = [pimg, pimg];
+  return ev;
 }
 
 function breakupEvent(S, id){
@@ -1206,12 +1224,20 @@ function weddingEvent(S){
   if(!v || v.stage !== 2 || S.married || S.m < 58) return null;
   if(S.m - (v.engagedAt == null ? S.m : v.engagedAt) < 5) return null;
   const lv = LOVERS[id];
-  return {id:'wedding_' + id, lover:id, once:true, speaker:lv.name, title:'결혼식', place:'campus', img:'art/lv_' + id + '.webp',
+  const ev = {id:'wedding_' + id, lover:id, once:true, speaker:lv.name, title:'결혼식', place:'campus', img:`art/wd_${id}.webp`,
     text:S => `하얀 드레스와 환한 햇빛. ${lv.name}가 입장하는 나를 보며 눈시울을 붉혔다. 마흔의 내가 이혼 서류에 도장을 찍던 날과 같은 달력 위에 서 있는데, 오늘은 전혀 다른 날이다. 그래도 문득 두려움이 스쳤다. 이 사람과 십 년, 이십 년을 살 수 있을까.`,
     choices:[
       {label:'두려움까지 안고 약속한다', sub:'결혼 · 관계 대폭 상승', run(S){ const ch = []; v.stage = 3; v.marriedAt = S.m; S.married = id; fx(S, {bond:8, stress:-6, self:1}, ch); addAff(S, id, 8, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼`); return {text:`“네, 평생 함께하겠습니다.” 하객들의 박수 속에서 나는 처음으로 서약이 아닌 선택이라는 단어를 떠올렸다. ${lv.name}의 손은 따뜻했다.`, chips:ch}; }},
       {label:'혼인신고는 조금 더 미룬다', sub:'동거 상태 · 관계 소폭', run(S){ const ch = []; v.stage = 3; v.marriedAt = S.m; v.pending = true; S.married = id; fx(S, {bond:5, self:2, stress:-3}, ch); S.album.push(`${josa(lv.name, '과', '와')} 결혼(혼인신고는 나중에)`); return {text:'“식은 올리되, 서류는 우리가 준비되었을 때.” 그는 잠깐 놀랐지만 웃으며 고개를 끄덕였다. 조금 느슨한 약속이 오히려 숨 쉴 틈이 되었다.', chips:ch}; }},
     ]};
+  // 신부 대기실 → 입장 → 서약: 그림이 바뀌며 이어진다
+  const vow = [`art/wd_${id}.webp`, `art/lv_${id}.webp`];
+  ev.beats = [
+    `신부 대기실. 거울 속에 하얀 웨딩드레스를 입은 내가 서 있다. 소연이 베일을 매만지다가 훌쩍였다. “야, 울지 마. 나 화장 번지잖아.” 정작 우는 건 소연이다. 마흔의 나는 이 방에 서 본 적이 없다. 손끝에 닿는 레이스가 낯설게 따뜻하다.`,
+    `문이 열리고 버진로드 끝의 빛이 쏟아졌다. 꽃잎이 깔린 길 위로 한 걸음씩. 하객석에서 엄마가 손수건으로 입을 가리는 게 보인다. 그 끝에서 ${lv.name}${id === 'jaewoo' ? '가' : '이'} 숨을 삼키고 서 있다. 눈이 마주치자 그가 입 모양으로 말했다. “예뻐.”`,
+  ];
+  ev.beatImgs = [[`art/wd_dress.webp`, `art/lv_${id}.webp`], [`art/wd_aisle.webp`, `art/lv_${id}.webp`], vow];
+  return ev;
 }
 const MARRIED_SCENES = [
   {t:'신혼의 아침', x:lv => `${lv.name}가 서툰 솜씨로 아침을 차려 놓았다. 계란은 탔고 국은 짰다. 그런데 이상하게 웃음이 났다. 같은 집에서 눈을 뜬다는 일이 이렇게 낯설고 따뜻하다.`, a:['“맛있어, 내일은 내가 할게”', '그는 안심한 듯 웃었다. 서로 번갈아 아침을 차리기로 약속했다.', {bond:2, stress:-3}, 5], b:['웃으며 먹되 레시피를 알려 준다', '그는 투덜대면서도 메모를 했다. 부엌에서 오래 웃었다.', {bond:1.2, self:1}, 3]},
@@ -7242,7 +7268,7 @@ function playEvent(ev){
     const beats = (ev.beats || []).slice();
     const mc = /^st_(\d+)_1$/.exec(ev.id);
     // 대사마다 일러스트가 바뀌는 이벤트(오프닝 등): beatImgs[i] 가 i번째 대사의 그림, 선택지 화면은 마지막 그림을 이어 쓴다
-    const bimgs = ev.beatImgs || null; let bi = 0; if(bimgs) bimgs.forEach(u => { const im = new Image(); im.src = u; });
+    const bimgs = ev.beatImgs || null; let bi = 0; if(bimgs) bimgs.forEach(u => [].concat(u).forEach(x => { const im = new Image(); im.src = x; }));
     const nextBeat = () => {
       if(beats.length){ const t = beats.shift(), ev2 = bimgs ? Object.assign({}, ev, {img: bimgs[Math.min(bi, bimgs.length - 1)]}) : ev; bi++; evOpen(ev2, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
       if(bimgs) ev = Object.assign({}, ev, {img: bimgs[bimgs.length - 1]});
@@ -7376,7 +7402,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #91 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #92 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7438,7 +7464,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#91 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#92 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

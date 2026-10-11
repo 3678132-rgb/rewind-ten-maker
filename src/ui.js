@@ -131,12 +131,12 @@ function render(){
   $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
   $('hud-avatar').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
-  $('hud-age').textContent = `${ageOf(S)}세 · ${left}개월 남음`;
+  $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
   const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
-  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false); + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
+  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
   const full = !S.plan.some(x => !x);

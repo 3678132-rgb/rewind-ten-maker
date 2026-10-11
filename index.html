@@ -364,6 +364,16 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 #title .coverart::after{height:70%;background:radial-gradient(90% 70% at 100% 70%,rgba(18,22,60,.55),rgba(18,22,60,0) 70%)}
 .ccard{font-size:12.5px;padding:11px 12px;line-height:1.55;letter-spacing:-.02em}
 #app:has(#title.on) #buildtag{display:none}
+
+/* ───── 상태창이 얼굴을 가리지 않게: 날짜는 아바타 아래 작은 칩으로, 얼굴 자리(가운데)는 비운다 ───── */
+.hud-id{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.hud-id .hud-center{max-width:none;width:auto;padding:5px 9px 6px;border-radius:14px;flex:none}
+.hud-id .hud-line b{font-size:13px;letter-spacing:-.03em}
+.hud-id .hud-line span{font-size:10.5px;line-height:1.35;white-space:nowrap}
+.hud-top{align-items:flex-start}
+.hud-top .gear{margin-top:2px}
+.side-l{top:calc(176px + env(safe-area-inset-top))}
+@media (max-height:720px){.side-l{top:calc(168px + env(safe-area-inset-top))}}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -374,7 +384,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #47 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #48 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -388,8 +398,8 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="game" class="screen">
   <div class="scene" id="scene"><img class="pimg" id="g-img" alt=""><div class="scene-shade"></div></div>
   <div class="hud-top">
-   <div class="avatar" id="hud-avatar"></div>
-   <div class="hud-center"><div class="hud-line"><b id="tb-date"></b><span id="hud-age"></span></div><div class="hud-bar"><i id="hud-prog"></i></div><div class="hud-sub" id="tb-sub"></div></div>
+   <div class="hud-id"><div class="avatar" id="hud-avatar"></div>
+   <div class="hud-center"><div class="hud-line"><b id="tb-date"></b><span id="hud-age"></span></div><div class="hud-bar"><i id="hud-prog"></i></div><div class="hud-sub" id="tb-sub"></div></div></div>
    <button class="gear" id="b-call" aria-label="전화하기"><span data-icon="phone"></span><span class="badge" id="call-badge"></span></button>
    <button class="gear" id="b-menu" aria-label="메뉴"><span data-icon="gear"></span></button>
   </div>
@@ -412,7 +422,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #47 · 2026.10.11</div>
+ <div id="buildtag">빌드 #48 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -3274,12 +3284,12 @@ function render(){
   $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
   $('hud-avatar').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
-  $('hud-age').textContent = `${ageOf(S)}세 · ${left}개월 남음`;
+  $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
   const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
-  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false); + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
+  $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
   const full = !S.plan.some(x => !x);
@@ -3533,7 +3543,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #47 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #48 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3577,7 +3587,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#47 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#48 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -359,3 +359,13 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 #title .coverart::after{height:70%;background:radial-gradient(90% 70% at 100% 70%,rgba(18,22,60,.55),rgba(18,22,60,0) 70%)}
 .ccard{font-size:12.5px;padding:11px 12px;line-height:1.55;letter-spacing:-.02em}
 #app:has(#title.on) #buildtag{display:none}
+
+/* ───── 상태창이 얼굴을 가리지 않게: 날짜는 아바타 아래 작은 칩으로, 얼굴 자리(가운데)는 비운다 ───── */
+.hud-id{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.hud-id .hud-center{max-width:none;width:auto;padding:5px 9px 6px;border-radius:14px;flex:none}
+.hud-id .hud-line b{font-size:13px;letter-spacing:-.03em}
+.hud-id .hud-line span{font-size:10.5px;line-height:1.35;white-space:nowrap}
+.hud-top{align-items:flex-start}
+.hud-top .gear{margin-top:2px}
+.side-l{top:calc(176px + env(safe-area-inset-top))}
+@media (max-height:720px){.side-l{top:calc(168px + env(safe-area-inset-top))}}

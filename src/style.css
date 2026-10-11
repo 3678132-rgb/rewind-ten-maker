@@ -454,3 +454,6 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .agok{padding:12px;border-radius:14px;background:#4f63f0;color:#fff;font-weight:800;font-size:15px}
 .agno{padding:8px;color:#778;font-size:13px}
 #ag-msg{color:#d32f4a;font-size:12.5px;min-height:16px}
+
+.dexrow{grid-template-columns:44px 1fr}.dexrow .g.th{width:44px;height:64px;border-radius:10px;background-size:cover;background-position:center 25%;font-size:0;box-shadow:0 2px 8px rgba(20,30,70,.25)}
+.dexrow{grid-template-columns:44px 1fr auto}.dexrow:not(:has(.th)){grid-template-columns:34px 1fr auto}

@@ -8,6 +8,8 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
+const END_ART = new Set(__END_ART__); // art/end_<엔딩id>.webp: 엔딩별 일러스트
+const endArt = (id, e) => END_ART.has('end_' + id) ? `art/end_${id}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
 const HERO_JOB = new Set(__HERO_JOB__); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
 const HERO_RIPE = new Set(__HERO_RIPE__); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(__DATE_ART__); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
@@ -369,9 +371,11 @@ function showShop(){
   $('x').onclick = () => { closeSheet(); render(); };
   document.querySelectorAll('#sheet .act').forEach(b => b.onclick = () => { const r = buyItem(S, b.dataset.id); if(r){ toast(r); return; } save(); toast(`${ITEMS[b.dataset.id].name} 구입!`); showShop(); });
 }
+// 본 엔딩 기록: 예전 이름은 지금 이름으로 이어받는다
+function seenEndings(){ const raw = store(ENDINGS_KEY) || []; const out = []; raw.forEach(id => { const n = endingNorm(id); if(ENDINGS[n] && !out.includes(n)) out.push(n); }); return out; }
 function showDex(){
-  const seen = store(ENDINGS_KEY) || [];
-  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
+  const seen = seenEndings();
+  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g ${ok && END_ART.has('end_' + id) ? 'th' : ''}" ${ok && END_ART.has('end_' + id) ? `style="background-image:url(art/end_${id}.webp)"` : ''}>${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
   $('x').onclick = closeSheet;
   document.querySelectorAll('.dexrow[data-e]').forEach(r => r.onclick = () => showEndingCard(r.dataset.e));
 }
@@ -379,7 +383,7 @@ function showDex(){
 function showEndingCard(id){
   const e = ENDINGS[id], who = S ? S.name : '나', letter = e.letter.replace(/\{name\}/g, who);
   let el = document.getElementById('ecard'); if(!el){ el = document.createElement('div'); el.id = 'ecard'; $('app').appendChild(el); }
-  const art = `art/${e.free ? 'age30' : 'cover'}.webp`;
+  const art = endArt(id, e);
   el.innerHTML = `<div class="ecbg" style="background-image:url(${art})"></div><div class="ecshade"></div><div class="ecbody"><button class="ecx" id="ec-x" aria-label="닫기">✕</button><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${esc(e.sub)}</span><h1>${esc(e.title)}</h1><div class="letter">${esc(letter)}\n\n— 일흔 살의 나로부터</div><div class="ecbtns"><button class="btn" id="ec-share">공유하기</button><button class="btn ghost" id="ec-save">이미지 저장</button></div></div>`;
   el.classList.add('on');
   $('ec-x').onclick = () => el.classList.remove('on');
@@ -545,8 +549,8 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 // ── 엔딩 ──────────────────────────────────────────────────────
 function showEnding(){
   const id = S.ending || computeEnding(S), e = ENDINGS[id]; const P = finalPillars(S);
-  const seen = store(ENDINGS_KEY) || []; if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
-  $('end').innerHTML = `<div class="endbg" style="background-image:url(art/${e.free ? 'age30' : 'cover'}.webp)"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
+  const seen = seenEndings(); if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
+  $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>

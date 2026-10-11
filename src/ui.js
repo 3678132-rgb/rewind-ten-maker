@@ -3,7 +3,7 @@ const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_K
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
-const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
+const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', city:'🏙️', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
@@ -146,8 +146,8 @@ function render(){
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
-  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도감
-  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'dex'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : '도감'; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'dex'] || ''; ic.dataset.painted = '1'; }
+  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도시 산책
+  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'city'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : `도시 ${cpLeft(S)}/${CAMPUS_VISITS}`; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'home'] || ''; ic.dataset.painted = '1'; }
   const full = !S.plan.some(x => !x);
   $('slots3').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
@@ -216,6 +216,38 @@ async function visitCampus(key){
     save(); render();
   } finally { visiting = false; }
   showCampus();
+}
+// ───── 도시 산책(졸업 뒤): 지도에서 장소를 고르면 사람을 만나고, 취업했다면 쇼핑도 한다 ─────
+const CT_PIN = {office:[14, 15], cinema:[50, 17], museum:[84, 17], mall:[18, 48], beauty:[80, 47], books:[15, 77], river:[52, 67], night:[86, 85]};
+const ctMapHTML = () => `<div class="cpmap ctmap" style="background-image:url(art/ct_map.webp)">${CITY_KEYS.map(k => { const p = CITY_PLACES[k], pos = CT_PIN[k], n = cityRecommend(S, k).length, side = pos[0] < 26 ? ' l' : pos[0] > 74 ? ' r' : ''; return `<button class="cpin${side}" data-pin="${k}" style="left:${pos[0]}%;top:${pos[1]}%"><i>${p.icon}</i><b>${p.name}</b>${n ? `<em>${n}</em>` : ''}</button>`; }).join('')}</div>`;
+function showCity(){
+  const left = cpLeft(S), dots = Array.from({length:CAMPUS_VISITS}, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
+  const rows = CITY_KEYS.map(k => { const p = CITY_PLACES[k], rec = cityRecommend(S, k).slice(0, 3).map(i => LOVERS[i].name).join('·');
+    return `<div class="ctrow"><button class="ctgo" data-go="${k}"><i>${p.icon}</i><span><b>${p.name}</b><small>${rec ? `💗 ${rec}` : p.desc}</small></span></button>${S.hired ? `<button class="ctshop" data-shop="${k}">🛒</button>` : ''}</div>`; }).join('');
+  openSheet(sheetHead('도시 산책', '졸업한 뒤엔 시내를 돌아다녀요. 💗 표시는 그곳을 좋아하는 사람이에요.') + `<div class="cpleft"><span>이번 달 남은 방문</span><span class="dots">${dots}</span><b>${left}/${CAMPUS_VISITS}</b></div>` + ctMapHTML() + `<div class="ctrows">${rows}</div><button class="act" id="ct-dex" style="margin-top:6px"><span class="top"><span class="ic">📖</span><b>엔딩 도감</b></span></button>`);
+  $('x').onclick = () => { closeSheet(); render(); };
+  document.querySelectorAll('.cpin').forEach(b => b.onclick = () => visitCity(b.dataset.pin));
+  document.querySelectorAll('.ctgo').forEach(b => b.onclick = () => visitCity(b.dataset.go));
+  document.querySelectorAll('.ctshop').forEach(b => b.onclick = () => showCityShop(b.dataset.shop));
+  $('ct-dex').onclick = showDex;
+}
+async function visitCity(key){
+  if(visiting) return; if(cpLeft(S) <= 0){ toast('이번 달 방문을 다 썼어요 (3/3)'); return; }
+  visiting = true; closeSheet();
+  try{
+    const out = cityVisit(S, key);
+    if(out.enc && !S.ending){ await playEvent(out.enc); }
+    save(); render();
+  } finally { visiting = false; }
+  showCity();
+}
+function showCityShop(place){
+  const p = CITY_PLACES[place], comp = cityCompanion(S), items = CITY_SHOP[place] || [];
+  const rows = items.map(it => { const poor = S.cash < it.price, full = it.item && owned(S, it.item) >= (ITEMS[it.item].stack || 1), need = it.who && !comp;
+    return `<button class="act" data-id="${it.id}" ${poor || full || need ? 'disabled' : ''}><span class="top"><span class="ic">${it.icon}</span><b>${it.name}</b></span><span class="em">${it.price}만원${full ? ' · 보유' : need ? ' · 함께할 사람 없음' : ''}</span><span class="d">${it.desc}</span></button>`; }).join('');
+  openSheet(sheetHead(`${p.icon} ${p.name} 쇼핑`, `자금 ${fmtMoney(S.cash)}${comp ? ` · 함께: ${LOVERS[comp].name}` : ''}`) + `<div class="acts">${rows}</div>`);
+  $('x').onclick = () => showCity();
+  document.querySelectorAll('#sheet .act[data-id]').forEach(b => b.onclick = () => { const r = cityBuy(S, place, b.dataset.id); if(r){ toast(r); return; } save(); toast(S._shopNote || '구입!'); render(); showCityShop(place); });
 }
 function openPicker(i, cat){
   activeSlot = i;
@@ -514,7 +546,7 @@ function initGame(){
   $('b-call').onclick = openPhone;
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
-  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
   $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}

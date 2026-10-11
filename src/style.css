@@ -428,3 +428,14 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 #ecard .ecbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
 #ecard .ecbtns .btn{min-height:48px}#ecard .ecbtns .ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.5)}
 #ecard .letter{background:none;border:0;padding:0;box-shadow:none}
+
+/* 도시 지도·쇼핑 */
+.ctmap{background-color:#dfe6f3}
+.cpin em{font-style:normal;background:#ff5c8a;color:#fff;border-radius:99px;min-width:16px;height:16px;line-height:16px;text-align:center;font-size:10px;margin-left:2px;padding:0 4px}
+.cpin.l{transform:translate(-30%,-50%)}.cpin.r{transform:translate(-72%,-50%)}
+.ctrows{display:grid;grid-template-columns:1fr;gap:6px;margin-top:4px}
+.ctrow{display:flex;gap:6px}
+.ctgo{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:8px 12px;border-radius:14px;background:#fff;border:2px solid #e3e7f5;color:#2b3560}
+.ctgo i{font-style:normal;font-size:22px}.ctgo span{display:flex;flex-direction:column;min-width:0}.ctgo b{font-size:14px}.ctgo small{font-size:11.5px;color:#6a7396;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctshop{flex:none;width:46px;border-radius:14px;background:#fff3e0;border:2px solid #ffd9a8;font-size:20px}
+.ctrows{grid-template-columns:minmax(0,1fr)}.ctrow{min-width:0}.ctgo{min-width:0;overflow:hidden}.ctgo small{max-width:100%}

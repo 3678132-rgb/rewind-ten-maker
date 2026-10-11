@@ -433,6 +433,17 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 #ecard .ecbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
 #ecard .ecbtns .btn{min-height:48px}#ecard .ecbtns .ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.5)}
 #ecard .letter{background:none;border:0;padding:0;box-shadow:none}
+
+/* 도시 지도·쇼핑 */
+.ctmap{background-color:#dfe6f3}
+.cpin em{font-style:normal;background:#ff5c8a;color:#fff;border-radius:99px;min-width:16px;height:16px;line-height:16px;text-align:center;font-size:10px;margin-left:2px;padding:0 4px}
+.cpin.l{transform:translate(-30%,-50%)}.cpin.r{transform:translate(-72%,-50%)}
+.ctrows{display:grid;grid-template-columns:1fr;gap:6px;margin-top:4px}
+.ctrow{display:flex;gap:6px}
+.ctgo{flex:1;display:flex;align-items:center;gap:10px;text-align:left;padding:8px 12px;border-radius:14px;background:#fff;border:2px solid #e3e7f5;color:#2b3560}
+.ctgo i{font-style:normal;font-size:22px}.ctgo span{display:flex;flex-direction:column;min-width:0}.ctgo b{font-size:14px}.ctgo small{font-size:11.5px;color:#6a7396;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ctshop{flex:none;width:46px;border-radius:14px;background:#fff3e0;border:2px solid #ffd9a8;font-size:20px}
+.ctrows{grid-template-columns:minmax(0,1fr)}.ctrow{min-width:0}.ctgo{min-width:0;overflow:hidden}.ctgo small{max-width:100%}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -443,7 +454,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #71 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #72 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -481,7 +492,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #71 · 2026.10.11</div>
+ <div id="buildtag">빌드 #72 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -2955,449 +2966,6 @@ const LSTORY_D = [
 ];
 LSTORY.push(...LSTORY_D);
 
-// 특별 이벤트 A: 서하린 삼각관계 · 1학년 MT · 신입 환영회. ENGINE 구간(DOM 금지)
-// SPECIAL 이벤트는 cond 가 맞으면 그 달에 우선 나온다(한 번만). 로컬 도구는 _sx 접두어.
-
-// 효과 → 칩 순으로 결과 객체를 만든다. more: {aff:[id,Δ], rv:Δ, mood:'shy', run(ch)}
-const _sxR = (S, o, text, more) => {
-  const ch = [], m = more || {};
-  if(m.aff) addAff(S, m.aff[0], m.aff[1], ch);
-  if(o) fx(S, o, ch);
-  if(m.rv) rivalMood(S, m.rv, ch);
-  if(m.run) m.run(ch);
-  const out = {text, chips:ch};
-  if(m.mood) out.mood = m.mood;
-  return out;
-};
-// ── 삼각관계 도우미 ──
-const _sxId = S => SF(S).triWho || triMan(S);
-const _sxM = S => { const id = _sxId(S) || 'minjun'; return {id, n:LOVERS[id].name, cp:isCouple(S, id)}; };
-const _sxLive = (S, id) => !!id && !!LOVERS[id] && isMet(S, id) && S.love[id].stage !== 3; // 아직 이어지고 있는 상대
-const _sxStart = S => { const id = triMan(S); return !!id && _sxLive(S, id); };
-const _sxNext = (prev, gap) => S => { const id = SF(S).triWho; return afterEv(S, prev, gap) && _sxLive(S, id); };
-// 인물마다 흔들릴 때의 말투
-const _sxVoice = {
-  jaewoo:'…둘 다 나한테는 소중한 사람이라서, 이런 건 처음이야. 내 꿈 얘기만 하던 내가 누구 마음을 이렇게 오래 생각해 본 적이 없거든.',
-  minjun:'나, 이런 거 잘 못하는 거 알잖아. …근데 가만히 있으면 안 될 것 같아서, 도시락 싸는 것보다 어렵네.',
-  hajin:'솔직히 말할게. 나 지금 정리 못 하고 있어. 회사 일은 잘만 정리하는 대표가 이래도 되나 싶다.',
-  taeoh:'천천히 생각하고 싶은데… 두 분이 기다려 주질 않네요. 아니, 기다려 주고 있어서 더 미안한 걸지도요.',
-  jihu:'…곤란하군요. 이런 사안에는 익숙하지 않습니다. 변명처럼 들리겠지만, 가볍게 대하고 있지는 않습니다.',
-  dohyun:'아, 씨, 나 이런 거 진짜 싫은데. …근데 도망은 안 간다. 도망치면 둘 다 다치니까.',
-  sian:'시나리오라면 쉬웠을 텐데요. 현실은 대사가 정해져 있지 않아서, 저도 다음 문장이 안 나옵니다.',
-  geonwoo:'…정리해서 말씀드리려고 했습니다. 그런데 정리가 되질 않습니다. 이런 적은 처음이라서요.',
-  yuchan:'에러가 두 개 동시에 떠. 어느 쪽부터 잡아야 할지 모르겠어. 하나 고치면 다른 쪽이 죽을 것 같아서.',
-  ujin:'두 가지 색이 한 천에 번지면… 어느 쪽도 원래 색이 아니게 되잖아요. 그게 제일 무서워요.'
-};
-const _sxIda = n => josa(n, '이다', '다');
-
-// ════════ 특별 이벤트 ════════
-const SPECIAL_A = [
-// ════════ 신입 환영회 ════════
-(() => {
-  const V = {
-    beauty:{where:'회사 근처의 와인 바', mood:'화사한 조명 아래 잔이 부딪히는데, 이야기는 전부 매출과 다음 시즌 트렌드다', stunt:'신제품 슬로건 즉석 짓기', senior:'옆자리 선배가 내 립 색을 슬쩍 보고는 “발색 좋네, 근데 오늘은 다 지워질 거야”라며 웃는다'},
-    pd:{where:'촬영팀 단골 고깃집', mood:'불판 연기 속에서 소주잔이 줄지어 돌고, 막내는 가위와 집게를 쉬지 않고 잡는다', stunt:'촬영 현장 성대모사', senior:'옆자리 선배가 슬레이트 치는 시늉을 하며 “컷, 첫 잔 다시 가자”라고 한다'},
-    writer:{where:'방송국 뒤편 포장마차', mood:'작가실 사람들이 대사 같은 농담을 주고받고, 잔이 비면 이야기가 하나씩 채워진다', stunt:'즉석 한 줄 대사 이어 쓰기', senior:'옆자리 선배 작가가 내 얼굴을 한참 보더니 “눈이 이야기를 담고 있네”라고 평한다'},
-    actor:{where:'연습실 근처의 회식집', mood:'잔보다 시선이 먼저 도는 자리다. 누구나 서로의 표정과 평판을 곁눈으로 살핀다', stunt:'30초 즉석 연기', senior:'옆자리 선배 배우가 고개를 기울이고 “카메라 앞에선 어떻게 웃어?”라고 묻는다'},
-    lawyer:{where:'사무실 옆 한정식집의 별실', mood:'목소리는 낮고 잔은 정확히 칠 부만 채워진다. 건배 한 번에도 격식이 있다', stunt:'판례 퀴즈', senior:'옆자리 시니어가 건배사 대신 “오늘 들은 이야기는 이 방 안에서만”이라고 말한다'},
-    dev:{where:'사무실 근처의 치킨 호프', mood:'맥주잔 옆에 노트북 스티커가 굴러다니고, 대화는 장애와 배포 이야기로 흘러간다', stunt:'장애 변명 즉흥 발표', senior:'옆자리 선배가 코드 리뷰하듯 내 말을 한 줄씩 짚으며 고개를 끄덕인다'},
-    designer:{where:'작업실 아래층의 선술집', mood:'원단 샘플과 스케치북이 안주 접시 사이에 섞여 있고, 모두의 손끝에 색이 묻어 있다', stunt:'냅킨에 3분 스케치', senior:'옆자리 선배가 내 소매 단을 쓱 만져 보고는 “바느질 보는 눈이 있네”라고 한다'},
-    other:{where:'사무실 근처의 단골 식당', mood:'새로 들어온 사람을 살피는 눈이 열댓 개, 잔은 쉬지 않고 돈다', stunt:'즉석 장기자랑', senior:'옆자리 선배가 내 첫인상을 묻지도 않았는데 평가하기 시작한다'}
-  };
-  const vo = S => V[S.track] || V.other;
-  const co = S => (CAREERS[S.track] && CAREERS[S.track].company) || '회사';
-  const rk = S => rankName(S) || '신입';
-  return {id:'sp_welcome', once:true,
-    cond:S => !!S.hired && S.hiredAt != null && !S.switched && S.m >= S.hiredAt && S.m - S.hiredAt <= 1 && !inLawSchool(S),
-    speaker:'', title:'신입 환영회', place:'night', img:'art/ct_night.webp',
-    beats:[
-      '출근한 지 얼마 안 된 어느 저녁. 퇴근 시간이 되자 팀 전체가 일어났다. 팀장이 손뼉을 한 번 치며 말한다. “오늘은 신입 환영회. 빠지면 서운하지.”',
-      '질문은 없었다. 이런 문장 뒤에는 거절하는 선택지가 없다는 걸, 마흔의 나는 몸으로 안다. 수백 번 견뎠던 자리다. 첫 잔의 압박, 두 번째 잔의 본심, 세 번째 잔부터의 후회까지.',
-      '그래도 이번엔 다르다. 같은 자리라도 이번엔 내가 어떻게 앉을지 고를 수 있다.'
-    ],
-    text:S => { const v = vo(S); const hard = S.stress >= 60; return `${co(S)}의 신입 ${josa(rk(S), '이', '가')} 된 나를 위한 자리는 ${v.where}에 마련돼 있다. ${v.mood}. ${v.senior}. 팀장이 내 앞에 빈 잔을 놓고 가득 채우며 말한다. “첫 잔은 받는 거지?” 분위기가 달아오르자 누군가 외친다. “신입, ${v.stunt}!” 모두의 시선이 나에게 온다. ${hard ? '요즘 쌓인 피로가 어깨에 무겁게 얹혀 있다.' : '마흔의 기억이 말한다. 이 몇 분이 앞으로 일 년의 공기를 정한다고.'} 어떻게 할까?`; },
-    choices:[
-      {label:'분위기를 이끈다', sub:'장기자랑 · 일 +· 스트레스 +3', run(S){
-        const v = vo(S); const ok = (S.st.charm + S.st.dare) / 2 + rand(-10, 10) >= 36;
-        if(ok){ S.album.push('신입 환영회에서 장기자랑으로 팀의 마음을 샀다'); return _sxR(S, {work:2.5, bond:2, stress:3, hp:-4, cash:-3}, `나는 잔을 들고 일어나 ‘${v.stunt}’을 시작한다. 처음엔 어색했지만 세 마디째에 웃음이 터졌고, 팀장이 무릎을 치며 “이 신입 물건이네!” 하고 외쳤다. 옆자리 선배가 슬쩍 다가와 속삭인다. “오늘부터 네 편 한 명 늘었다.” 대신 목은 쉬었고 지갑도 가벼워졌다.`, {mood:'happy'}); }
-        S.album.push('신입 환영회에서 장기자랑에 나섰다가 크게 구르기도 했다'); return _sxR(S, {work:1, bond:1, stress:5, hp:-4, self:-1, cash:-3}, `‘${v.stunt}’에 나섰지만 중간에 말이 꼬였다. 정적이 잠깐 흘렀고, 얼굴이 불에 덴 듯 뜨겁다. 그러다 팀장이 “용기는 합격!” 하고 잔을 부딪혀 주자 웃음이 번졌다. 잘하지는 못했지만, 도망치지 않은 신입으로는 기억될 것 같다.`, {mood:'shy'}); }},
-      {label:'조용히 한 잔만 받는다', sub:'통찰 · 나 +1 · 일 +1', run(S){
-        const v = vo(S);
-        if(S.st.ins >= 45){ S.album.push('신입 환영회에서 조용히 팀의 지형을 읽었다'); return _sxR(S, {ins:1, self:1, work:2, stress:1}, `첫 잔만 받고 나머지는 물로 대신한다. 그 덕에 눈이 맑다. 팀장 말에 누가 먼저 웃는지, 누가 잔을 비우지 않는지, 어느 선배끼리 눈을 피하는지가 한눈에 읽힌다. ${v.senior}. 이 사람은 나중에 내 편이 될 사람이다. 마흔의 눈이 이럴 때는 쓸모가 있다.`); }
-        return _sxR(S, {ins:1, self:1, work:1, stress:1}, `“죄송한데 오늘은 첫 잔만 받겠습니다.” 팀장은 눈썹을 올렸지만 곧 “그래, 천천히 가자” 하고 넘어갔다. 장기자랑은 다른 신입에게로 돌아갔다. 나는 맞장구를 치며 사람들의 이야기를 들었다. 눈에 띄지는 않았지만, 말을 잘 들어 주는 신입이라는 인상은 남은 듯하다.`); }},
-      {label:'일찍 일어난다', sub:'스트레스 -4 · 나 +2 · 일 -2', run(S){
-        if(S.st.neg >= 45){ return _sxR(S, {stress:-4, self:2, work:-1}, `“내일 아침 자료가 남아 있어서, 이만 먼저 일어나겠습니다. 이 자리 초대해 주셔서 감사합니다.” 말투와 타이밍을 계산해서 말하니 팀장도 “책임감 있네” 하고 보내 준다. 문 밖의 밤공기가 시원하다. 아쉬움은 조금 남지만 마음은 가볍다.`); }
-        S.album.push('신입 환영회를 일찍 빠져나왔다'); return _sxR(S, {stress:-4, self:2, work:-2, bond:-1}, `“죄송합니다, 먼저 가보겠습니다.” 일어서는 순간 몇몇 시선이 서늘하게 따라온다. 팀장이 “요즘 애들은…” 하고 중얼거리는 소리도 들린다. 문을 나서자 밤공기가 시원하지만, 마음 한켠에는 내일 아침 출근길의 어색함이 미리 놓여 있다.`, {mood:'serious'}); }}
-    ]};
-})(),
-
-// ════════ 1학년 MT ════════
-(() => {
-  // 이미 만난 남주가 있으면 스치듯 등장
-  const cameo = S => {
-    const ids = Object.keys(LOVERS).filter(i => isMet(S, i)).sort((a, b) => affOf(S, b) - affOf(S, a));
-    const id = ids[0]; if(!id) return '';
-    if(id === 'minjun') return '주머니 속 휴대폰이 짧게 떤다. 한민준이다. “MT 간다며. 밥은 챙겨 먹어.” 짧은 문장이 이상하게 마음을 데운다.';
-    if(id === 'jaewoo') return '주머니 속 휴대폰이 짧게 떤다. 서재우의 메시지다. “MT 재밌게 놀아. 술은 적당히.” 웃을 때 사라지던 눈이 떠오른다.';
-    return `${LOVERS[id].name}의 안부 메시지가 도착해 있다. 짧은 한 줄인데도 한참 들여다본다.`;
-  };
-  const lines = [
-    {id:'sp_mt_1', once:true, cond:S => S.m >= 2 && S.m <= 4,
-      speaker:'서하린', title:'MT, 이어달리기', place:'campus', img:'art/cp_field.webp', cut:'harin', cut2:'soyeon',
-      beats:[
-        '과 전체 MT 날. 대절 버스 창가에 앉자마자 지수가 마이크를 잡았다. “자, 다 같이 노래 한 곡씩! 거부권 없음!” 버스가 흔들릴 때마다 풍선처럼 웃음이 튕긴다.',
-        '태윤은 출발한 지 오 분 만에 내 어깨 쪽으로 기울어 잠들었다. 소연은 그 머리를 슬쩍 반대편으로 밀며 간식 봉지를 뜯는다. 마흔의 나는 이런 소란을 그리워했다는 걸, 소란 한가운데서야 안다.',
-        '펜션에 도착하자 서하린은 제일 먼저 조 편성표를 확인하고 있었다. 일정표를 사본까지 챙긴 사람이다. “같은 팀이에요. 대항전에서 발목 잡지 말아 주세요.” 인사인지 경고인지 모를 말투였다.'
-      ],
-      text:S => `오후 레크리에이션의 마지막 종목은 팀 이어달리기다. ${cameo(S)} 우리 팀은 근소하게 앞서 있다. 그런데 마지막 주자인 하린이 코너에서 발을 헛디뎌 주저앉았다. 발목을 잡은 손이 떨리는데도 그녀는 “괜찮아요. 뛰겠습니다” 하며 일어서려 한다. 소연이 걱정스레 나를 본다. 모두의 시선이 나를 향한다. 이 순간, 나는 이기고 싶은가, 그녀 곁에 서고 싶은가.`,
-      choices:[
-        {label:'내가 대신 뛴다', sub:'체력 -6 · 하린 관계 +2', run(S){
-          SF(S).mtRace = 'carry';
-          const win = S.st.dare + S.hp / 3 + rand(-10, 10) >= 40;
-          return _sxR(S, {hp:-6, bond:1, charm:0.5}, `“앉아 있어요. 제가 뛸게요.” 하린을 부축해 앉히고 바통을 받았다. ${win ? '마지막 코너를 숨이 터지도록 달려 결승선을 먼저 끊었다. 환호 속에서 하린이 올려다본다.' : '아쉽게 간발의 차로 졌다. 그래도 우리 팀은 환호했다.'} “…이건 빚이에요.” 하린이 고개를 돌리며 말했다. 귀 끝이 붉다.`, {rv:2, mood:'shy'}); }},
-        {label:'곁에서 같이 천천히 완주한다', sub:'관계 +3 · 하린 관계 +1', run(S){
-          SF(S).mtRace = 'together';
-          return _sxR(S, {bond:3, self:1}, `나는 하린의 팔을 어깨에 두르고 한 걸음씩 걸었다. 팀은 꼴찌가 됐지만 소연과 지수가 끝까지 박수를 쳤다. “꼴찌네요.” 하린이 숨을 고르며 중얼거렸다. “…이상하게 기분은 나쁘지 않아요.” 입꼬리가 아주 조금 올라갔다.`, {rv:1, mood:'tender'}); }},
-        {label:'이기기 위해 바통을 넘긴다', sub:'일 +1 · 하린 관계 -2 · 나 -1', run(S){
-          SF(S).mtRace = 'win';
-          return _sxR(S, {work:1, self:-1, stress:2}, `나는 곁에 있던 지수에게 바통을 밀어 넘겼고, 지수는 질풍처럼 달려 우승을 가져왔다. 환호 속에서 하린은 혼자 절뚝이며 걸어 나왔다. “합리적인 판단이었어요.” 칭찬 같지만 눈은 웃지 않았다. 소연이 의미심장하게 나를 흘끗 본다.`, {rv:-2, mood:'serious'}); }}
-      ]},
-    {id:'sp_mt_2', once:true, cond:S => S.m >= 2 && S.m <= 5 && afterEv(S, 'sp_mt_1', 0),
-      speaker:'서하린', title:'MT, 모닥불과 고백 게임', place:'night', img:'art/cp_garden.webp', cut:'harin', cut2:'jisu',
-      beats:[
-        '밤. 펜션 마당에 장작이 쌓였고, 누군가 불을 붙이자 모두의 얼굴이 주황빛으로 물든다.',
-        '태윤이 기타를 잡았지만 코드를 세 개밖에 몰라서 같은 노래가 세 번 반복됐다. 지수가 박수를 치며 따라 부르고, 소연은 내 옆에서 손을 쬐며 조용히 웃는다.',
-        '분위기가 무르익자 누군가 종이컵을 돌렸다. “고백 게임 하자! 쪽지에 속마음 한 줄씩 써서 뽑는 거야. 뽑힌 사람은 진실 하나, 아니면 도전 하나!”',
-        '내 순서. 접힌 쪽지를 펼친다. 거기에는 이렇게 적혀 있다. ‘지금 가장 말하고 싶은데 못 한 말.’'
-      ],
-      text:S => { const r = SF(S).mtRace; const hz = r === 'carry' ? '낮의 일 때문인지 하린이 불꽃 너머에서 자꾸 이쪽을 본다.' : r === 'together' ? '하린이 불꽃 너머에서 낮보다 훨씬 편한 얼굴로 앉아 있다.' : r === 'win' ? '하린은 불빛이 닿지 않는 자리에서 팔짱을 낀 채 앉아 있다.' : '하린은 불꽃 너머에서 조용히 불을 보고 있다.'; return `모든 눈이 나에게 모였다. ${hz} 마흔의 비밀은 어디까지 말할 수 있을까. 거짓 없는 진실도, 장난 같은 도전도 고를 수 있다. 어쩌면 둘 다 아닌 방법도.`; },
-      choices:[
-        {label:'진실을 고른다', sub:'나 +2 · 관계 +3 · 하린 관계 +1', run(S){
-          S.album.push('MT 모닥불 앞에서 지금이 소중해서 무섭다고 털어놓았다');
-          return _sxR(S, {self:2, bond:3, stress:-3}, `“요즘 자주 무서워. 지금 이 시간이 갑자기 사라질까 봐. 너희랑 이렇게 있는 게 너무 소중해서.” 마흔의 비밀은 숨기고, 진심만 꺼냈다. 지수는 눈물을 글썽였고 소연은 말없이 내 손을 잡았다. 불꽃 너머의 하린이 아주 잠깐 고개를 숙이는 게 보였다.${S.st.ins >= 45 ? ' 그 입술이 “…알 것 같아요”라고 소리 없이 움직인 것 같기도 하다.' : ''}`, {rv:1}); }},
-        {label:'도전을 고른다 — 보고 싶은 사람에게 전화한다', sub:'도전 +1 · 호감 +4', run(S){
-          const ids = Object.keys(LOVERS).filter(i => isMet(S, i)).sort((a, b) => affOf(S, b) - affOf(S, a)); const id = ids[0];
-          if(id){ const n = LOVERS[id].name; return _sxR(S, {dare:1, stress:2}, `환호 속에서 휴대폰을 꺼내 ${n}에게 전화를 건다. 신호음 세 번 뒤, 낮은 목소리가 받았다. 나는 불빛을 등지고 말했다. “…보고 싶어서 걸었어요.” 건너편이 한참 조용하더니 “지금 어디야?” 하고 묻는다. 뒤에서 아이들이 비명을 질렀다. 얼굴이 불보다 뜨겁다.`, {aff:[id, 4], mood:'shy'}); }
-          return _sxR(S, {dare:1, bond:2, stress:-3}, `환호 속에서 휴대폰을 꺼내 엄마에게 전화를 건다. “엄마, 그냥… 보고 싶어서.” 건너편에서 엄마의 웃음이 번졌다. “얘가 술 마셨니?” 마흔의 내가 한참 못 했던 말을 이제야 했다. 모닥불이 번져 보였다.`); }},
-        {label:'자리를 빠져나와 불 뒤편으로 간다', sub:'하린 관계 +2 · 스트레스 -2', run(S){
-          const r = SF(S).mtRace;
-          const line = r === 'carry' ? '“낮의 일은… 고마웠어요. 빚은 갚을 거예요. 제 방식대로요.”' : r === 'together' ? '“꼴찌였는데 말이죠. 그렇게 오래 웃어 본 건 오랜만이었어요.”' : r === 'win' ? '“낮의 판단이 틀렸다고는 생각 안 해요. 다만… 합리적인 것과 다정한 것이 다르다는 건 알겠어요.”' : '“시끄러운 건 잘 못 견뎌서요. 그래도 오늘은 나쁘지 않았어요.”';
-          return _sxR(S, {stress:-2, self:1}, `웃음소리를 뒤로하고 펜션 뒤편으로 돌아가니, 장작 더미에 서하린이 혼자 앉아 있다. 모닥불 빛이 하트형 얼굴의 윤곽을 따라 일렁이고 주근깨가 평소보다 도드라져 보인다. 그녀는 놀란 듯 몸을 세우다가 이내 힘을 풀었다. ${line} 하늘에는 별이 많았다. 우리는 아무 말 없이 한참 같은 방향을 봤다.`, {rv:2, mood:'shy'}); }}
-      ]}
-  ];
-  return lines;
-})(),
-
-// ════════ 서하린 삼각관계 ════════
-{id:'sp_tri_1', once:true, cond:S => S.m >= 30 && _sxStart(S),
-  speaker:RIVAL, title:'창가 자리', place:'cafe', img:'art/ct_books.webp', cut:'harin',
-  beats:[
-    '오후, 익숙한 거리의 서점 카페. 창가 자리에서 낯익은 웃음소리가 들린다.',
-    '서하린이다. 하트처럼 갸름한 얼굴, 단정하게 틀어 올린 오번 머리, 코끝에 흩어진 주근깨. 세상에서 웃음을 가장 아끼는 사람이 지금 소리 내어 웃고 있다.',
-    '그녀의 맞은편에는 내가 아는 사람이 앉아 있다. 하린은 컵을 두 손으로 감싸 쥔 채, 자기도 모르게 몸을 앞으로 기울이고 있다.',
-    '마흔의 기억 속에 이런 장면은 없다. 서하린이 누군가를 이렇게 바라보던 얼굴은.'
-  ],
-  text:S => { const {n, cp} = _sxM(S); const rv = SS(S).rival; return `맞은편에 앉은 사람은 ${n}${_sxIda(n)}. ${cp ? '내 연인 앞에서 라이벌이 처음 보는 얼굴을 하고 있다.' : '내가 마음에 두고 있는 사람 앞에서 라이벌이 처음 보는 얼굴을 하고 있다.'} 가슴 한쪽이 따끔하다. ${rv >= 4 ? '하린과는 꽤 가까워졌는데도, 이 장면은 낯설다.' : rv <= -4 ? '하린과 틀어진 지금이라 더 신경이 쓰인다.' : '아직 이 감정에 이름을 붙이기 싫다.'} 어떻게 할까?`; },
-  choices:[
-    {label:'자연스럽게 다가가 합석한다', sub:'도전 · 하린 관계 -1', run(S){
-      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'join'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 처음 목격했다');
-      const bold = S.st.dare >= 45 || S.st.charm >= 50;
-      if(bold) return _sxR(S, {dare:1, charm:0.5, stress:2}, `“여기 자리 있죠?” 웃으며 의자를 당겨 앉았다. ${josa(n, '은', '는')} 반가운 얼굴로 자리를 내주었고, 하린의 웃음은 서리처럼 얼어붙었다. “…우연이네요.” 그녀가 컵을 천천히 내려놓았다. 작은 전쟁이 시작됐다는 걸 둘 다 알았다.`, {aff:[id, 2], rv:-1, mood:'serious'});
-      return _sxR(S, {stress:4}, `“저, 같이 앉아도…” 목소리가 생각보다 작게 나왔다. ${josa(n, '은', '는')} 웃으며 자리를 내주었지만 하린의 시선은 날카롭게 나를 훑었다. 대화는 어색한 침묵과 컵 부딪히는 소리로 채워졌다. 앉기만 했을 뿐, 이긴 기분은 아니다.`, {aff:[id, 1], rv:-1, mood:'serious'}); }},
-    {label:'못 본 척 돌아선다', sub:'스트레스 +3 · 나 -1', run(S){
-      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'avoid'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 목격하고 모른 척 지나쳤다');
-      return _sxR(S, {stress:3, self:-1}, `나는 문고리를 잡았다가 손을 뗐다. 안 들어가는 편이 어른스럽다고 스스로를 설득하며 거리로 나왔지만, 걸음이 이상하게 빨랐다. 유리창 너머에서 하린이 문득 고개를 들었다. 눈이 마주쳤는지는 확신할 수 없다. 다만 오늘 밤은 ${n}의 문자에 답장을 쓰다 지우다를 반복할 것 같다.`); }},
-    {label:'나중에 하린에게 담담히 묻는다', sub:'통찰 +1 · 하린 관계 +1', run(S){
-      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'ask'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 보고 직접 물어보았다');
-      return _sxR(S, {ins:1.5, stress:1}, `다음 날 복도에서 하린을 불러 세웠다. “어제 서점 카페에서 ${josa(n, '과', '와')} 계셨죠.” 하린의 주근깨가 붉게 번졌다. “…그게 서윤 씨와 무슨 관계죠?” 방어하듯 말했지만 눈은 흔들렸다. 나는 대답 대신 고개만 끄덕였다. 그것만으로도 서로 무엇을 확인했는지 알았다.`, {rv:1, mood:'shy'}); }}
-  ]},
-
-{id:'sp_tri_2', once:true, cond:_sxNext('sp_tri_1', 2),
-  speaker:RIVAL, title:'선전포고', place:'night', img:'art/ct_river.webp', cut:'harin',
-  beats:[
-    '삼 일 뒤, 해 질 무렵. 하린이 먼저 나를 불러냈다. 장소는 강변 산책로, 약속 시각 오 분 전에 이미 와 있는 사람답게 그녀는 벤치 옆에 꼿꼿이 서 있었다.',
-    '“용건부터 말씀드릴게요.” 목소리는 평소처럼 단정했다. 다만 손가락이 소매 끝을 계속 만지작거렸다.',
-    '“저, 좋아하게 된 것 같아요. 그 사람을요.” 처음 듣는 문장이었다. 서하린의 입에서 ‘것 같아요’라는 말이 나오다니.',
-    '“숨기고 접근하는 건 비겁하니까요. 알고 계시는 게 공정하다고 생각해서 말씀드려요. 정정당당하게 해요. 서로.”'
-  ],
-  text:S => { const {n, cp} = _sxM(S); const sw = SF(S).triSaw; return `하린이 눈을 피하지 않고 내 대답을 기다린다. ${cp ? `${n}${josa(n, '은', '는').slice(n.length)} 내 연인이라는 사실을 알면서도 한 선언이다. 뺏겠다는 말이 아니라, 마음을 속이지 않겠다는 말이라고 그녀는 덧붙였다.` : `아직 누구도 ${n}의 마음을 얻은 건 아니다.`} ${sw === 'avoid' ? '그날 모른 척 지나친 내가 새삼 부끄럽다.' : sw === 'join' ? '그날 합석했던 내 모습이 떠올라 조금 민망해진다.' : '그날 복도에서의 질문이 이 대화의 시작이었다.'} 코끝의 주근깨가 붉어진 게 보인다. 나는 뭐라고 답할까?`; },
-  choices:[
-    {label:'“좋아요. 정정당당하게.”', sub:'경쟁 · 도전 +1 · 하린 관계 +1', run(S){
-      SF(S).triStance = 'fight'; S.album.push('하린과 정정당당하게 겨루기로 약속했다');
-      return _sxR(S, {dare:1, stress:2}, `“좋아요. 정정당당하게. 거짓말도, 뒷말도, 몰래 하는 것도 없이요.” 하린이 손을 내밀었다. 악수는 서늘하고 짧았다. “약속했어요. 나중에 변명하지 마세요.” 그녀가 돌아서며 말했다. 나는 그 단정한 등을 보며 이상하게 이 사람을 싫어할 수 없다고 생각했다.`, {rv:1, mood:'serious'}); }},
-    {label:'“…난 물러설게요.”', sub:'양보 · 호감 -3 · 나 -2', run(S){
-      const {id} = _sxM(S); SF(S).triStance = 'yield'; S.album.push('하린 앞에서 한 걸음 물러서겠다고 말했다');
-      return _sxR(S, {self:-2, stress:3}, `나도 모르게 그 말이 나왔다. 하린의 표정이 굳었다. “양보받은 마음을 받으려고 이 말을 한 게 아니에요.” 목소리가 낮게 떨렸다. “그건… 저를 이기지도 못하는 사람 취급하는 거예요.” 그녀의 눈이 번쩍였다가 이내 흔들렸다. 물러선다는 건 상대에게 가장 아픈 모욕일 수도 있다는 걸 마흔의 나는 알았을 텐데.`, {aff:[id, -3], rv:2, mood:'serious'}); }},
-    {label:'“그 사람에게도 솔직히 말할 거예요. 당신의 선언까지.”', sub:'솔직 · 호감 +2 · 통찰 +1', run(S){
-      const {id} = _sxM(S); SF(S).triStance = 'open'; S.album.push('하린에게 그에게도 솔직히 말하겠다고 선언했다');
-      return _sxR(S, {ins:1, stress:2}, `“그건… 규칙에 없는데요.” 하린이 당황해서 말을 잃었다. “제 입으로 말해야 할 일이에요. 서윤 씨가 전해 주는 건 공정하지 않아요.” 나는 웃으며 고개를 끄덕였다. 마음을 숨기는 쪽이 오히려 비겁하다고 생각했을 뿐이다. 하린이 어이없다는 듯, 그러나 처음으로 웃었다.`, {aff:[id, 2], mood:'surprised'}); }}
-  ]},
-
-{id:'sp_tri_3', once:true, cond:_sxNext('sp_tri_2', 2),
-  speaker:RIVAL, title:'흔들리는 사람', place:'cafe', img:'art/ct_museum.webp', cut:'harin',
-  beats:[
-    '요즘 그의 말수가 줄었다. 약속 장소에 언제나 일찍 와 있던 사람이 이번에는 십 분 늦게 도착했다.',
-    '하린이 이미 마음을 전했다는 걸 안다. 그가 내 눈을 똑바로 보지 못하니까.',
-    '조용한 전시실 벤치. 그가 한참을 망설이다 입을 열었다.'
-  ],
-  text:S => { const {id, n, cp} = _sxM(S); const st = SF(S).triStance; const hes = _sxVoice[id] || '…나도 내 마음을 모르겠어. 두 사람 다 소중해서 더 어렵다.'; return `“${hes}” ${n}${josa(n, '은', '는').slice(n.length)} 두 사람 사이에서 흔들리고 있다는 사실을 숨기지 못한다. ${st === 'fight' ? '정정당당하자던 하린과의 약속이 떠오른다.' : st === 'yield' ? '물러선다고 말한 내 입이 얼마나 가벼웠는지 이제야 안다.' : st === 'open' ? '솔직히 말하겠다고 한 사람은 나다.' : ''} ${cp ? '연인의 흔들리는 눈을 보는 것은 생각보다 아프다.' : '마음을 확인하지 못한 사이에서 흔들리는 눈을 보는 것은 생각보다 아프다.'} 나는 어떻게 대답할까?`; },
-  choices:[
-    {label:'그의 마음을 존중한다며 한 걸음 물러선다', sub:'양보 · 호감 -2 · 하린 관계 +1', run(S){
-      const {id, n} = _sxM(S); SF(S).triTalk = 'step'; S.album.push('흔들리는 그에게 한 걸음 물러서겠다고 했다');
-      return _sxR(S, {self:1, stress:3}, `나는 담담하게 말했다. 어느 쪽을 고르든 그 마음을 존중하겠다고. ${n}${josa(n, '은', '는').slice(n.length)} 멍하니 나를 보다가 고개를 숙였다. 안도한 얼굴인지 서운한 얼굴인지 알 수 없었다. 돌아서는 길에 이상하게 눈이 시렸다. 이 선택이 옳았는지는, 아직 모르겠다.`, {aff:[id, -2], rv:1}); }},
-    {label:'같은 마음이라고, 하린에게 지지 않겠다고 말한다', sub:'경쟁 · 매력·도전 판정 · 호감 +', run(S){
-      const {id, n} = _sxM(S); SF(S).triTalk = 'push'; S.album.push('그에게 하린에게 지지 않겠다는 마음을 보여 주었다');
-      const ok = (S.st.charm + S.st.dare) / 2 + rand(-10, 10) >= 38;
-      if(ok) return _sxR(S, {dare:1, stress:2}, `“저도 같은 마음이에요. 그리고 서하린에게 지고 싶지 않아요.” 말하고 나서 얼굴이 뜨거워졌지만 시선은 피하지 않았다. ${n}${josa(n, '은', '는').slice(n.length)} 놀란 듯 눈을 크게 뜨더니 천천히 웃었다. “…그렇게 정면으로 말하는 사람은 처음이에요.” 흔들리던 눈빛이 잠시 나에게 멈췄다.`, {aff:[id, 5], mood:'shy'});
-      return _sxR(S, {stress:4}, `“저도 같은 마음이에요. 그리고… 하린한테 질 수 없어요!” 의욕이 앞서 목소리가 커졌다. ${n}${josa(n, '은', '는').slice(n.length)} 당황해서 주위를 둘러봤다. 진심은 전해졌지만 너무 밀어붙였다는 후회가 뒤늦게 올라온다. 그래도 마음은 숨기지 않았다.`, {aff:[id, 1], mood:'shy'}); }},
-    {label:'솔직히 불안하다고 털어놓는다', sub:'솔직 · 호감 +3 · 나 +1', run(S){
-      const {id, n} = _sxM(S); SF(S).triTalk = 'open'; S.album.push('그에게 솔직한 불안을 털어놓았다');
-      const deep = S.st.ins >= 40;
-      return _sxR(S, {self:1, bond:1}, `“솔직히 말하면 저도 불안해요. 하린이 대단한 사람이라는 걸 아니까요. 그래서 이기고 싶은 마음보다, 이 마음을 숨기지 않는 쪽을 고를게요.” ${n}${josa(n, '은', '는').slice(n.length)} 한참 말이 없다가 조용히 숨을 내쉬었다. ${deep ? '내 말의 이면까지 읽은 듯한 눈이었다. “…그 불안, 내가 더 크게 만들고 있었네요.”' : '“…고마워요, 말해 줘서.”'}`, {aff:[id, deep ? 5 : 3], mood:'tender'}); }}
-  ]},
-
-{id:'sp_tri_4', once:true, cond:_sxNext('sp_tri_3', 2),
-  speaker:RIVAL, title:'번진 소문', place:'rain', img:'art/cover.webp', cut:'harin',
-  beats:[
-    '월요일 아침부터 분위기가 이상했다. 내가 다가가면 대화가 뚝 끊긴다.',
-    '단체방과 복도에서 도는 이야기는 이랬다. 내가 하린 몰래 그에게 하린의 험담을 했고, 하린의 고백이 틀어진 것도 나 때문이라는 것.',
-    '사실이 아니다. 한 번도 입에 올린 적 없는 문장들이다. 그런데 누군가 그럴듯하게 짜 맞췄다. 마치 그날 그 자리에 있었던 것처럼.',
-    '점심 뒤, 하린이 아무 말 없이 나를 불러 세웠다. 얼굴이 전에 없이 하얗다. “확인하겠어요. 사실인가요?”'
-  ],
-  text:S => { const {n} = _sxM(S); const rv = SS(S).rival; return `하린이 잔뜩 굳은 얼굴로 서 있다. ${rv >= 3 ? '하지만 그 눈빛에는 믿고 싶은 마음이 보인다.' : rv <= -3 ? '눈빛에는 이미 결론을 내린 사람의 차가움이 있다.' : '눈빛은 나를 심판하려는 것과 믿으려는 것 사이에서 흔들린다.'} 이 소문은 곧 ${n}의 귀에도 들어갈 것이다. 해명하든 침묵하든, 지금 내 선택이 하린과 그 사람 모두에게 남는다.`; },
-  choices:[
-    {label:'출처를 거슬러 올라가 직접 해명한다', sub:'협상·통찰 판정 · 하린 관계 ↑', run(S){
-      const {id} = _sxM(S); const rv = SS(S).rival; S.album.push('번진 소문의 출처를 직접 찾아 해명했다');
-      const ok = (S.st.neg + S.st.ins) / 2 + (rv >= 3 ? 8 : 0) + rand(-10, 10) >= 38;
-      if(ok){ SF(S).triCleared = true; return _sxR(S, {neg:1, ins:1, stress:3}, `나는 소문이 처음 나온 단체방의 순서를 되짚고, 같은 자리에 있었다는 사람들의 말을 모아 하린 앞에 내밀었다. 알고 보니 누군가의 말을 잘못 전해 들은 것이 시작이었다. 하린은 한참 자료를 들여다보다가 고개를 숙였다. “…사과할게요. 확인도 없이 의심했어요.” 서하린이 먼저 사과하는 모습은 처음 본다.`, {aff:[id, 1], rv:2, mood:'shy'}); }
-      return _sxR(S, {neg:0.5, stress:5}, `자료를 모아 해명했지만 출처를 끝까지 잡지는 못했다. 하린은 고개를 끄덕였지만 반만 믿는 눈이었다. “일단은… 알겠어요.” 소문은 가라앉았으나 찜찜한 앙금이 남았다.`, {rv:0, mood:'serious'}); }},
-    {label:'대응하지 않고 시간에 맡긴다', sub:'스트레스 +4 · 나 +1', run(S){
-      const {id, n} = _sxM(S); const rv = SS(S).rival;
-      if(rv >= 3){ SF(S).triCleared = true; S.album.push('소문 속에서 하린이 먼저 나를 믿어 주었다'); return _sxR(S, {self:1, stress:3}, `아무것도 하지 않고 일주일을 견뎠다. 그런데 어느 날 하린이 단체방에 글을 남겼다. “제가 직접 확인한 바로는 사실이 아닙니다. 확인되지 않은 말을 퍼뜨리는 건 중단해 주세요.” 짧고 서늘한 문장이었다. 하린이 내 앞에서 팔짱을 낀 채 말했다. “오해하지 마세요. 정확하지 않은 정보가 싫을 뿐이에요.” 하지만 귀 끝이 붉었다.`, {aff:[id, 1], rv:2, mood:'shy'}); }
-      return _sxR(S, {self:1, stress:4}, `나는 변명하지 않기로 했다. 해명할수록 구차해질 것 같았다. 하지만 일주일이 지나도 소문은 가라앉지 않았고, ${n}의 문자도 뜸해졌다. 하린은 나를 볼 때마다 시선을 피했다. 침묵은 가끔 가장 큰 오해가 된다.`, {aff:[id, -2], rv:-2, mood:'serious'}); }},
-    {label:'마흔의 기억 속 하린의 약점으로 역공한다', sub:'하린 관계 -3 · 선명도 -3', run(S){
-      const {id} = _sxM(S); SF(S).triDirty = true; S.borrowed = (S.borrowed || 0) + 1; S.album.push('소문에 맞서 하린의 약점을 꺼냈다가 후회했다');
-      return _sxR(S, {clarity:-3, stress:4, self:-2}, `나는 마흔의 기억 속에서 하린이 가장 숨기고 싶어 했던 한 문장을 꺼내 그녀 앞에 던졌다. 소문은 거짓말처럼 멈췄다. 하린의 얼굴이 새하얗게 변했다. “…그걸, 어떻게.” 한 번도 본 적 없는 눈이었다. 이겼다는 느낌은 없었다. 대신 사람이 부서지는 소리를 들은 것 같았다.`, {aff:[id, -2], rv:-3, mood:'sad'}); }}
-  ]},
-
-{id:'sp_tri_5', once:true, cond:_sxNext('sp_tri_4', 2),
-  speaker:RIVAL, title:'마지막 대답', place:'night', img:'art/ct_night.webp', cut:'harin',
-  beats:[
-    '결국 그가 대답을 내놓았다. 하린에게 먼저, 나에게는 그다음에. 순서를 정했다는 것조차 그에게는 큰 용기였을 것이다.',
-    '강변도 서점도 아닌 평범한 길모퉁이에서 하린과 마주쳤다. 오번 머리가 오늘은 조금 흐트러져 있고, 눈가의 주근깨 위로 붉은 기운이 번져 있다.',
-    '“들었어요.” 하린이 담담하게 말했다. 담담하려고 애쓰는 목소리라서 더 쓰라렸다. “이긴 사람이 누구인지는 중요하지 않다고 생각했는데… 막상 이러니까 중요하네요.”',
-    '그녀는 가방끈을 꽉 쥐었다. “마지막으로 하나만 묻고 싶어요. 저를… 처음부터 그저 경쟁 상대로만 보셨어요?”'
-  ],
-  text:S => { const {n, cp} = _sxM(S); const f = SF(S); const rv = SS(S).rival;
-    const head = f.triDirty ? '그날 내가 꺼낸 문장이 아직 우리 사이에 차갑게 남아 있다.' : f.triCleared ? '소문이 걷힌 뒤 서로를 보는 눈이 조금 달라졌다.' : '말하지 못한 것들이 쌓인 채 여기까지 왔다.';
-    return `${head} ${cp ? `${n}${josa(n, '은', '는').slice(n.length)} 내 곁에 남았고, 하린은 혼자 이 결과를 받아들이려 한다.` : `${n}의 대답은 하린에게도, 나에게도 완전히 한쪽이 아니었다.`} ${rv >= 3 ? '하린은 어쩐지 나에게 화를 내지 못하는 얼굴이다.' : rv <= -3 ? '하린의 어깨는 분노와 슬픔 사이에서 팽팽하다.' : '하린은 눈물이 나는 걸 필사적으로 참고 있다.'} 지금 내가 하는 말이 이 삼각관계의 마지막 문장이 된다.`; },
-  choices:[
-    {label:'손을 내밀며 진심을 말한다', sub:'화해 · 하린 관계 +3 · 호감 크게 +', run(S){
-      const {id, n} = _sxM(S); const f = SF(S); const rv = SS(S).rival;
-      if(rv >= -3 && !f.triDirty){ f.triDone = 'ally'; lvSet(S, id, 'triEnd', 'ally'); S.album.push('서하린과 정정당당한 경쟁 끝에 화해했다');
-        return _sxR(S, {self:2, bond:2, stress:-4}, `“처음엔 경쟁 상대였어요. 하지만 지금은 아니에요. 당신은 한 번도 비겁하지 않았으니까요.” 내가 손을 내밀자 하린은 한참 그 손을 보다가 천천히 맞잡았다. “…서윤 씨는 정말 곤란한 사람이에요.” 처음으로 소리 내어 웃었다. 우는 얼굴 반, 웃는 얼굴 반이었다. 길 끝에서 ${n}${josa(n, '이', '가').slice(n.length)} 그 모습을 조용히 보고 있었다.`, {aff:[id, 8], rv:3, mood:'happy'}); }
-      f.triDone = 'neutral'; lvSet(S, id, 'triEnd', 'neutral'); S.album.push('서하린과 어색한 휴전으로 마무리했다');
-      return _sxR(S, {self:1, stress:2}, `손을 내밀었지만 하린은 잡지 않았다. “마음은 받아 둘게요. 그 이상은… 아직 못 하겠어요.” 그녀가 고개를 숙이고 돌아섰다. 내가 쌓은 것들이 한 번에 지워지지는 않는다. 그래도 최소한, 마지막 말은 진심이었다.`, {aff:[id, 3], rv:1, mood:'sad'}); }},
-    {label:'아무 말 하지 않고 하린의 자존심을 지켜 준다', sub:'휴전 · 호감 +2 · 나 +1', run(S){
-      const {id} = _sxM(S); const f = SF(S); f.triDone = 'neutral'; lvSet(S, id, 'triEnd', 'neutral'); S.album.push('하린이 스스로 물러서도록 아무 말도 하지 않았다');
-      const retreat = f.triStance === 'yield' || SS(S).rival >= 5;
-      return _sxR(S, {self:1, stress:1}, `나는 아무 말도 하지 않고 하린이 먼저 고개를 들 때까지 기다렸다. ${retreat ? '“…이만 물러설게요. 이건 제가 정한 거예요. 누구에게 양보받은 게 아니라.” 그녀의 목소리는 단정하고 맑았다. 그것이 그녀가 지키려던 마지막 자존심이었다.' : '“…대답은 안 하셔도 돼요.” 하린이 가방끈을 고쳐 쥐고 돌아섰다. 걸음은 곧았지만 어깨는 조금 내려와 있었다.'} 멀어지는 오번 머리가 가로등 아래서 한 번 반짝였다.`, {aff:[id, 2], rv:0, mood:'tender'}); }},
-    {label:'“이번엔 제가 이겼네요.” 승자의 말을 한다', sub:'냉전 · 하린 관계 -4 · 호감 -', run(S){
-      const {id, n} = _sxM(S); const f = SF(S); f.triDone = 'enemy'; lvSet(S, id, 'triEnd', 'enemy'); S.album.push('서하린에게 승자의 말을 던져 냉전이 되었다');
-      return _sxR(S, {self:-2, stress:3}, `“이번엔 제가 이겼네요.” 말하고 나서 입안이 썼다. 하린의 눈이 얼음처럼 굳었다. “…기억해 두겠어요. 그 말.” 그녀는 돌아서며 낮게 덧붙였다. “다음엔, 제가 이길 거예요.” 이후 ${n}${josa(n, '은', '는').slice(n.length)} 나를 한참 바라봤다. 이겼는데도 잃은 것이 더 많은 것 같은 밤이었다.`, {aff:[id, -6], rv:-4, mood:'serious'}); }}
-  ]}
-];
-// 중첩 배열(MT 두 편)을 펼쳐서 등록한다. 신입 환영회·MT가 삼각관계보다 앞에 오도록 순서를 유지한다.
-SPECIAL.push(...SPECIAL_A.flat());
-
-// 특별 이벤트 B: 강라온 혐관(앙숙) 서사 — 스타일리스트 직업 한정, 8개(sp_raon_1 ~ 8). ENGINE 구간(DOM 금지)
-// 흐름: 1 담당 배정(거부) → 2 현장 충돌 → 3 공개 말다툼·악수 거부 → 4 일을 건 대립 → 5 전환(생방송 사고) → 6 서툰 사과 → 7 들키면 안 되는 설렘 → 8 마음 확인
-// 로컬 헬퍼는 _sr 접두어. 혐관 구간(1~4)의 호감은 0~15 로 낮게 유지, 적대 단계는 lvSet(S,'raon','hostile',n)
-const _srStart = S => {
-  if(!S.love.raon) S.love.raon = {aff:0, stage:-1, since:S.m};
-  else if(S.love.raon.aff > 6) S.love.raon.aff = 6;   // 이미 안면이 있어도 이 구간에서는 앙숙으로 시작한다
-  S.seen['meet_raon'] = true;
-};
-const _srEnsure = S => { if(!S.love.raon) S.love.raon = {aff:0, stage:-1, since:S.m}; return S.love.raon; };
-const _srHost = (S, n) => { lvSet(S, 'raon', 'hostile', n); const v = S.love.raon; if(v && v.aff > 15) v.aff = 15; };
-const _srCapMax = (S, c) => { const v = S.love.raon; if(v && v.aff > c) v.aff = c; };
-const _srOut = (S, o, d, text, mood) => { const ch = []; if(d) addAff(S, 'raon', d, ch); if(o) fx(S, o, ch); const out = {text, chips:ch}; if(mood) out.mood = mood; return out; };
-const _srOk = S => isMet(S, 'raon');
-const _srEasy = S => S.st.ins >= 45 || S.st.know >= 45 || lvFlag(S, 'raon', 'braced');   // 라온이 좋아하는 통찰·학식이 높거나 보강을 해 두었으면 전환이 쉽다
-
-const SPECIAL_B = [
-
-// ════════ 1. 담당 배정 ════════
-{id:'sp_raon_1', cond:S => S.hired && S.track === 'stylist' && S.m >= 30 && S.m - (S.hiredAt || 0) >= 2 && !seen(S, 'sp_raon_1') && (!S.love.raon || (S.love.raon.stage === -1 && S.love.raon.aff < 40)),
- speaker:'강라온', title:'세 번째 담당이 떠난 자리', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
- beats:[
-  '모드 스튜디오 3층 회의실. 팀장이 서류철을 내 앞에 밀어 놓는다. “이번 달부터 강라온 담당이에요. 앞의 세 명이 두 달을 못 채웠고요.”',
-  '왜 못 채웠는지는 묻지 않아도 될 것 같다. 복도 끝에서 문이 거칠게 닫히는 소리가 들린다. 스태프들이 일제히 고개를 숙인다.',
-  '대기실 의자에 비스듬히 앉은 남자. 마스크, 눈까지 눌러쓴 모자, 모자 밖으로 삐져나온 라일락빛 머리카락 한 올. 그는 나를 보지도 않고 휴대폰만 넘긴다.',
-  '“또 새로 왔네. 어차피 한 달이잖아요. 옷 입혀 주실 필요 없어요. 내가 입고 싶은 거 입을 거니까.” 낮고 건조한 반말이 섞인 목소리. 화면 속의 웃음과는 딴판이다.',
- ],
- text:S => `${S.love.raon ? '예전에 복도에서 부딪혔던 마스크의 청년이 바로 이 사람이었다. 그때의 수줍은 목소리는 어디에도 없다. ' : ''}스캔들과 루머, 회사의 압박으로 그가 비틀려 있다는 소문은 들었다. 마흔의 나는 이런 눈을 알고 있다. 무너질까 봐 먼저 날을 세우는 눈. 어떻게 말할까?`,
- choices:[
-  {label:'“입고 싶은 옷 보여 주세요. 안 어울리면 그때 말할게요.”', sub:'감각 · 호감 소폭', run(S){ _srStart(S); _srHost(S, 1);
-    if(S.st.sense >= 40){ return _srOut(S, {sense:0.5, work:1}, 2, `그는 비웃으며 입고 온 오버사이즈 재킷을 벗어 던졌다. 나는 소매 길이와 어깨선만 집어 한 번 접어 주었다. 십 초 뒤, 거울 앞에서 그의 눈이 아주 잠깐 멈췄다. “…뭐야, 이 사람.” 고맙다는 말은 없었지만 쫓겨나지도 않았다.`, 'shy'); }
-    return _srOut(S, {stress:3}, 0, `그가 던지듯 내민 재킷은 내가 보기에도 어울리지 않았다. “그것 봐요, 말할 것도 없잖아.” 비웃음을 뒤로하고 그는 먼저 나가 버렸다. 첫날부터 나는 졌다.`, 'serious'); }},
-  {label:'“담당이라서 있는 거예요. 싫으면 팀장님께 직접 말하세요.”', sub:'협상 · 관계 마찰', run(S){ _srStart(S); _srHost(S, 1);
-    if(S.st.neg >= 40){ return _srOut(S, {neg:0.5, self:1}, 1, `그가 처음으로 고개를 들었다. 모자 챙 아래에서 짜증 섞인 눈이 나를 훑었다. “…재수 없게 말하네.” 하지만 그는 팀장에게 가지 않았다. 앞의 세 명에게는 없던 일이라고, 나중에 막내가 속삭여 주었다.`, 'serious'); }
-    return _srOut(S, {stress:4}, -1, `“그럼 그렇게 하죠.” 그는 정말로 팀장에게 갔고, 나는 오후 내내 회의실에서 해명해야 했다. 첫 담당은 하루 만에 끝나지 않았지만, 이 사람은 사람을 시험하는 데 거리낌이 없다.`, 'serious'); }},
-  {label:'말없이 의상 행거를 정리하며 그의 움직임을 지켜본다', sub:'통찰 · 단서', run(S){ _srStart(S); _srHost(S, 1);
-    if(S.st.ins >= 45){ lvSet(S, 'raon', 'ankle', 1); return _srOut(S, {ins:0.8}, 1, `그는 앉을 때도, 일어설 때도 왼발에 체중을 싣지 않았다. 신발 끈은 유난히 단단히 묶여 있었고, 바지 밑단은 일부러 내려 있었다. 마흔의 눈으로만 읽히는 아주 작은 어색함. 나는 아무 말도 하지 않고 머릿속에 적어 두었다.`, 'serious'); }
-    return _srOut(S, {work:0.5}, 0, `한 시간 내내 그는 휴대폰만 봤고, 나는 행거만 정리했다. 스태프들이 눈치만 보는 이유는 알 것 같다. 그가 왜 저렇게까지 날을 세우는지는, 아직 알 수 없다.`, 'serious'); }},
- ]},
-
-// ════════ 2. 현장 충돌 ════════
-{id:'sp_raon_2', cond:S => afterEv(S, 'sp_raon_1', 2) && _srOk(S),
- speaker:'강라온', title:'화보 촬영장의 일침', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
- beats:[
-  '잡지 화보 촬영 날. 스튜디오 가득 조명이 켜져 있는데 주인공은 한 시간째 대기실에서 나오지 않는다.',
-  '막내 어시스턴트가 세 번째로 문을 두드렸다. 안에서 의상이 벽에 부딪히는 소리가 났다. “이딴 걸 입으라고? 내 얼굴 팔아서 장사하는 거잖아!”',
-  '문이 열리고, 던져진 재킷이 막내의 발치에 떨어졌다. 막내는 눈물이 맺힌 채 옷을 주워 들었다. 스태프 서른 명이 숨을 죽이고 있다.',
-  '“울 거면 나가요. 어차피 내 이름 팔아서 월급 받는 사람들이.” 마스크 뒤의 목소리가 떨리는 걸 나만 알아챘다.',
- ],
- text:S => `이 사람은 지금 자기가 한 말에 자기가 더 다쳤다. 그런데 그걸 받아 주기엔 이 현장의 서른 명이 너무 아프다. 나는 마흔의 기억 속, 어떤 어른도 해 주지 않았던 말을 해야 하는 순간이다. 어떻게 할까?`,
- choices:[
-  {label:'“현실을 봐요. 당신이 무너지면 이 사람들이 같이 무너져요.”', sub:'협상·통찰 · 호감 소폭 ↓ · 일침', run(S){ _srHost(S, 2);
-    if(S.st.ins >= 45){ lvSet(S, 'raon', 'pierced', 1); return _srOut(S, {ins:0.8, self:1.5, stress:3}, 0, `“월급 받는 게 아니라, 당신 이름으로 먹고사는 사람들이에요. 그래서 당신이 허세로 버티면 제일 먼저 다치는 건 저 막내예요. 나이 스물넷이면 그럴 수도 있어요. 하지만 스물넷이라는 게 면죄부는 아니에요.” 그의 눈이 흔들렸다. “…당신이 나에 대해 뭘 안다고.” 대답은 하지 않았다. 마스크 위로 눈이 붉어져 있었다.`, 'shy'); }
-    return _srOut(S, {neg:0.5, stress:4, self:1}, -1, `“현실을 봐요. 당신이 무너지면 같이 무너지는 사람들이 저기 서 있어요.” 현장이 얼어붙었다. 그는 한참 나를 노려보다가 “꺼져요”라고 뱉고 문을 닫았다. 후회는 없지만 마음은 쓰리다.`, 'serious'); }},
-  {label:'막내를 내보내고 문 앞에 둘만 남아 낮게 말한다', sub:'매력 · 사적인 훈계', run(S){ _srHost(S, 2);
-    if(S.st.charm >= 40){ return _srOut(S, {charm:0.5, bond:1}, 1, `“막내는 제가 달랠게요. 당신은 거울 한번 봐요. 그 표정으로 카메라 앞에 서면 사진이 거짓말을 해요.” 한참 말이 없던 그가 중얼거렸다. “…어른인 척하지 마요.” 하지만 문틈은 닫히지 않았다.`, 'shy'); }
-    return _srOut(S, {stress:3}, -1, `조용히 말하려 했지만 그는 비웃기만 했다. “설교는 무대 위에서 충분히 들어요.” 문이 닫혔다. 현장은 한 시간 더 지연됐고, 나는 사과문을 쓰는 사람이 되었다.`, 'serious'); }},
-  {label:'촬영을 잠시 멈추고 의상을 즉석에서 다시 짠다', sub:'감각 · 실력으로 입 막기', run(S){ _srHost(S, 2);
-    if(S.st.sense >= 45){ return _srOut(S, {sense:0.8, work:2}, 2, `나는 그가 던진 재킷을 뒤집어 안감 색을 드러내고, 소품 셔츠의 소매를 롤업해 새로 입혔다. 사진기자가 “이게 훨씬 낫다”고 중얼거렸다. 거울 앞에서 그가 말없이 서 있었다. “…내가 원한 건 아니지만.” 문장은 거기서 끊겼다. 입은 채로 촬영장에 걸어 나갔다.`, 'shy'); }
-    return _srOut(S, {skill:1, stress:3}, 0, `급하게 바꿔 봤지만 어딘가 덜 맞았다. 그는 거울을 보고 “이게 최선이에요?”라며 비꼬았다. 결국 촬영은 원래 의상으로 끝났고, 나는 자존심만 구겨졌다.`, 'serious'); }},
- ]},
-
-// ════════ 3. 공개 말다툼과 거부당한 악수 ════════
-{id:'sp_raon_3', cond:S => afterEv(S, 'sp_raon_2', 2) && _srOk(S),
- speaker:'강라온', title:'거부당한 악수', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
- beats:[
-  '방송국 리허설 복도. 다른 팀 스태프와 매니저, 작가들이 오가는 한복판에서 그가 내 길을 막아섰다.',
-  '“내가 입겠다고 한 옷을 왜 마음대로 바꿨어요? 당신이 뭔데 내 무대를 정해요?” 목소리가 복도에 울린다. 시선이 몰린다.',
-  '“무대에 서는 건 당신이지만 카메라에 찍히는 건 우리 둘의 일이에요. 어제 약속한 시안대로 한 거예요.” 내 목소리도 낮지만 흔들리지 않는다.',
-  '결국 실장이 달려와 우리 사이에 섰다. “둘 다 그만. 서로 사과하고, 악수하세요.” 나는 손을 내밀었다. 그는 내 손을 한 번 보고, 고개를 돌렸다.',
- ],
- text:S => `허공에 뜬 내 손에 모든 시선이 꽂혀 있다. 스태프들 사이에서 수군거림이 번진다. “스타일리스트가 센터한테 대들었대.” “저러다 잘리지.” 그는 모자 챙 아래에서 시선을 피하고 있다. 어떻게 할까?`,
- choices:[
-  {label:'손을 거두지 않고 그가 시선을 돌릴 때까지 기다린다', sub:'매력 · 침착함', run(S){ _srHost(S, 3);
-    if(S.st.charm >= 40){ return _srOut(S, {charm:0.8, self:1}, 1, `십 초, 이십 초. 복도가 조용해졌다. 그는 끝내 손을 잡지 않았지만 한쪽 발끝이 불안하게 움직였다. 실장이 헛기침을 하자 그가 먼저 자리를 떴다. “…이상한 사람.” 지나치는 순간 들린 중얼거림이 비웃음 같지 않았다.`, 'shy'); }
-    return _srOut(S, {stress:4, self:-0.5}, -1, `손을 든 채로 나는 한참 서 있었다. 그는 끝내 돌아보지 않았고, 사람들은 흩어졌다. 팔이 저릿했지만 더 저린 건 얼굴이었다.`, 'serious'); }},
-  {label:'손을 내리고 “악수는 일할 때 하는 거예요. 시안부터 맞춰요”라고 말한다', sub:'협상 · 공과 사 구분', run(S){ _srHost(S, 3);
-    if(S.st.neg >= 45){ return _srOut(S, {neg:0.8, work:2, bond:1}, 0, `실장이 안도의 한숨을 쉬었다. 나는 일 이야기로 곧장 돌아가 시안 두 개를 펼쳤다. 그가 따라오지 않으려다 멈칫했다. 스태프들 사이에서 “저 사람 뭐지”라는 말이 “저 사람 일은 하네”로 바뀌었다.`, 'serious'); }
-    return _srOut(S, {stress:3, work:0.5}, -1, `일 이야기를 꺼냈지만 분위기는 가라앉은 채였다. 그는 이어폰을 꽂았고, 대화는 일방적으로 끝났다. 일은 간신히 이어졌다.`, 'serious'); }},
-  {label:'“당신이 그렇게 구는 이유를 나는 알아요”라고 쏘아붙이고 자리를 뜬다', sub:'도전 · 스트레스 ↑ · 소문 ↑', run(S){ _srHost(S, 3);
-    if(S.st.dare >= 45){ return _srOut(S, {dare:0.8, self:1.5, stress:5}, -2, `복도에 정적이 흘렀다. 등 뒤에서 그가 숨을 삼키는 소리가 났다. 소문은 더 퍼지겠지만 이상하게도 속은 시원했다. 저녁에 막내가 건넨 말. “…저, 선배 편이에요.”`, 'serious'); }
-    return _srOut(S, {stress:7, work:-1}, -2, `쏘아붙이고 돌아섰지만 계단참에서 다리가 풀렸다. 소문은 한 시간 만에 층을 돌았다. “스타일리스트가 센터와 싸웠다.” 내일 팀장에게 불려갈 것이다.`, 'serious'); }},
- ]},
-
-// ════════ 4. 갈등 최고조: 일을 건 선택 ════════
-{id:'sp_raon_4', cond:S => afterEv(S, 'sp_raon_3', 3) && _srOk(S),
- speaker:'강라온', title:'이름을 걸고', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
- beats:[
-  '컴백 쇼케이스를 일주일 앞둔 밤. 실장이 회의실 문을 닫고 서류를 펼쳤다. “소속사에서 콘셉트를 확정했어요. 청순한 순정남. 스캔들 이미지를 덮을 거예요.”',
-  '시안에는 무릎이 드러나는 반바지와 얇은 굽의 구두가 그려져 있다. 라온의 얼굴이 하얗게 굳는다. “…싫어요. 이건 못 해요.”',
-  '“라온 씨가 못 하겠다면 담당 스타일리스트를 교체할 거예요. 이번 시즌 계약도 없던 걸로 하고요.” 실장의 시선이 나를 향한다. “설득해 주세요. 부탁이 아니라 업무입니다.”',
-  '라온이 나를 노려본다. “당신이 나를 팔면 끝이에요. 알죠?” 그의 목소리가 쉬어 있다. 화가 아니라 겁이 난 사람의 목소리다.',
- ],
- text:S => `그가 왜 못 하겠다는지 이유는 말하지 않는다. ${lvFlag(S, 'raon', 'ankle') ? '나는 그의 왼발을 떠올린다. 반바지와 얇은 구두라면 감춰 온 것이 드러난다. ' : ''}이 자리에서 내 일자리와 그의 비밀 사이에 선이 그어진다. 나는 어떻게 선택할까?`,
- choices:[
-  {label:'실장에게 “콘셉트를 바꾸지 않으면 제 이름을 빼 주세요”라고 말한다', sub:'협상 · 일을 걸다', run(S){ _srHost(S, 4);
-    if(S.st.neg >= 50){ return _srOut(S, {neg:1, work:2, self:2, stress:4}, 1, `“스타일링에 이유 없는 거부는 없어요. 이유를 들을 시간을 주세요. 그게 쇼케이스를 지키는 방법이에요.” 실장은 한참 침묵하다 안경을 벗었다. “…일주일 줄게요.” 라온은 말없이 나를 바라봤다. 믿는 눈은 아니었지만, 처음으로 피하지 않는 눈이었다.`, 'shy'); }
-    return _srOut(S, {work:-2, self:2, stress:8}, -2, `“그렇다면 담당 교체 건은 내일 알려 드릴게요.” 실장은 차갑게 말했다. 라온은 비웃지도, 고마워하지도 않았다. “당신 정말 바보 같네요.” 혼자 밤길을 걷는 동안 처음으로 내가 무엇을 걸었는지 실감했다.`, 'serious'); }},
-  {label:'라온에게 직접 말한다. “도망치지 말고 서든가 접든가 정해요”', sub:'도전 · 정면 승부', run(S){ _srHost(S, 4);
-    if(S.st.dare >= 45 || S.st.ins >= 45){ lvSet(S, 'raon', 'confronted', 1); return _srOut(S, {dare:0.8, self:1.5, stress:5}, 0, `“비겁한 척하지 마요. 겁나면 겁난다고 말해요. 그러면 나도 같이 싸워 줄 수 있으니까.” 그가 입술을 깨물었다. “…당신이랑 상관없는 일이에요.” 그러면서도 회의실을 나가지 않았다. 문 앞에서 한 번 멈췄다. “…내일 알려 줄게요.”`, 'shy'); }
-    return _srOut(S, {stress:6, self:1}, -2, `“당신이 뭔데요!” 그가 소리쳤고 컵이 바닥에서 깨졌다. 실장이 얼굴을 찌푸렸다. 그가 문을 박차고 나가고, 나는 남은 파편을 주웠다. 입안이 썼다.`, 'serious'); }},
-  {label:'지시를 따르는 척하며 몰래 의상에 보강 장치를 설계한다', sub:'실무·감각 · 비밀 작업', run(S){ _srHost(S, 4);
-    if(S.st.skill >= 45 || S.st.sense >= 45){ lvSet(S, 'raon', 'braced', 1); return _srOut(S, {skill:1, sense:0.5, work:1, stress:4}, 0, `나는 그날 밤 작업실에 남았다. 반바지의 안감에 얇은 압박 밴드를 꿰매 넣고, 구두의 안창을 두 겹으로 깔았다. 겉에서는 절대 보이지 않는다. 라온에게 알리지 않았다. 알면 또 화낼 테니까.`, 'serious'); }
-    return _srOut(S, {skill:0.5, stress:6}, -1, `밤새 안창을 덧대 봤지만 마음에 들지 않았다. 아무것도 숨기지 못한 채 날이 밝았다. 라온은 시안을 보고도 아무 말도 하지 않았다.`, 'serious'); }},
- ]},
-
-// ════════ 5. 전환 사건: 생방송 무대 ════════
-{id:'sp_raon_5', cond:S => afterEv(S, 'sp_raon_4', 2) && _srOk(S),
- speaker:'강라온', title:'생방송, 꺾인 발목', place:'night', img:'art/ct_cinema.webp', cut:'raon', cutVar:'b',
- beats:[
-  '컴백 첫 음악방송, 생방송 무대. 안개 기계 소리와 환호가 객석을 채운다. 나는 대기 구역 모니터 앞에서 팔짱을 낀 채 숨을 참는다.',
-  '후렴 직전, 센터 라온이 한 발을 디디다 휘청한다. 왼쪽 발목이 꺾이는 소리가 마이크 너머로 들리는 것 같다. 카메라가 흔들린다.',
-  '그는 쓰러지지 않았다. 이를 악물고 끝까지 춤을 췄고 마지막 포즈에서 웃었다. 무대 밖으로 나오자마자 무릎이 꺾였다.',
-  '한 시간 뒤. 실시간 검색어에는 ‘센터 사고’. 댓글은 쏟아진다. “연기하는 인성 쓰레기.” “센터 자격 없다.” 스태프들이 수군거린다. 라온은 사라졌다.',
- ],
- text:S => `비상계단 아래, 마스크를 벗은 라온이 얼음주머니를 발목에 대고 앉아 있다. 휴대폰 화면에는 악플이 줄줄이 흐른다. “…웃어요. 다들 그러잖아요. 쇼 하다 넘어졌다고.” 어깨가 가늘게 떨린다. ${lvFlag(S, 'raon', 'braced') ? '내가 몰래 넣어 둔 압박 밴드가 오늘 그의 인대를 살렸다는 걸 의사가 확인해 주었다. ' : ''}나는 어떻게 할까?`,
- choices:[
-  {label:'말없이 재킷을 덮어 주고 풀린 붕대를 다시 감아 준다', sub:'실무 · 곁에 있어 준다', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const b = v.aff; v.aff = Math.max(v.aff, _srEasy(S) ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); fx(S, {skill:0.8, bond:2, self:1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('생방송 뒤 비상계단에서 라온의 발목을 감아 줌');
-    return {text:`그는 발을 빼려다 포기했다. 붕대를 감는 동안 아무도 말하지 않았다. 한참 뒤, 나직한 목소리. “…아팠어요. 한 달 전부터 계속. 쉬면 팀이 끝나고, 우리 엄마 병원비도…” 그는 말을 잇지 못했다. 나는 대답 대신 매듭을 단단히 묶었다. “그래요. 이제 혼자 안 아파도 돼요.” 그가 처음으로 마스크 없이 내 눈을 똑바로 봤다. 눈물이 고여 있었다.`, chips:ch, mood:'shy'}; }},
-  {label:'휴대폰을 뺏어 엎어 놓고 말한다. “읽지 마요. 이건 소음이에요. 현실은 지금 당신 발목이에요”', sub:'통찰·학식 · 전환이 쉬운 선택', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const easy = S.st.ins >= 45 || S.st.know >= 45; const b = v.aff; v.aff = Math.max(v.aff, easy ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); fx(S, {ins:0.8, self:1.5, stress:-1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('악플이 쏟아진 밤, 라온에게 현실을 보라고 말함');
-    return {text:`“당신이 처음 나에게 한 말이 이거였죠. 현실을 보라고.” 그는 쓴웃음을 지었다. “그땐 정말 싫었는데.” 나는 그의 발목을 가리켰다. “이게 현실이에요. 숫자도 댓글도 아니고요.” ${easy ? '내가 짚은 이야기는 그가 몇 번이고 속으로 되뇌던 문장이었다. 그가 고개를 푹 숙였다. 어깨가 떨렸다. “…아무도 그렇게 말해 주지 않았어요.”' : '그는 대답 대신 얼음주머니를 꼭 쥐었다. 아무 말 없이 한참 앉아 있다가 작게 말했다. “…병원은 같이 가요.”'}`, chips:ch, mood:'shy'}; }},
-  {label:'몰려온 기자와 스태프 앞을 막아서며 “이 사람 지금 아파요. 비켜 주세요”라고 말한다', sub:'매력·협상 · 감싸기', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const b = v.aff; v.aff = Math.max(v.aff, _srEasy(S) ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); const strong = S.st.neg >= 45 || S.st.charm >= 45; fx(S, {neg:0.5, charm:0.5, self:2, stress:4, work:strong ? 1.5 : -1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('기자들 앞에서 라온을 몸으로 막아섬');
-    return {text:`${strong ? '“지금 촬영본을 찍으면 내일 기사 제목이 바뀝니다. 이 사람의 사고가 아니라 이 사람의 부상으로요.” 기자들이 한 걸음 물러났다.' : '“비켜 주세요, 제발.” 목소리가 떨렸지만 나는 한 걸음도 물러서지 않았다.'} 등 뒤에서 라온이 숨을 삼켰다. 한참 뒤 그가 낮게 말했다. “…당신 정말 바보예요. 그런데…” 말끝을 흐리다 그가 모자를 눌러 썼다. “…고마워요.”`, chips:ch, mood:'shy'}; }},
- ]},
-
-// ════════ 6. 서툰 사과와 어머니 이야기 ════════
-{id:'sp_raon_6', cond:S => afterEv(S, 'sp_raon_5', 2) && _srOk(S),
- speaker:'강라온', title:'사과하는 법을 몰라서', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
- beats:[
-  '이틀 뒤 이른 아침. 의상실 문이 조심스럽게 열렸다. 목발을 짚은 라온이 모자도 쓰지 않은 채 서 있다. 마스크도 없다.',
-  '“저기… 사과하러 왔는데, 사과를 어떻게 하는지 몰라서요.” 반말 대신 어색한 존댓말이 튀어나온다. 귀 끝이 빨갛다.',
-  '그의 손에는 보온 가방이 들려 있다. “어, 이건… 엄마가 보냈어요. TV에서 나 감싸 준 선생님이 누구냐고. 김밥이랑 반찬… 아니, 그런 게 아니라…”',
-  '그는 스스로도 우스운지 헛웃음을 흘리고, 곧 정색을 한다. 막내가 의상실 구석에서 이쪽을 보고 있다.',
- ],
- text:S => `엄마는 분식집을 접고 그를 뒷바라지했다고 한다. 지금은 병원에 있고, 그는 TV에서 웃는 모습만 보여 주고 싶었다고 했다. 날을 세운 건 아프다는 걸 들킬까 봐서였다고. 그가 서툴게 고개를 숙인다. “…그동안 죄송했어요.” 나는 어떻게 답할까?`,
- choices:[
-  {label:'“사과는 됐어요. 대신 병원부터 가요. 내가 같이 가 줄게요.”', sub:'통찰 · 호감↑', run(S){ const ch = []; addAff(S, 'raon', 5, ch); fx(S, {ins:0.5, bond:2, self:1}, ch); _srCapMax(S, 39); lvSet(S, 'raon', 'mother', 1);
-    return {text:`그는 눈을 크게 떴다가 곧 시선을 피했다. “…그래도 돼요?” 병원 복도에서 그의 어머니가 나를 보고 두 손을 잡았다. “우리 아들, 사람 대하는 게 서툴러서… 고마워요.” 라온의 귀가 다시 빨개졌다. 돌아오는 길에 그가 불쑥 말했다. “…엄마가 웃은 거 오랜만이에요.”`, chips:ch, mood:'shy'}; }},
-  {label:'“막내에게도 사과해요. 그게 진짜 사과예요”', sub:'협상 · 단호한 어른', run(S){ const ch = []; addAff(S, 'raon', 4, ch); fx(S, {neg:0.8, self:1.5}, ch); _srCapMax(S, 39);
-    const brave = S.st.neg >= 40 || S.st.charm >= 40;
-    return {text:`그는 입술을 꾹 다물고 막내 앞에 섰다. ${brave ? '“저, 그때 던진 거… 미안해요. 정말.” 막내가 울음을 터뜨렸고, 스태프들이 웃으며 박수를 쳤다. 그는 어쩔 줄 몰라 하며 내 쪽을 보았다. “…이렇게 하는 거 맞죠?” 나는 고개를 끄덕였다.' : '“그… 미안해요.” 짧고 어색했지만 막내는 고개를 끄덕였다. 그는 땀을 닦으며 내게 속삭였다. “심장 터지는 줄 알았어요.”'}`, chips:ch, mood:'shy'}; }},
-  {label:'웃으며 보온 가방을 받는다. “어머니께 잘 먹겠다고 전해 주세요”', sub:'매력 · 호감↑', run(S){ const ch = []; addAff(S, 'raon', 6, ch); fx(S, {charm:0.5, bond:2, stress:-3}, ch); _srCapMax(S, 39);
-    return {text:`그는 한참 나를 보다가 이내 마음이 놓인 듯 웃었다. 처음 보는 진짜 웃음이었다. 김밥은 따뜻했고 단무지는 조금 짰다. “그거 엄마가 새벽부터 쌌거든요. 맛없어도 맛있다고 해야 해요.” 나는 웃음을 참지 못했다. 그의 어머니 이야기가 나오는 순간, 이 사람이 얼마나 외로웠는지 알 것 같았다.`, chips:ch, mood:'shy'}; }},
- ]},
-
-// ════════ 7. 설렘, 그리고 들키면 안 되는 긴장 ════════
-{id:'sp_raon_7', cond:S => afterEv(S, 'sp_raon_6', 3) && _srOk(S),
- speaker:'강라온', title:'가로등 그림자', place:'night', img:'art/ct_river.webp', cut:'raon', cutVar:'a',
- beats:[
-  '재활 병원에서 돌아오는 밤. 그가 마스크와 모자, 두꺼운 후드를 겹겹이 쓰고 한강공원 벤치에 앉아 있다. “여기, 새벽엔 아무도 없대요.”',
-  '이어폰 한쪽을 내 귀에 꽂아 준다. 발매 전의 노래. 사실 이 곡의 도입부는 그가 병상에서 썼다고 한다.',
-  '“이상하죠. 처음엔 당신이 제일 싫었는데.” 그가 시선을 피한 채 웃는다. 어깨가 닿을 만큼 가깝다.',
-  '그때 맞은편 산책로에서 렌즈의 반사광이 번쩍였다. 라온의 몸이 굳는다. “…카메라예요.”',
- ],
- text:S => `아이돌과 스타일리스트가 새벽 강가에 함께 있는 사진은 곧 기사가 된다. 그의 팀, 그의 어머니, 나의 일. 모두가 얽혀 있다. 그가 내 손목을 쥔 채 속삭인다. “어떻게 해요?” 나는 어떻게 할까?`,
- choices:[
-  {label:'후드를 깊게 씌워 주고 따로 갈라져 걷는다', sub:'감각 · 안전하게', run(S){ const ch = []; addAff(S, 'raon', 4, ch); fx(S, {sense:0.5, self:1, stress:3}, ch); _srCapMax(S, 39);
-    const ok = S.st.sense >= 40 || S.st.ins >= 40;
-    return {text:`${ok ? '나는 가로등 반대편으로 걸으며 그의 모자를 눌러 주고, 일부러 전화를 받는 척 큰소리로 말했다. “네, 의상 건이요.” 렌즈는 그 말에 방향을 틀었다.' : '급히 갈라져 걸었지만 심장이 터질 것 같았다. 다행히 사진은 찍히지 않았다.'} 멀어지는 길에서 그가 돌아보며 입 모양으로 말했다. 고마워요. 가슴이 뜨거워서 더 걷고 싶었다.`, chips:ch, mood:'shy'}; }},
-  {label:'“우리는 아티스트와 스타일리스트예요. 선을 넘으면 둘 다 끝나요”라고 말한다', sub:'나 · 거리 두기', run(S){ const ch = []; addAff(S, 'raon', 2, ch); fx(S, {self:2.5, stress:2}, ch); _srCapMax(S, 39); lvSet(S, 'raon', 'line', 1);
-    return {text:`그는 손목을 놓았다. 아주 잠깐 서운한 표정이 스쳤다. “…알아요.” 그러다 다시 고개를 들었다. “그래도 선 안에서 할 수 있는 건 있잖아요. 같이 밥 먹기. 안부 문자. 그 정도는 괜찮죠?” 나는 대답 대신 웃었다. 마흔의 내가 이십 대에는 하지 못했던 일, 선을 지키면서도 마음을 닫지 않는 것.`, chips:ch, mood:'shy'}; }},
-  {label:'그가 잡은 손을 놓지 않고 그림자 속으로 함께 숨는다', sub:'도전 · 설렘↑ · 위험', run(S){ const ch = []; const lucky = S.st.dare >= 45 || R() < 0.5; addAff(S, 'raon', lucky ? 6 : 4, ch); fx(S, {dare:0.8, stress:lucky ? 1 : 5, self:1}, ch); _srCapMax(S, 39);
-    return {text:`가로등 그림자가 우리를 삼켰다. 숨소리와 심장 소리가 겹쳤다. 그는 내 손을 놓지 않았고, 나도 놓지 않았다. ${lucky ? '불빛은 지나갔다. 그가 나직하게 웃었다. “…나, 지금 인생에서 제일 무서운데 제일 좋아요.”' : '렌즈가 오래 머물렀지만 결국 지나갔다. 둘 다 한참 말이 없었다. 그가 작게 말했다. “…다음엔 더 잘 숨을게요.”'}`, chips:ch, mood:'shy'}; }},
- ]},
-
-// ════════ 8. 마음 확인 ════════
-{id:'sp_raon_8', cond:S => afterEv(S, 'sp_raon_7', 3) && _srOk(S) && S.m < 119,
- speaker:'강라온', title:'가면을 벗는 밤', place:'night', img:'art/ct_night.webp', cut:'raon', cutVar:'a',
- beats:[
-  '컴백 활동 마지막 방송이 끝난 밤. 스태프들이 철수한 주차장 옥상에서 라온이 먼저 올라와 기다리고 있다.',
-  '마스크도 모자도 없다. 도시의 불빛이 그의 얼굴을 비춘다. 목발은 이제 짚지 않는다. “오늘 처음으로 아프지 않게 마지막 무대를 마쳤어요.”',
-  '그가 들고 있던 작은 쇼핑백을 내민다. 안에는 접착 테이프, 줄자, 분필. 스타일리스트의 도구들이다. “필요할 것 같아서요. 선물이 이상하죠.”',
-  '“그리고 하고 싶은 말이 있어요.” 그는 숨을 크게 들이쉰다.',
- ],
- text:S => `${isCouple(S, 'raon') ? '이미 서로를 연인으로 부르고 있지만, 그는 말로 확인하고 싶어 한다. ' : ''}“처음엔 당신이 제일 싫었어요. 나보다 내 거짓말을 먼저 알아봐서. 그런데 그 사람이 내 발목도, 내 엄마도, 내 무서움도 다 알고도 도망가지 않았어요. 나, 당신을 좋아해요. 아이돌 말고, 강라온으로요.” 나는 어떻게 답할까?`,
- choices:[
-  {label:'“나도 좋아해요. 마흔 살의 기억까지 다 털어놓고 싶을 만큼”', sub:'솔직함 · 호감 크게↑', run(S){ const ch = []; addAff(S, 'raon', 12, ch); fx(S, {self:2, bond:3, stress:-6}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('가면을 벗은 라온과 마음을 확인한 밤');
-    return {text:`“마흔이요?” 그가 고개를 갸웃했다가 이내 웃었다. “뭐든 괜찮아요. 당신이 어떤 사람이든.” 나는 그의 손을 잡았다. 이번에는 둘 다 피하지 않았다. 도시 야경 위로 바람이 지나갔다. 이마가 맞닿았다가 조심스럽게 떨어졌다. “…이제 진짜 비밀 하나 생겼네요, 우리.”`, chips:ch, mood:'shy'}; }},
-  {label:'“아이돌 라온이 아니라, 지금의 강라온이면 좋겠어요”', sub:'매력 · 호감 크게↑', run(S){ const ch = []; addAff(S, 'raon', 10, ch); fx(S, {charm:0.8, self:1.5, bond:2, stress:-4}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('아이돌이 아닌 강라온을 좋아한다고 말함');
-    const high = S.st.charm >= 45 || S.st.sense >= 45;
-    return {text:`그가 눈을 크게 떴다. 그리고 천천히, 아주 천천히 웃었다. ${high ? '“그 말이 이렇게 사람을 살릴 수도 있구나.” 그의 눈이 젖어 있었다.' : '“…그런 말, 처음 들어요.” 그가 서툴게 코를 훌쩍였다.'} 우리는 한동안 아무 말도 하지 않았다. 아래에서 자동차 불빛이 지나갈 때마다 그의 라일락빛 머리카락이 흔들렸다.`, chips:ch, mood:'shy'}; }},
-  {label:'“좋아해요. 하지만 우리가 정리할 것들이 있어요. 기다릴게요”', sub:'나 · 호감↑ · 어른의 약속', run(S){ const ch = []; addAff(S, 'raon', 9, ch); fx(S, {self:3, ins:0.5, stress:-3}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('라온과 서로의 마음을 확인하고 기다리기로 함');
-    return {text:`“소속사도, 팬들도, 어머니도 있어요. 서두르면 우리 둘 다 다쳐요.” 그는 입술을 깨물다가 천천히 끄덕였다. “그럼 약속해요. 내가 제대로 서면, 제일 먼저 말하러 올게요.” 새끼손가락이 걸렸다. 열 살짜리 같은 약속이 이상하게 든든했다. 마흔의 나는 몰랐다. 기다린다는 말이 이렇게 설렐 수 있다는 걸.`, chips:ch, mood:'shy'}; }},
- ]},
-
-];
-SPECIAL.push(...SPECIAL_B);
-
-
 // 캠퍼스 산책: 교내 장소별 우연한 만남 장면 (ENGINE 구간 안, DOM 금지)
 // 장소 키: class 강의실 · library 도서관 · shop 매점/학생식당 · club 동아리실 · field 운동장 · garden 정원/뒤뜰 벤치
 
@@ -3645,6 +3213,514 @@ function campusEncounter(S, place, visitCh){
       {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
       {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch, mood:'shy'}; }},
     ]};
+}
+
+// 도시 산책: 취업 후 시내 장소별 친구 장면 (ENGINE 구간 안, DOM 금지)
+// 장소 키: office 회사 근처 · cinema 영화관 · museum 미술관 · mall 백화점 · beauty 뷰티 스토어 · books 서점 · river 한강공원 · night 야식 거리
+
+const CT_FRIEND = {
+  office:[
+    {who:'소연', title:'퇴근길 횡단보도', text:'횡단보도 건너편에서 소연이 가방을 껴안고 서 있다. 나를 발견하자 손을 크게 흔들지만 얼굴은 많이 지쳐 보인다. 신호가 바뀌자마자 달려와 팔짱을 낀다. “나 오늘 팀장님한테 한 소리 들었어. 그냥 같이 걸어 줘.”',
+      yes:['“걷자, 천천히 가면서 다 말해 봐”라고 한다', '골목을 두 바퀴나 돌며 소연의 하소연을 들었다. 말이 끝나갈 즈음 그 애가 “이상하다, 별일 아닌 것 같아졌어” 하며 웃었다. 헤어질 때 소연이 내 어깨를 한 번 꽉 안아 주고 갔다.'],
+      no:['“저녁 먹으면서 얘기하자”며 식당으로 이끈다', '따뜻한 국물 앞에 앉자 소연의 어깨가 조금씩 내려갔다. 이야기는 밥그릇이 비워질 때쯤 농담으로 바뀌어 있었다. 계산서는 소연이 “오늘은 내가 살게” 하며 가져갔다.']},
+    {who:'지수', title:'점심 골목의 줄', text:'점심시간 골목에 지수가 끝도 없이 늘어선 줄 한가운데에 서 있다. 나를 보자마자 소리를 지른다. “여기야 여기! 이 집 한 시간 기다려야 하는데 같이 서자. 줄 서는 동안 우리 팀 이야기 해 줄게, 완전 웃겨.” 벌써 입이 근질거리는 표정이다.',
+      yes:['“좋아, 같이 서자”며 줄 뒤에 선다', '줄이 줄어드는 동안 지수의 이야기를 끝까지 들었다. 팀 회식 자리에서 벌어진 일인데 정말 웃겨서 앞사람이 돌아볼 정도였다. 한 시간이 십 분처럼 지나갔다.'],
+      no:['“시간이 없어서 다음에 같이 먹자”고 한다', '“아 맞다, 너도 점심시간 빠듯하지!” 지수는 아쉬워하면서도 금방 손을 흔들었다. 오후에 문자가 왔다. “줄 서다가 먹은 건데 맛있었어. 다음엔 예약하고 같이 가자.”']},
+    {who:'태윤', title:'야근 후 편의점 커피', text:'사무실 건물 앞 벤치에서 태윤이 종이컵 두 개를 들고 앉아 있다. 마침 근처에서 일이 있어서 왔다고 한다. “너 이 시간까지 불 켜져 있길래. 커피 식었으면 어쩌지, 뭐 그런 생각을 했어.” 어색하게 컵 하나를 내민다.',
+      yes:['컵을 받아 옆에 앉는다', '식은 커피였지만 태윤은 끝까지 모른 척했다. 둘이 건물 불빛을 올려다보며 한참 시시한 얘기를 했다. 일어설 때 그 애가 “내일은 일찍 퇴근해라” 하며 내 가방을 한 번 툭 쳤다.'],
+      no:['“고마워, 마음만 받을게. 얼른 들어가자”라고 한다', '태윤은 “그럴 줄 알았어” 하고 커피를 자기가 두 잔 다 마시겠다며 웃었다. 지하철역까지 나란히 걸어 주고는 개찰구 앞에서 손을 흔들었다. 늦은 퇴근길이 덜 외로웠다.']},
+  ],
+  cinema:[
+    {who:'소연', title:'표 두 장의 취향', text:'영화관 로비 상영 시간표 앞에서 소연이 팔짱을 끼고 서 있다. 나를 발견하더니 휴대폰을 흔든다. “나 혼자 보려고 했는데 마침 잘 만났네. 액션이랑 잔잔한 거 중에 뭐 볼래? 오늘은 네가 골라.”',
+      yes:['“잔잔한 걸로 보자”고 고른다', '영화가 끝나고도 소연은 한참 자리에서 일어나지 못했다. 엔딩 크레딧 속에서 우리는 말없이 앉아 있다가 서로를 보고 웃었다. “이런 영화는 너랑 봐야 돼.” 그 애의 목소리가 조금 잠겨 있었다.'],
+      no:['“액션 보자, 오늘은 머리 비우고 싶어”라고 한다', '소연이 “좋아, 폭발하고 싶었어!” 하며 표를 뽑아 왔다. 극장을 나서며 둘 다 하이톤으로 대사를 따라 했다. 팝콘 부스러기가 가방에 한가득이었지만 개운했다.']},
+    {who:'지수', title:'팝콘 맛 심의', text:'매점 줄에서 지수가 팝콘 통을 하나씩 가리키며 점원과 진지하게 대화하고 있다. 나를 보자마자 소리친다. “잘 왔다, 카라멜이랑 어니언 중에 심판해 줘! 둘 다 포기 못 하겠어.” 뒤에 선 사람들이 슬슬 시계를 본다.',
+      yes:['“반반 시켜서 같이 먹자”고 제안한다', '지수는 “반반이 있었다니!” 하며 점원에게 박수를 쳤다. 상영관에 들어가서도 팝콘을 번갈아 집으며 예고편마다 감상평을 속삭였다. 끝날 즈음에는 통이 깨끗하게 비었다.'],
+      no:['“카라멜, 그냥 직감으로 가”라고 정해 준다', '지수가 “직감 접수!” 하며 한 번에 주문을 끝냈다. 뒤에 선 사람들의 한숨이 눈에 띄게 줄었다. 영화가 끝나고 그 애가 “역시 선택은 남이 해 줘야 맛있어”라고 우겼다.']},
+    {who:'태윤', title:'맨 앞줄 예매 사건', text:'발권기 앞에서 태윤이 머리를 긁적이고 있다. 화면에는 남은 좌석이 맨 앞줄뿐이다. “아, 이거 예매할 때 좌석 확인을 안 했네. 이러면 목이 부러지는데.” 나를 돌아보며 슬쩍 눈치를 본다.',
+      yes:['“그럼 다른 시간대로 같이 바꿔 보자”고 한다', '둘이 화면을 하나씩 눌러 보다가 한 시간 뒤 회차에서 가운데 좌석을 찾았다. 기다리는 동안 태윤이 쏘는 호떡을 먹었다. 영화는 자리가 좋아서인지 평소보다 더 재미있었다.'],
+      no:['“맨 앞에서 보는 것도 경험이지”라며 웃는다', '태윤은 “경험이라니, 목 경험이겠지” 하면서도 표를 뽑았다. 영화가 끝나자 둘 다 목을 돌리며 곡소리를 냈다. 극장을 나오며 그 애가 “다음엔 네가 예매해라”고 말했다.']},
+  ],
+  museum:[
+    {who:'소연', title:'그림 앞에서 멈춘 사람', text:'전시실 한가운데 큰 그림 앞에 소연이 서 있다. 나를 알아보고도 한참 말이 없다가 작게 입을 연다. “그림 보면 아무 생각이 안 나서 좋아. 나 요즘 계속 생각이 많았거든.” 들고 있던 도록의 모서리가 조금 구겨져 있다.',
+      yes:['옆에 나란히 서서 같이 그림을 본다', '말없이 그림을 보는 동안 시간이 천천히 흘렀다. 소연이 문득 “나 이직 준비하고 있어”라고 털어놓았다. 나는 고개를 끄덕였고, 그 애의 숨이 한결 깊어지는 소리가 들렸다.'],
+      no:['“저쪽 작품도 좋더라, 같이 가 볼래?”라고 이끈다', '다음 전시실로 옮겨 가자 소연의 표정이 조금씩 풀렸다. 이 작품은 색이 이상하다, 저 작품은 제목이 웃기다, 하면서 둘이 속닥였다. 출구에서 그 애가 “나오길 잘했어”라고 말했다.']},
+    {who:'태윤', title:'도슨트 앞 최선의 자세', text:'도슨트 해설 팀 맨 뒤에 태윤이 팔짱을 끼고 서 있다. 진지하게 듣는 척하지만 사실은 눈이 반쯤 감겨 있다. 나를 발견하더니 입 모양으로 “살려 줘”라고 말한다. 해설사의 목소리는 점점 길어진다.',
+      yes:['슬쩍 다가가 소매를 당겨 빠져나온다', '둘이 조용히 다른 전시실로 빠져나와서야 태윤이 숨을 몰아쉬었다. “나 예술을 존중하는데 졸음은 어쩔 수가 없어.” 우리는 한적한 전시실 의자에 앉아 키득거렸다.'],
+      no:['“조금만 더 들어 보자, 의외로 재밌어”라고 속삭인다', '태윤은 투덜대면서도 끝까지 들었다. 마지막 설명에서는 어느새 그 애가 눈을 뜨고 고개를 끄덕이고 있었다. 나오는 길에 “아까 그 작가 얘기는 좀 신기하더라”라고 인정했다.']},
+    {who:'지수', title:'포토존 줄서기', text:'미술관 입구 포토존에서 지수가 휴대폰을 들고 폴짝폴짝 뛰고 있다. 나를 보더니 눈이 커진다. “사진 좀 찍어 줘! 이 작품 앞에서 안 찍으면 여기 온 의미가 없잖아.” 벌써 몇 번이나 포즈를 바꿔 가며 준비 중이다.',
+      yes:['“좋아, 각도 잡아 줄게”라며 휴대폰을 받는다', '쭈그려 앉아 찍으니 지수가 작품만큼 크게 나왔다. 그 애가 사진을 확인하더니 “전시 오길 잘했다!”라며 환호했다. 보답으로 내 사진도 열 장쯤 찍어 주었다.'],
+      no:['“작품부터 보고 나서 찍자”고 제안한다', '지수는 “아, 그렇네. 본말전도였다!” 하며 먼저 전시를 한 바퀴 돌았다. 그림을 오래 보더니 마지막에 사진을 찍으면서 “아까보다 좋아 보여”라고 속삭였다.']},
+  ],
+  mall:[
+    {who:'소연', title:'엄마 선물 고르기', text:'백화점 스카프 코너에서 소연이 두 개를 번갈아 들고 고민하고 있다. 나를 부르며 손짓한다. “엄마 생신 선물인데 이 색이랑 이 색 중에 뭐가 어울릴까? 요즘 내가 용돈도 제대로 못 드려서 마음이 좀 그래.” 목소리가 조금 낮아진다.',
+      yes:['“엄마 얼굴이 환해 보이는 쪽으로 가자”고 같이 고른다', '소연이 스카프를 엄마 목에 두르는 상상을 하는 듯 한참 웃었다. 포장을 기다리는 동안 그 애가 “너 같은 친구가 있어서 다행이야” 하고 속삭였다. 쇼핑백이 유난히 무거워 보이지 않았다.'],
+      no:['“작은 선물 하나 더 더하자, 편지 같은 거”라고 제안한다', '소연이 눈을 크게 뜨더니 문구 코너로 달려갔다. 짧은 편지 한 장을 직접 쓰고 스카프 옆에 끼웠다. 계산을 마친 소연이 “이게 오늘 제일 잘한 일 같아”라고 했다.']},
+    {who:'지수', title:'세일 코너 전투', text:'세일 코너 한복판에서 지수가 옷걸이 사이를 헤치고 있다. 나를 발견하자마자 옷 한 벌을 흔들며 소리친다. “이거 봐, 반값이야! 사이즈만 맞으면 완벽한데, 한 번만 입어 봐 줘. 같이 입으면 둘이 돈 아끼는 거야!”',
+      yes:['“좋아, 일단 입어 보자”며 피팅룸으로 간다', '피팅룸 거울 앞에서 둘이 한참을 웃었다. 지수의 옷은 어울렸고 내 옷은 어울리지 않았다. 지수가 “세일 천재다!”를 외치며 계산대로 달려갔다.'],
+      no:['“난 구경만 할게, 대신 평가는 해 줄게”라고 한다', '지수가 입고 나올 때마다 내가 솔직하게 점수를 매겼다. 8점, 6점, 9점…… 마지막 옷에서 지수가 “이걸로 간다!” 하고 손을 번쩍 들었다. 그 애가 고른 옷은 정말 잘 어울렸다.']},
+    {who:'태윤', title:'선물 코치 요청', text:'남성복 코너 앞에서 태윤이 마네킹 앞에 서서 팔짱을 끼고 있다. 나를 부르는 목소리가 평소보다 작다. “우리 아버지 생신이라서 셔츠를 사려는데, 솔직히 아무것도 모르겠어. 네가 같이 좀 봐 줘. 부탁이야.”',
+      yes:['“같이 보자, 아버지 취향부터 말해 봐”라고 한다', '태윤이 아버지 이야기를 하나씩 꺼냈다. 차분한 색을 좋아하고 목 단추는 늘 풀어 둔다는 것. 우리는 그 얘기를 바탕으로 회색 셔츠를 골랐고, 태윤이 “이 정도면 합격이지”라며 한숨을 놓았다.'],
+      no:['“점원분께 추천을 받아 보자”며 직원을 부른다', '직원이 몇 가지를 골라 주자 태윤이 진지한 얼굴로 하나하나 만져 봤다. 결국 가장 부드러운 셔츠를 골랐다. 나오며 그 애가 “낯선 곳일수록 물어보는 게 답이네”라고 중얼거렸다.']},
+  ],
+  beauty:[
+    {who:'지수', title:'립 샘플 열 개', text:'뷰티 스토어 샘플 진열대 앞에서 지수가 손등에 립 색을 줄줄이 발라 놓았다. 나를 보더니 손등을 불쑥 내민다. “이 중에 어떤 색이 제일 예뻐? 고르다가 손이 알록달록해졌어!” 어느새 손등은 무지개처럼 변해 있다.',
+      yes:['“내 손등에도 발라 줘”라며 같이 고른다', '서로의 손등에 색을 발라 주다 보니 어떤 색이 누구에게 어울리는지 신기하게 보였다. 지수가 내가 고른 색을 사며 “이건 너 때문에 산 거야!”라고 웃었다.'],
+      no:['“가장 자연스러운 색이 제일 예뻐”라고 솔직히 말한다', '지수가 손등을 한참 들여다보더니 “오, 그렇네. 은근 이게 제일 낫다” 하고 인정했다. 계산대에서 그 애가 샘플 한 개를 몰래 더 챙겨 내게 쥐여 주었다.']},
+    {who:'소연', title:'피부 고민 상담', text:'뷰티 스토어 스킨케어 코너에서 소연이 제품 뒷면을 읽으며 미간을 찌푸리고 있다. 나를 보더니 반갑게 웃는다. “나 요즘 야근이 많아서 피부가 말이 아니야. 어떤 걸 써야 할지 모르겠어.” 거울에 비친 눈 밑이 좀 어둡다.',
+      yes:['“내가 쓰는 거 같이 써 볼래? 샘플 있어”라며 건넨다', '소연이 샘플을 손등에 발라 보더니 “오, 이거 괜찮은데?” 하며 감탄했다. 계산대 앞에서 그 애가 “다음 주에 후기 알려 줄게”라고 말했다. 가방에 든 작은 샘플이 괜히 뿌듯했다.'],
+      no:['“피부보다 잠이 먼저야. 오늘은 일찍 자”라고 걱정한다', '소연이 한숨을 쉬면서도 고개를 끄덕였다. “알아, 나도 아는데…… 그래도 네가 말해 주니까 들려.” 그 애는 결국 수면 안대 하나만 사 들고 나왔다.']},
+    {who:'태윤', title:'여동생 생일 선물', text:'화장품 진열대 사이에서 태윤이 어색하게 서 있다. 주변이 온통 여자 손님인 데다 포장 상자들이 알록달록하다. 나를 발견한 얼굴에 안도가 번진다. “살았다. 동생 생일 선물을 사야 하는데 뭐가 뭔지 하나도 모르겠어.”',
+      yes:['“동생이 평소에 뭘 쓰는지 같이 떠올려 보자”고 한다', '태윤이 동생 방 화장대를 열심히 떠올렸다. 분홍색 케이스를 자주 들고 다니던 기억에서 힌트를 얻어 핸드크림 세트를 골랐다. 포장을 기다리며 그 애가 “역시 너한테 물어보길 잘했다”고 했다.'],
+      no:['“동생한테 직접 문자로 물어보자”고 제안한다', '태윤이 반신반의하며 문자를 보냈고 몇 분 만에 답장이 왔다. 읽고 나서 그 애가 낮게 웃었다. “이름이 이렇게 길 줄은 몰랐네.” 우리는 답장대로 제품을 찾아 장바구니에 담았다.']},
+  ],
+  books:[
+    {who:'소연', title:'자격증 코너의 한숨', text:'서점 자격증 코너에서 소연이 두꺼운 문제집을 두 손으로 들고 서 있다. 나를 발견하더니 겸연쩍게 웃는다. “이직을 해야 하나 계속 고민 중인데, 일단 이거라도 해 볼까 싶어서. 근데 책이 너무 두껍다.” 책 뒤표지를 한참 내려다본다.',
+      yes:['“같이 해 보자, 나도 하나 골라 볼게”라고 한다', '서로 다른 분야의 책을 한 권씩 골라 계산대에 섰다. 북카페에서 첫 장을 같이 펴 놓고 서로의 진도를 확인하기로 했다. 소연이 “이러니까 할 수 있을 것 같아”라며 형광펜 세트를 꺼냈다.'],
+      no:['“일단 오늘은 목차만 보고 결정하자”고 말린다', '소연이 목차를 훑다가 “생각보다 할 만한데?” 하며 책을 덮었다. 오늘은 사지 않고, 며칠 뒤 다시 와서 결정하기로 했다. 그 애의 얼굴에서 조급함이 빠져 있었다.']},
+    {who:'지수', title:'북카페 인증샷', text:'북카페 창가 자리에서 지수가 책 한 권과 음료를 세 가지 각도로 찍고 있다. 나를 보자 손짓한다. “너 마침 잘 왔다. 이 책 같이 들고 찍어 줘, 세트로 올리려고. 안 읽고 올려도 되는 건가?”',
+      yes:['“읽는 척이라도 하자”며 책을 펼쳐 같이 찍는다', '책 한 장을 넘기는 순간을 포착하느라 우리는 열 번쯤 찍었다. 막상 책장을 넘기다 보니 지수가 첫 문장을 읽고 “어, 이거 재밌는데?” 하며 눈을 반짝였다. 결국 그 애는 책을 사 갔다.'],
+      no:['“한 챕터라도 읽고 나서 올려라”고 놀린다', '지수가 입을 삐죽이면서도 책을 펼쳤다. 한참 지나 고개를 들었을 때는 그 애의 음료가 다 식어 있었다. “이거 생각보다 좋아”라는 말에 나는 웃음을 참지 못했다.']},
+    {who:'태윤', title:'만화책 탑 쌓기', text:'만화 코너 바닥에 태윤이 책을 쌓아 놓고 앉아 있다. 나를 보더니 손바닥을 흔든다. “나 지금 완결까지 몰아 읽는 중이야. 이거 한 번 보면 못 끊어. 진짜로.” 쌓인 책의 높이가 무릎을 넘는다.',
+      yes:['“한 권만 추천해 줘, 나도 볼래”라며 앉는다', '태윤이 가장 아끼는 권을 골라 건넸다. 나도 바닥에 앉아 몇 페이지를 넘기다가 시간을 잊었다. 일어서자 다리가 저렸고, 둘 다 웃으며 서로를 부축했다.'],
+      no:['“다 읽으면 후기나 알려 줘”라고 응원한다', '태윤은 “그래, 그건 약속하지” 하며 다시 책에 코를 박았다. 며칠 뒤 문자로 장문의 후기가 도착했다. 한 줄 평은 “결말이 날 울렸다”였다.']},
+  ],
+  river:[
+    {who:'소연', title:'돗자리 위의 속마음', text:'강가 잔디밭에서 소연이 돗자리를 펴 놓고 혼자 앉아 있다. 나를 발견하더니 옆자리를 툭툭 친다. “여기 앉아. 치킨 시켰는데 곧 도착해. 나 오늘 좀 마음이 허하다.” 강물에 비친 불빛이 천천히 일렁인다.',
+      yes:['옆에 앉아 어깨를 기댄다', '치킨이 오기 전까지 우리는 강 건너 불빛만 바라봤다. 소연이 “우리 이십대가 정말 이렇게 지나가네”라고 중얼거렸다. 나는 아무 말도 하지 않고 그 애의 손을 한 번 잡아 주었다.'],
+      no:['“치킨 오기 전에 한 바퀴 걷고 오자”며 일으킨다', '둘이 강가를 천천히 걸으며 서로의 근황을 쏟아 냈다. 돌아왔을 때 치킨이 도착해 있었고, 소연은 “배고플 때 걸으니까 더 허하네” 하며 허겁지겁 먹기 시작했다. 웃음이 터졌다.']},
+    {who:'지수', title:'자전거 대여소', text:'강변 자전거 대여소 앞에서 지수가 헬멧을 쓴 채 손을 흔든다. 나를 발견하자마자 다른 자전거를 가리킨다. “두 대 빌려 놨어! 반포까지 가 보자. 혼자 가기엔 좀 무서워서 그래.” 그 애의 눈이 한껏 반짝인다.',
+      yes:['“좋아, 출발하자”며 헬멧을 쓴다', '지수의 속도가 의외로 빨라서 따라가느라 숨이 찼다. 중간에 쉬며 마신 음료가 어느 때보다 달았다. 돌아오는 길 석양 속에서 그 애가 크게 소리쳤다. “우리 최고!”'],
+      no:['“난 다리가 후들거려서 걷기만 할래”라고 한다', '지수는 “그럼 같이 천천히 가자!” 하며 자전거를 끌고 나란히 걸어 주었다. 느린 걸음 덕분에 강가 풍경이 더 잘 보였다. 한 바퀴가 끝나자 그 애가 “이것도 좋은데?”라며 웃었다.']},
+    {who:'태윤', title:'라면 끓이는 기계 앞', text:'강변 편의점 한쪽에서 태윤이 컵라면 기계 앞에 서서 버튼을 눌렀다 뗐다 하고 있다. 나를 부르며 컵을 흔든다. “이거 물 붓는 선 어디까지야? 매번 헷갈려서 국물이 항상 이상해.” 눈이 진지하다.',
+      yes:['“내가 해 줄게, 선은 여기야”라고 알려 준다', '태윤이 내 손길을 따라 물을 붓더니 “오, 이게 정석이구나” 하고 감탄했다. 둘이 강가 벤치에 앉아 후루룩 먹은 라면은 평소보다 맛있었다. 그 애는 국물까지 다 마셨다.'],
+      no:['“네가 해야 늘지, 한 번 더 해 봐”라고 응원한다', '태윤이 진지하게 선을 확인하며 물을 붓고, 3분을 기다렸다. 입에 넣더니 “이번엔 성공이다!” 하고 주먹을 쥐었다. 나는 웃으며 박수를 쳐 주었다.']},
+  ],
+  night:[
+    {who:'소연', title:'포장마차 어묵 국물', text:'야식 거리 포장마차 앞에서 소연이 어묵 꼬치를 든 채 서 있다. 나를 발견하자 반가워서 어쩔 줄 몰라 한다. “마침 잘 왔다. 야근하고 나왔는데 혼자 먹기 서러웠거든.” 목소리가 지친 것 같으면서도 밝다.',
+      yes:['“나도 배고팠어, 같이 먹자”며 자리에 앉는다', '뜨끈한 어묵 국물 앞에서 소연이 하루 동안 쌓인 일을 풀어 놓았다. 나도 내 이야기를 꺼냈다. 국물이 줄어들수록 속도 풀렸고, 헤어질 때 둘이 “내일도 파이팅”이라고 입을 맞췄다.'],
+      no:['“오늘은 집에 가서 쉬자, 내일 맛있는 거 먹자”고 한다', '소연이 잠시 아쉬운 눈을 하더니 “그래, 내일 꼭이야” 하고 어묵 꼬치 하나를 내 손에 쥐여 주었다. 걸어가는 뒷모습이 처음보다 가벼워 보였다.']},
+    {who:'지수', title:'편의점 신상 라면', text:'편의점 진열대 앞에서 지수가 신상 라면 세 개를 양팔에 안고 서 있다. 나를 보자 눈이 번쩍 뜨인다. “이거 먹어 봤어? 매운맛 단계가 대박이래. 하나씩 끓여서 순위 매겨 보자!” 이미 계산대로 향할 기세다.',
+      yes:['“좋아, 심사위원 할게”라며 참가한다', '컵라면 세 개를 앞에 두고 둘이 진지하게 점수를 매겼다. 1등은 의외로 가장 순해 보이는 맛이었다. 지수가 순위표를 휴대폰에 저장하며 “이거 역사적인 기록이야”라고 선언했다.'],
+      no:['“난 순한 맛 하나만 먹고 평가는 구경할게”라고 한다', '지수가 “알았어, 대신 내가 다 먹고 후기 남긴다!” 하며 비장하게 젓가락을 들었다. 두 번째 컵에서 눈물을 흘리며 웃는 그 애를 보다가 나도 배를 잡고 웃었다.']},
+    {who:'태윤', title:'야식 메뉴 가위바위보', text:'야식 거리 가판대 앞에서 태윤이 메뉴판을 노려보고 있다. 나를 부르며 손가락 두 개를 든다. “떡볶이냐 순대냐, 지금 이걸로 이십 분째야. 내기로 정하자, 가위바위보. 지는 사람이 계산!” 눈빛이 무서울 만큼 진지하다.',
+      yes:['“좋아, 한 판 승부다”라고 받아친다', '세 번의 무승부 끝에 내가 이겼다. 태윤은 “다음엔 꼭 이긴다” 하며 순순히 계산했다. 둘이 떡볶이와 순대를 모두 시켜서 나눠 먹으니 그 애도 만족한 얼굴이었다.'],
+      no:['“둘 다 시켜서 나눠 먹자, 내기는 다음에”라고 한다', '태윤이 “그 방법이 있었네!” 하며 머리를 쳤다. 이십 분의 고민이 일 분 만에 해결됐다. 포장을 기다리며 그 애가 “넌 문제 해결사야”라고 말했다.']},
+  ],
+};
+
+// 도시 산책: 취업 후 시내 장소별 남자 주인공 장면 A (jaewoo · minjun · hajin · taeoh) (ENGINE 구간 안, DOM 금지)
+// 장소 키: office 회사 근처 · cinema 영화관 · museum 미술관 · mall 백화점 · beauty 뷰티 스토어 · books 서점 · river 한강공원 · night 야식 거리
+
+const CT_LOVER_A = {
+  jaewoo: {
+    office:{
+      pre:{title:'점심 골목의 계약서',
+        text:'점심 골목 입구에서 재우가 서류 가방을 겨드랑이에 낀 채 뛰어오다가 나와 딱 마주친다. “마침 잘 만났다! 방금 거래처에서 계약 땄거든. 이 기쁨을 혼자 먹기엔 점심이 너무 아까워.” 눈이 사라지도록 웃는 얼굴은 아직 아무 잘못도 하지 않은 사람의 것이다.',
+        yes:['“축하해, 오늘은 내가 살게”라며 같이 걷는다', '국숫집 구석 자리에서 재우는 계약 이야기를 신나게 풀어놓다가 문득 숟가락을 멈추고 물었다. “근데 너는 요즘 어때? 내 얘기만 했네.” 그 한마디가 의외로 오래 남았다. 계산대 앞에서 서로 지갑을 내밀다 손끝이 스쳤다.'],
+        no:['“오후 회의가 있어서 다음에 먹자”고 한다', '“아, 그렇지. 직장인이 점심시간 쪼개 쓰는 거 내가 제일 잘 알지.” 재우는 순순히 길을 비켜 주었다. 사무실에 돌아오니 메신저에 짧은 글이 와 있었다. “다음엔 내가 시간부터 잡을게.”']},
+      love:{title:'회사 앞에서 기다리는 사람',
+        text:'퇴근길 회사 건물 앞 가로등 아래에서 재우가 휴대폰도 보지 않고 서 있다. 출장 가방을 멘 채라 방금 도착한 모양이다. “집에 가기 전에 네 얼굴부터 보고 싶어서.” 마흔의 나는 이 사람이 내 퇴근 시간을 묻는 날이 올 줄 몰랐다.',
+        yes:['“오늘 있었던 일 다 얘기해 줄게”라며 팔짱을 낀다', '지하철역까지 가는 길에 재우는 내 하루를 처음부터 끝까지 들었다. 중간에 끼어들지도, 자기 얘기로 돌리지도 않았다. 헤어질 때 그가 가방 속에서 출장지의 작은 열쇠고리를 꺼내 내 손에 쥐여 주었다.'],
+        no:['“내일 중요한 발표가 있어서 일찍 들어갈게”라고 한다', '“그래, 발표가 먼저지. 네 일정부터 챙겨.” 재우는 선뜻 한 걸음 물러나 내 가방을 대신 들어 주었다. 역 앞까지 나란히 걷다가 그가 말했다. “발표 끝나면 제일 먼저 나한테 말해 줘.”']},
+    },
+    night:{
+      pre:{title:'포장마차의 풀린 넥타이',
+        text:'야식 거리 포장마차 앞에서 재우가 넥타이를 풀어헤친 채 어묵 국물을 마시고 있다. 접대 자리가 막 끝난 얼굴이다. 나를 발견하자 종이컵을 번쩍 든다. “나 오늘 웃기만 하다 왔어. 얼굴이 아직 안 풀렸다.”',
+        yes:['옆에 서서 어묵 한 꼬치를 같이 든다', '재우는 입꼬리를 손으로 꾹꾹 누르며 얼굴을 풀어 보이려 했다. 그 모습이 웃겨서 둘 다 한참 웃었다. “너 앞에선 일부러 안 웃어도 되네.” 그가 중얼거렸다.'],
+        no:['“얼른 들어가 쉬어”라며 따뜻한 국물만 챙겨 준다', '“역시 너는 사람 상태를 잘 봐.” 재우는 컵을 받아 들고 길게 숨을 내쉬었다. 택시를 잡아 타기 전에 그가 창문을 내리고 손을 흔들었다. 어깨가 조금 가벼워 보였다.']},
+      love:{title:'편의점 앞 컵라면',
+        text:'야식 거리 끝 편의점 앞 간이 의자에 재우가 컵라면 두 개를 올려 놓고 앉아 있다. 하나는 내가 좋아하는 맛이다. 언제 알았는지 모르겠다. “너 야근할 것 같아서 미리 끓여 놨어. 불기 전에 와.”',
+        yes:['“어떻게 알았어?”라고 웃으며 옆에 앉는다', '“네가 하는 말은 한 번 들으면 다 적어 두거든. 영업 버릇이야.” 재우가 우쭐대며 젓가락을 건넸다. 면을 후루룩 먹다가 둘의 팔꿈치가 닿았다. 나는 그 따뜻함을 피하지 않았다.'],
+        no:['“오늘은 가볍게 먹고 들어갈게”라며 국물만 마신다', '“그래, 나도 반만 먹을게. 같이 가볍게.” 재우는 면을 덜어 내 쪽 컵을 가볍게 만들어 주었다. 남은 국물을 나눠 마시며 그는 다음 주 일정이 어떠냐고 물었다. 이번엔 내 쪽 일정부터였다.']},
+    },
+  },
+  minjun: {
+    books:{
+      pre:{title:'건축 코너의 두꺼운 책',
+        text:'서점 건축 코너 맨 위 칸에서 민준이 까치발을 하고 책을 꺼내려 애쓰고 있다. 책이 손끝에 걸렸다 빠졌다 한다. 나를 발견하자 허둥지둥 내려선다. “아, 아니, 이건 그냥… 회사 선배가 추천해 준 책인데 너무 높아서.”',
+        yes:['대신 책을 꺼내 건넨다', '민준은 책을 두 손으로 받으며 귀 끝이 빨개졌다. “고마워. 이거 완독하면 네 이름 넣어서 후기 써 줄게.” 농담인지 진심인지 알 수 없는 눈이었다. 책을 건네다 손이 스쳤다.'],
+        no:['“사다리 가져다 달라고 해 줄까?”라고 웃는다', '“아냐, 아냐! 내가 해결할게!” 민준은 결국 의자를 끌어와 올라섰다가 책 두 권을 같이 떨어뜨렸다. 둘이 쭈그려 앉아 주워 담는 동안 웃음이 터졌다. 서툴러도 다정한 사람이다.']},
+      love:{title:'북카페의 스케치',
+        text:'서점 안 북카페 구석에서 민준이 노트에 무언가를 그리다 나를 보고 황급히 덮으려 한다. 컵 받침 위에 내 쪽으로 밀어 둔 따뜻한 차가 놓여 있다. “아, 이건 방금 시킨 건데… 아니, 네가 올 것 같아서 시킨 거야.” 말끝이 점점 작아진다.',
+        yes:['“그림 보여 줘”라며 옆자리에 앉는다', '민준은 한참 망설이다가 노트를 펼쳤다. 서점 창가에 앉은 사람 하나가 선으로 그려져 있었다. “설계 연습인데… 모델이 너라서 잘 나왔어.” 노트 위에서 손등이 살짝 스쳤다.'],
+        no:['“다 그리면 보여 줘. 기다릴게”라고 한다', '“응, 꼭 완성해서 보여 줄게.” 민준은 노트를 가슴께로 꼭 안았다가 웃으며 펜을 다시 쥐었다. 나는 옆에서 책을 읽으며 연필 소리를 들었다. 아무 말 없는 시간이 편안했다.']},
+    },
+    river:{
+      pre:{title:'도면 통을 멘 한강',
+        text:'한강공원 산책로 옆 잔디에 민준이 도면 통을 베고 앉아 강을 보고 있다. 나를 발견하자 벌떡 일어나다가 통이 굴러 간다. “일 끝나고 머리 식히려고 나왔는데… 이상하게 자꾸 강을 설계하고 있어.” 겸연쩍게 웃는다.',
+        yes:['굴러 간 도면 통을 주워 와 옆에 앉는다', '민준은 통 뚜껑을 열더니 접힌 도면을 조심스럽게 펼쳐 보였다. “여기 다리 옆 쉼터를 이렇게 바꾸면 어떨까 해서.” 설명하는 목소리가 점점 신나졌다. 해가 기울 때까지 나는 그의 상상 속 산책로를 걸었다.'],
+        no:['“오늘은 쉬는 날이니까 설계는 잠깐 접어 두자”고 한다', '“맞다, 쉬는 건데.” 민준은 머쓱하게 웃으며 도면을 다시 말았다. 대신 편의점에서 사 온 과자를 반으로 쪼개 내밀었다. 강을 보며 나눠 먹는 과자가 괜히 맛있었다.']},
+      love:{title:'돗자리 위의 퇴근',
+        text:'해 질 무렵 한강공원 잔디밭에 민준이 돗자리를 이미 펴 놓고 기다리고 있다. 한쪽 귀퉁이에는 편의점 봉지 두 개가 눌러 놓여 있다. 내가 다가가자 그가 얼른 자리를 털어 준다. “여기 앉아. 나는… 바람 쪽에 앉을게.”',
+        yes:['“같이 바람 쪽에 앉자”며 어깨를 맞대고 앉는다', '민준은 순간 굳었다가 천천히 어깨 힘을 뺐다. 강 건너 불빛이 하나둘 켜지는 동안 그는 말 대신 내 쪽으로 컵을 건넸다. “이 건물 완성되면 네가 제일 먼저 와 줬으면 좋겠어.” 같은 말을 또 하는 사람이 사랑스러웠다.'],
+        no:['“난 괜찮으니까 너도 편하게 앉아”라고 한다', '“그래도…” 민준은 머뭇대다가 결국 내 옆에 앉았다. 둘 사이 간격이 어색하게 반 뼘쯤 남았지만, 그 간격조차 이상하게 따뜻했다. 한참 뒤 그가 작게 말했다. “다음엔 더 큰 돗자리 사 올게.”']},
+    },
+  },
+  hajin: {
+    office:{
+      pre:{title:'걸으면서 하는 점심',
+        text:'점심 골목에서 하진이 샌드위치를 한 손에 쥐고 걸으며 통화를 하고 있다. 나를 발견하자 통화를 끊고 다짜고짜 말한다. “마침 잘 만났어요. 일 얘기 아니고요. 밥 먹는 시간까지 쪼개 쓰는 사람한테 하는 말인데, 같이 앉아서 먹어요.” 직설적인 눈빛이 곧장 닿는다.',
+        yes:['“좋아요, 오늘은 앉아서 먹죠”라고 답한다', '하진은 골목 벤치에 자리를 잡고 샌드위치를 둘로 나눴다. “오늘 처음으로 앉아서 먹는 끼니예요.” 그가 웃으며 말했다. 샌드위치를 건네받을 때 손끝이 스쳤는데, 의외로 차분한 손이었다.'],
+        no:['“저는 시간이 빠듯해서 걸으면서 먹을게요”라고 한다', '“그럼 걸으면서 해요. 대신 오 분은 같이 걷는 걸로.” 하진은 어깨를 으쓱하고 보폭을 맞췄다. 골목 끝에서 헤어질 때 그가 한마디 덧붙였다. “다음엔 앉아서 먹어요.”']},
+      love:{title:'딱 한 가지 질문',
+        text:'퇴근길 회사 앞 가로수 아래에서 하진이 노트북 가방을 멘 채 서 있다. 나를 보자마자 직설적으로 입을 연다. “오늘 딱 한 가지만 물을게요. 힘든 일 있었어요, 없었어요?” 여전히 돌려 말하는 법이 없는 목소리인데 눈은 걱정으로 가득하다.',
+        yes:['“있었어요. 들어 줄래요?”라고 털어놓는다', '하진은 가방을 내려놓고 걷는 내내 한 번도 휴대폰을 보지 않았다. 내가 말을 끝내자 그가 짧게 말했다. “그 사람이 틀렸어요. 당신이 아니라.” 버스 정류장에서 그의 손이 내 손을 잠깐 감싸 쥐었다 놓았다.'],
+        no:['“괜찮아요, 오늘은 그냥 걷고 싶어요”라고 한다', '“알았어요. 대신 말하고 싶어지면 아무 때나요.” 하진은 더 묻지 않고 속도만 맞춰 걸어 주었다. 직설적인 사람이 질문을 거두는 일은 쉽지 않았을 텐데. 정류장에서 그가 쓰게 웃으며 손을 흔들었다.']},
+    },
+    books:{
+      pre:{title:'틀렸다고 하는 책',
+        text:'서점 경영서 코너에서 하진이 책 한 권을 펼쳐 들고 미간을 찌푸리고 있다. 나를 발견하자 책 표지를 내 쪽으로 돌려 보인다. “이 책 읽어 봤어요? 저자가 틀렸어요. 근데 틀린 이유가 궁금해서 사려고요.” 말투는 단호한데 입꼬리가 올라가 있다.',
+        yes:['“어느 부분이 틀렸는지 알려 줄래요?”라고 묻는다', '하진은 페이지를 넘겨 가며 막힘없이 짚어 주었다. 말이 빨라질 때마다 책장 넘기는 소리도 빨라졌다. “이 정도 듣고 같이 고민해 줄 사람, 처음이에요.” 책을 같이 들여다보다 어깨가 가볍게 닿았다.'],
+        no:['“저는 다른 책을 먼저 읽어 볼게요”라고 한다', '“그래요, 읽고 나서 반박해 줘요.” 하진은 책을 덮으며 웃었다. 의견이 달라도 상관없다는 표정이다. 계산대에서 그가 내 책까지 슬쩍 들여다보았다.']},
+      love:{title:'북카페의 이십 분',
+        text:'서점 안 북카페 창가에서 하진이 노트북을 연 채 졸고 있다. 샌드위치는 반쯤 남았다. 내가 앉자 눈도 뜨지 않고 말한다. “이십 분만 쉴게요. 대신 그 이십 분은 당신이 같이 있어야 효과가 있어요.” 직설적이지만 어딘가 쑥스러운 목소리다.',
+        yes:['“그럼 이십 분 동안 지켜 줄게요”라고 답한다', '나는 그의 노트북 화면이 꺼지지 않도록 가끔 자판을 건드리며 책을 읽었다. 이십 분이 지나 눈을 뜬 하진이 나를 한참 바라보았다. “이상하네요, 이번엔 진짜로 쉰 것 같아요.” 컵 위에서 둘의 손이 잠깐 겹쳤다.'],
+        no:['“사실 이십 분은 길어요. 십 분만 쉬어요”라고 한다', '“협상 잘하네요. 좋아요, 십 분.” 하진은 시계를 맞추고 다시 눈을 감았다. 알람이 울리자 그는 정확히 일어나 기지개를 켰다. 그리고 내 쪽으로 새 책 한 권을 밀어 주었다. “대신 이건 읽어 봐요.”']},
+    },
+  },
+  taeoh: {
+    museum:{
+      pre:{title:'오래 서 있는 사람',
+        text:'미술관 사진 전시실 중간에서 태오가 한 작품 앞에 한참 서 있다. 다른 관람객이 두 번 지나가도 자세 하나 바뀌지 않는다. 내가 곁에 서자 그제야 천천히 고개를 돌린다. “아… 오래 보면, 사진이 말을 걸어요. 시간 괜찮으면… 같이 봐요.” 느린 말투가 전시실의 조용한 공기에 녹아든다.',
+        yes:['“같이 천천히 볼게요”라고 하고 옆에 선다', '태오는 아무 말 없이 한 걸음 비켜 자리를 만들어 주었다. 오래 서 있자 사진 구석의 작은 사람이 보이기 시작했다. “보이죠?” 그가 속삭였다. 나란히 선 어깨 사이로 조용한 온기가 지나갔다.'],
+        no:['“저는 한 바퀴 돌고 다시 올게요”라고 한다', '“네… 천천히 다녀와요.” 태오는 느리게 고개를 끄덕였다. 한 바퀴를 돌고 돌아오니 그가 같은 자리에 서 있었다. 나를 보고 조용히 웃었다.']},
+      love:{title:'작품 앞의 손',
+        text:'미술관 전시실 한쪽 벤치에서 태오가 안내 책자를 접었다 폈다 하며 앉아 있다. 나를 보자 벤치 한쪽을 천천히 비운다. “이 전시… 같이 보고 싶어서, 먼저 한 바퀴 돌고 기다렸어요.” 느리지만 이미 마음은 정해져 있다는 말투다.',
+        yes:['“그럼 처음부터 같이 다시 볼까요?”라고 손을 내민다', '태오는 놀란 눈으로 나를 보다가 천천히 웃으며 일어섰다. 작품 앞마다 그가 한참 서 있었고, 나는 그 시간을 재촉하지 않았다. 마지막 전시실에서 그가 낮게 말했다. “같이 보니까… 사진이 더 환해요.” 지나가던 손등이 가볍게 닿았다.'],
+        no:['“오늘은 마음에 드는 한 점만 같이 봐요”라고 한다', '“좋아요. 한 점이면… 충분해요.” 태오는 내가 고른 작품 앞에서 오래 서 있었다. 돌아 나오는 길에 그가 작은 엽서 한 장을 내밀었다. “이 작품이에요. 기억하고 싶어서요.”']},
+    },
+    river:{
+      pre:{title:'해 질 무렵의 셔터',
+        text:'한강공원 둔치 난간 앞에서 태오가 삼각대 없이 카메라를 든 채 서 있다. 해가 강 위로 낮게 내려앉는 중이다. 나를 보자 입 모양으로 “쉿” 하며 손가락을 든다. “지금… 한 장만 더 찍으면 돼요. 빛이 곧 바뀌어서요.”',
+        yes:['조용히 옆에서 빛이 변하는 걸 같이 기다린다', '태오는 숨을 한 번 쉬고 셔터를 눌렀다. 낮은 소리가 강바람에 섞였다. “기다려 줘서… 고마워요.” 그가 카메라를 내리며 처음으로 환하게 웃었다.'],
+        no:['“방해하지 않게 멀리서 구경할게요”라고 한다', '“아, 네… 편한 대로요.” 태오는 느리게 대답하고 다시 렌즈를 들었다. 한참 뒤 그가 멀리서 나를 향해 손을 흔들었다. 셔터는 한 번 더 울렸고, 그 소리는 어쩐지 나를 향해 있는 것 같았다.']},
+      love:{title:'돗자리 위 필름',
+        text:'한강공원 잔디 한쪽에 태오가 돗자리를 펴고 필름 카메라를 무릎 위에 올려놓고 있다. 내가 오는 걸 이미 알았는지 돗자리 한쪽 귀퉁이가 반듯하게 비어 있다. “오늘은… 찍을 게 별로 없어서요. 그냥 앉아 있어도 돼요?”',
+        yes:['옆에 앉아 어깨를 나란히 하고 강을 본다', '강바람이 지나가는 동안 태오는 카메라를 들지 않았다. 대신 오래 침묵하다가 말했다. “지금이… 제일 찍고 싶은 순간인데, 찍으면 사라질 것 같아서요.” 돗자리 위에서 그의 손이 내 손등 근처에 잠깐 머물렀다.'],
+        no:['“오늘은 제가 한 장 찍어 볼게요”라며 카메라를 빌린다', '태오는 놀란 듯하다가 조심스럽게 카메라를 건넸다. “숨을 한 번 쉬고… 누르면 돼요.” 서툴게 누른 셔터 소리가 낮게 울렸다. 그가 말없이 웃으며 필름 감는 법을 알려 주었다.']},
+    },
+  },
+};
+
+// 도시 산책: 취업 후 시내 장소별 남자 주인공 장면 B (라온·지후·도현·시안) (ENGINE 구간 안, DOM 금지)
+// 인물 × 단골 장소 2곳 × (pre 사귀기 전 / love 연인)
+
+const CT_LOVER_B = {
+  raon: {
+    night:{
+      pre:{title:'포장마차 천막 안의 마스크',
+        text:'포장마차 천막 안, 모자와 마스크를 푹 눌러쓴 사람이 어묵 국물 앞에서 곤란한 얼굴로 앉아 있다. 먹으려면 마스크를 내려야 하는데 옆자리에 사람이 가득하다. 라일락빛 머리카락 한 가닥이 모자 밖으로 삐져나온 그가 나를 알아보고 작게 속삭인다. “저기, 죄송한데 잠깐만 가려 주실래요? 딱 한 입만 먹을게요.”',
+        yes:['그의 옆에 서서 등으로 시선을 막아 준다', '나는 메뉴판을 보는 척하며 그의 앞을 등으로 막아 섰다. 뒤에서 후루룩 소리가 나더니 “살았다, 진짜 맛있어요” 하는 작은 목소리가 들렸다. 마스크를 올린 그가 어묵 꼬치를 내밀었다. “가림막 값이에요.”'],
+        no:['“저쪽 구석 자리가 비었어요”라고 알려 준다', '그는 고개를 꾸벅하고 천막 끝 자리로 옮겨 앉았다. 계산을 마치고 나가는 길에 그가 손을 작게 흔들었다. “다음엔 제가 살게요, 꼭요.”']},
+      love:{title:'편의점 앞 라면 두 개',
+        text:'편의점 앞 야외 테이블에 컵라면 두 개가 뚜껑을 덮은 채 놓여 있고, 모자를 눌러쓴 라온이 젓가락을 쥐고 기다리고 있다. 마스크는 턱에 걸쳐 놓았다. “스케줄 끝나고 바로 왔어요. 이 시간엔 다들 자기 라면만 봐서 아무도 안 알아봐요.” 말은 태연한데 목소리가 한껏 들떠 있다.',
+        yes:['맞은편에 앉아 뚜껑 위에 젓가락을 올려 눌러 준다', '라온은 휴대폰 타이머만 들여다보다가, 뚜껑을 여는 순간 올라온 김에 둘 다 웃음이 터졌다. 젓가락을 건네다 손끝이 스치자 그가 마스크를 올리며 중얼거렸다. “…라면이 뜨거워서 그래요.”'],
+        no:['“저쪽에 사람 와요. 마스크 올려요”라고 먼저 챙긴다', '라온은 반사적으로 마스크를 끌어올리고 고개를 숙였다. 지나가는 사람이 멀어진 뒤 그가 눈만 내놓고 웃었다. “눈치가 빨라서 마음이 놓여요.”']},
+    },
+    cinema:{
+      pre:{title:'키오스크 앞의 일행',
+        text:'영화관 로비 키오스크 앞에서 모자와 마스크 차림의 사람이 좌석 선택 화면과 씨름하고 있다. 뒤에 줄이 생기자 그가 어쩔 줄 모르다가 나를 힐끗 본다. “저기, 죄송한데요. 일행인 척해 주실 수 있어요? 혼자 오면 괜히 눈에 띌 것 같아서요.” 소매 밖으로 라일락빛 머리카락이 비죽 나와 있다.',
+        yes:['“네, 일행이에요”라며 옆에 나란히 선다', '둘이 화면을 같이 들여다보며 맨 뒷줄 구석 자리를 골랐다. 표가 나오자 그가 두 손으로 받아 들고 몰래 웃었다. “연기 처음 해 보는데 제법이죠?”'],
+        no:['화면 조작만 도와주고 비켜 선다', '나는 구석 좌석을 눌러 주고 한 걸음 물러섰다. 표를 받아 든 그가 마스크 위로 눈웃음을 지었다. “일행은 안 되는 대신 은인으로 해 둘게요.”']},
+      love:{title:'심야 상영 팝콘 한 통',
+        text:'심야 상영관 맨 뒷줄에서 라온이 모자를 눌러쓰고 손짓한다. 팝콘 통 하나를 팔걸이 사이에 올려놓고 광고가 나오는 동안 내 쪽으로 몸을 기울인다. “오늘 영화 슬프대요. 울음이 나도 소리는 안 낼 테니까 모른 척해 줘요.” 어둠 속에서도 마스크 위 눈이 장난스럽다.',
+        yes:['팝콘 통을 가운데 두고 같이 먹는다', '손을 넣다가 몇 번이나 그의 손과 마주쳐서 둘 다 동시에 손을 뺐다. 세 번째에는 그가 먼저 웃음을 삼키며 팝콘을 한 줌 집어 내 손에 올려 주었다. 영화가 시작되자 우리는 같은 장면에서 숨을 멈췄다.'],
+        no:['휴지 한 장을 팔걸이에 올려 둔다', '라온은 휴지를 소중히 쥐고 “…언제 준비했어요?” 하고 속삭였다. 영화가 끝나 갈 즈음 옆자리에서 코를 훌쩍이는 소리가 났지만 나는 끝까지 스크린만 보았다. 불이 켜지자 그가 말했다. “모른 척해 줘서 고마워요.”']},
+    },
+  },
+  jihu: {
+    mall:{
+      pre:{title:'선물 코너의 시장조사',
+        text:'백화점 선물 코너에서 손수건 세트 두 개를 들고 한참 고민하는 중이다. 뒤에서 낮고 건조한 목소리가 들린다. “우연이네요. 시장조사 중이었습니다. 쉬는 날에도 습관이라서요.” 한지후가 서류 가방 대신 쇼핑백을 든 채 진열대를 바라보고 있다.',
+        yes:['“어느 쪽이 나을지 봐 주실래요?”라고 묻는다', '지후는 두 상자를 번갈아 들어 보더니 말했다. “먼저 웃음이 나는 쪽이 정답입니다.” 나는 이미 한쪽을 쥐고 있었고, 그가 아주 약하게 입꼬리를 올렸다.'],
+        no:['“혼자 골라 볼게요”라고 웃으며 말한다', '지후는 한 걸음 물러서며 “선택은 쓰는 사람이 하는 겁니다” 하고 말했다. 계산을 마치고 돌아서자 포장대 앞에서 그가 리본 색을 무심히 가리켰다. “이쪽이 어울립니다. 참고만 하세요.”']},
+      love:{title:'식품관 시식 코너',
+        text:'백화점 지하 식품관 디저트 매장 앞에서 지후가 시식 접시를 들고 서 있다. 나를 발견하자 평소처럼 담담한 얼굴로 다가온다. “지난번에 말한 그 맛, 비슷한 걸 찾았습니다. 평가를 부탁드립니다.” 기억하고 있었다는 사실이 건조한 말투 사이로 고스란히 드러난다.',
+        yes:['시식 접시를 받아 맛을 보고 솔직하게 평가한다', '“조금 덜 달고, 끝맛이 좋아요.” 내 말을 들은 지후는 수첩을 꺼내 한 줄을 적었다. 접시를 건네던 손끝이 닿자 그는 시선을 진열대로 돌렸다.'],
+        no:['“오늘은 짐이 많으니 다음에 사요”라고 한다', '지후는 쇼핑백을 내려다보더니 고개를 끄덕였다. “알겠습니다. 매장 이름은 외워 두죠.” 헤어지기 전에 그가 시식 접시를 내밀어 마지막 한 입을 먹게 해 주었다.']},
+    },
+    beauty:{
+      pre:{title:'테스터 앞에서의 조언',
+        text:'뷰티 스토어 진열대 앞에서 립 컬러 테스터를 손등에 바르며 색을 고르고 있다. 뒤에서 건조한 목소리가 들린다. “손등은 피부가 얇아서 색이 다르게 보입니다. 손목 안쪽에 발라 보세요.” 돌아보니 한지후가 팔짱을 낀 채 매대를 살피고 있다.',
+        yes:['손목 안쪽에 발라 보이며 의견을 묻는다', '지후는 한 걸음 다가와 색을 유심히 살폈다. “이쪽은 낮에는 조금 무겁습니다.” 그가 다른 색을 집어 올려 주었고, 발라 보니 훨씬 내게 맞는 색이었다.'],
+        no:['“오늘은 제 눈을 믿어 볼게요”라고 한다', '지후는 짧게 고개를 끄덕였다. “좋은 자세입니다. 고르는 감각은 쓰면서 늘어요.” 내가 고른 색을 들고 계산대로 가는 동안 그의 표정이 아주 조금 풀려 있었다.']},
+      love:{title:'계산대 줄의 핸드크림',
+        text:'뷰티 스토어 계산대 줄에서 지후가 바구니를 들고 서 있다. 바구니 안에는 내가 좋아할 만한 향의 핸드크림과 립밤이 가지런히 담겨 있다. “요즘 손이 건조해 보여서요. 성분표는 읽어 봤습니다.” 담담한 문장인데 귀 끝이 조금 붉다.',
+        yes:['핸드크림을 받아 손등에 발라 본다', '“향이 좋네요.” 내가 손을 내밀자 지후가 잠시 망설이다 코를 가까이 댔다. 손끝이 스치는 순간 그가 헛기침을 했다. “…제 판단이 정확했던 걸로 하겠습니다.”'],
+        no:['“이건 제가 살게요. 받기만 하긴 그래서요”라고 한다', '지후는 잠시 멈췄다가 작게 웃었다. “그럼 다음 건 제가 삽니다. 순서대로 하죠.” 계산을 마치자 그가 영수증을 접어 수첩에 끼웠다.']},
+    },
+  },
+  dohyun: {
+    cinema:{
+      pre:{title:'포스터 앞의 혹평',
+        text:'영화관 로비 포스터 앞에서 차도현이 팔짱을 끼고 서 있다. 나를 보자마자 손가락으로 포스터를 툭 친다. “야, 너 이거 표 샀어? 보지 마. 중간에 이십 분은 처져.” 직업이 PD라서 그런지 보지도 않은 영화의 편집 리듬을 이미 다 읽은 얼굴이다.',
+        yes:['“그럼 대신 추천해 줘요”라고 받아친다', '도현은 상영표를 한참 훑더니 한 편을 짚었다. “이거. 오프닝이 죽여.” 줄을 서서 표를 받는 동안 그는 투덜대면서도 팝콘 값을 먼저 냈다.'],
+        no:['“그래도 직접 보고 판단할래요”라고 한다', '도현은 어이없다는 듯 웃으며 어깨를 으쓱했다. “그래, 그런 놈이 오래 가. 보고 나서 한 줄 평이나 보내.” 걸어가는 내 뒤통수에 그가 한마디를 더 던졌다. “이십 분 지점에서 졸면 내 말이 맞는 거다.”']},
+      love:{title:'끝까지 올라가는 이름들',
+        text:'영화가 끝나고 불이 켜졌는데도 도현은 좌석에서 일어나지 않는다. 스크린에는 엔딩 크레딧이 천천히 올라가고, 관객들이 줄줄이 빠져나간다. “가만있어. 이름 다 나올 때까지.” 그는 눈을 떼지 않은 채 내 소매를 가볍게 잡아 앉힌다.',
+        yes:['옆에 앉아 같이 이름을 끝까지 읽는다', '조명 담당부터 막내 스태프까지 그가 소리 없이 입술로 이름을 따라 읽는다. 팔걸이 위에서 우리 손등이 스쳤고, 그는 모르는 척 손을 치우지 않았다. 마지막 줄이 사라지자 도현이 낮게 말했다. “됐다. 가자.”'],
+        no:['“다음 회차 입장하니까 나가서 기다려요”라고 일으킨다', '도현은 스크린을 한 번 돌아보다가 못 이긴 척 일어났다. 로비로 나오며 그가 투덜댔다. “크레딧이 제일 중요한 건데.” 그러면서도 내 가방끈을 대신 고쳐 메어 주었다.']},
+    },
+    night:{
+      pre:{title:'새벽 포장마차 주문',
+        text:'촬영이 끝났는지 눈이 반쯤 풀린 차도현이 포장마차 앞에서 어묵을 주문하고 있다. 나를 보자 주문서를 든 채 턱짓을 한다. “뭐 먹을래. 빨리 말해, 사장님 기다리셔.” 말은 거칠지만 이미 내 몫의 컵을 하나 더 집어 들고 있다.',
+        yes:['“떡볶이도 시켜서 같이 먹어요”라고 한다', '도현이 피식 웃으며 떡볶이를 추가했다. 천막 안에 나란히 앉아 국물을 나눠 마시는 동안 그는 현장 얘기를 투덜투덜 늘어놓았다. 계산서를 낚아채며 한마디 했다. “오늘은 내가 쏜다.”'],
+        no:['“저는 포장해서 집에서 먹을게요”라고 한다', '도현은 아쉬운 눈으로 어묵 꼬치를 보더니 봉지를 직접 챙겨 주었다. “집에 가서 데워 먹어. 국물 식으면 맛없어.” 걸음을 돌리는 내게 그가 덧붙였다. “다음엔 같이 앉아.”']},
+      love:{title:'줄 서서 산 닭강정',
+        text:'야식 거리 가로등 아래에서 도현이 비닐봉지를 들고 나를 기다리고 있다. 눈 밑이 피곤해 보이는데 표정은 묘하게 득의양양하다. “네가 말했던 그 집 닭강정, 줄 서서 샀다. 내가 줄을 기다린 건 살면서 처음이야.” 봉지가 내 쪽으로 쑥 내밀어진다.',
+        yes:['봉지를 열어 하나 집어 그의 입에 먼저 넣어 준다', '도현은 얼떨결에 받아먹다가 귀까지 빨개졌다. “…야, 이건 반칙이지.” 둘이 가로등 아래 벤치에 앉아 박스를 비우다가, 양념 묻은 손끝이 서로 스쳤다.'],
+        no:['“먹기 전에 눈부터 붙여요. 내가 깨워 줄게요”라고 한다', '도현은 잠깐 버티다가 벤치 등받이에 머리를 기댔다. 닭강정 봉지를 안은 채 오 분 만에 숨소리가 고르게 변했다. 깨어난 그가 눈을 비비며 중얼거렸다. “…이상하네. 네 옆에선 잘 자.”']},
+    },
+  },
+  sian: {
+    books:{
+      pre:{title:'매대 앞의 1막과 3막',
+        text:'서점 신간 매대 앞에서 책 두 권을 들고 도무지 고르지 못하고 있다. 어깨 너머로 조용한 목소리가 들린다. “한 권은 도입이 좋고, 한 권은 결말이 좋네요. 대본으로 치면 1막과 3막이죠.” 유시안이 팔에 책 몇 권을 끼고 서 있다.',
+        yes:['“그럼 어느 쪽을 읽으시겠어요?”라고 묻는다', '시안은 두 권을 번갈아 펼쳐 첫 문장과 마지막 문장을 낮게 읽어 주었다. 평범한 문장이 그의 목소리를 타고 대사처럼 들렸다. 결국 나는 그가 고른 책을 들고 계산대로 향했다.'],
+        no:['“먼저 몇 쪽 읽어 보고 정할게요”라고 한다', '시안은 고개를 끄덕이며 서가 옆 의자를 가리켰다. “좋은 독자의 방식이에요. 한 줄을 읽으면 책이 말해 줍니다.” 내가 첫 장을 넘기는 동안 그는 천천히 다른 서가로 걸어갔고, 한참 뒤 책 위에는 책갈피 하나가 놓여 있었다.']},
+      love:{title:'책 사이에 끼운 대사',
+        text:'북카페 창가 자리에서 읽던 책을 넘기다가 갈피 사이에서 작은 쪽지를 발견한다. 맞은편에서 시안이 모른 척 커피 잔을 들고 있다. 쪽지에는 한 줄이 적혀 있다. “읽다가 발견하면 소리 내서 읽어 줘요. 지문은 비워 놨어요.”',
+        yes:['쪽지의 대사를 소리 내어 읽고 지문을 채운다', '“…오늘도 당신이 먼저 도착해서 다행이다.” 소리 내어 읽은 뒤 나는 지문 칸에 웃음이라고 적어 돌려주었다. 시안은 쪽지를 접어 책 사이에 도로 끼우며 내 손등을 손끝으로 스쳤다.'],
+        no:['“집에 가서 혼자 읽을게요. 지금은 부끄러워서요”라고 한다', '시안은 입가를 누르며 작게 웃었다. “소리 내지 않은 대사가 오래 남기도 하죠.” 쪽지를 책 사이에 도로 끼워 주며 그가 덧붙였다. “다음 쪽에도 한 줄 숨겨 놨어요.”']},
+    },
+    cinema:{
+      pre:{title:'상영 전의 약속',
+        text:'영화관 로비 벤치에서 시안이 단편 상영 시간표를 들여다보다가 나를 발견한다. 표를 손에 쥔 채 눈을 크게 뜬다. “마침 잘 만났네요. 영화를 보고 나서 첫마디를 들으면 그 사람을 알 수 있어요. 끝나고 한마디만 들려줄래요?” 진지한 말투인데 눈가는 부드럽다.',
+        yes:['“좋아요, 끝나고 제일 먼저 나오는 말을 할게요”라고 한다', '상영이 끝나고 불이 켜지자 시안이 숨을 죽이고 기다렸다. 내가 한마디를 건네자 그는 한동안 말이 없다가 고개를 끄덕였다. “역시 이 장면에서 울 줄 알았어요.”'],
+        no:['“감상은 말하면 줄어들 것 같아서요”라고 한다', '시안은 한 박자 쉬고 웃었다. “말하지 않는 문장이 오래 가기도 하니까요.” 영화가 끝난 뒤에도 우리는 말없이 로비를 걸었고, 그 침묵이 오히려 대답 같았다.']},
+      love:{title:'한 칸 오른쪽의 자리',
+        text:'상영 시작 전, 시안이 먼저 와서 객석 중간쯤에 앉아 나를 기다리고 있다. 표를 흔들며 옆자리를 가볍게 두드린다. “제일 좋은 자리는 스크린 한가운데에서 조금 뒤, 한 칸 오른쪽이에요. 보이는 것보다 들리는 게 먼저인 자리거든요.” 장면을 설명하듯 낮은 목소리다.',
+        yes:['그 자리에 앉아 예고편 대사를 같이 맞춰 본다', '예고편의 짧은 대사를 둘이 속삭이며 이어 붙였다. 마지막 줄을 동시에 말하는 바람에 옆 사람이 돌아보았고, 우리는 숨을 죽이고 웃었다. 팔걸이 위에서 시안의 손이 내 손과 나란히 놓였다.'],
+        no:['“저는 팝콘 사 올게요”라며 먼저 일어선다', '시안은 가방을 내 자리에 올려 두었다. “그럼 이 자리는 제가 맡아 둘게요. 주인공이 돌아올 때까지요.” 팝콘을 들고 돌아오니 그가 정말 한 칸 오른쪽을 비워 둔 채 웃고 있었다.']},
+    },
+  },
+};
+
+// 도시 산책: 취업 후 시내 장소별 남자 주인공 장면 C (승현·건우·유찬·우진) (ENGINE 구간 안, DOM 금지)
+// 장소 키: office 회사 근처 · cinema 영화관 · museum 미술관 · mall 백화점 · beauty 뷰티 스토어 · books 서점 · river 한강공원 · night 야식 거리
+// 인물 × 단골 장소 2곳 × (pre 사귀기 전 / love 연인)
+
+const CT_LOVER_C = {
+  seunghyun: {
+    cinema:{
+      pre:{title:'키오스크 옆의 모자 쓴 사람',
+        text:'영화표 키오스크 앞에서 상영 시간을 고르는데, 깊이 눌러쓴 모자와 마스크 차림의 남자가 옆 화면을 뚫어져라 본다. 눈만 보이는데도 누군지 알 것 같다. 그가 아주 낮은 목소리로 묻는다. “저기, 이 시간대 맨 뒷줄이 남았는지 좀 봐 주실래요? 제가 화면이 잘 안 보여서요.”',
+        yes:['“뒷줄 가운데 두 자리 남았어요”라고 알려 준다', '그는 마스크 위로 눈을 휘며 작게 웃었다. “역시 목소리가 기억나는 분이네요. 고마워요, 덕분에 안 들키고 들어가겠어요.” 표를 뽑아 건네다 손가락 끝이 스쳤고, 그는 그 손을 잠깐 내려다보았다.'],
+        no:['모른 척하고 내 표만 뽑는다', '그는 더 묻지 않고 한 걸음 물러나 모자 챙을 눌렀다. 대신 상영관 앞에서 마주쳤을 때 고개를 아주 살짝 숙여 인사했다. 모른 척해 준 걸 알아본 사람의 인사였다.']},
+      love:{title:'맨 뒷줄의 팝콘',
+        text:'불이 꺼지기 직전 승현이 모자를 눌러쓴 채 맨 뒷줄 내 옆자리로 미끄러져 들어온다. 팝콘 통을 사이에 놓고 그가 속삭인다. “이 영화 주인공 대사가 어색하면 알려 줘요. 직업병이라서 자꾸 입이 근질거려요.” 마스크 위의 눈이 어둠 속에서도 장난스럽다.',
+        yes:['어색한 대사가 나올 때마다 귓속말로 알려 준다', '내가 속삭일 때마다 그는 어깨를 들썩이며 웃음을 참았다. 엔딩 크레딧이 오를 때쯤 팝콘 통 속에서 손이 마주쳤고, 그는 빼지 않은 채 한참 가만히 있었다. “다음엔 제가 대본 읽어 줄게요, 이 영화보다 낫게.”'],
+        no:['“오늘은 영화만 조용히 볼래요”라고 한다', '“좋아요, 오늘은 관객 모드!” 그는 정말로 끝까지 숨죽이고 화면만 보았다. 불이 켜지기 전 그가 내 소매 끝을 살짝 잡았다 놓았다. 그 정도의 온기면 충분했다.']},
+    },
+    river:{
+      pre:{title:'벤치에서 연습하는 대사',
+        text:'한강 둔치 구석 벤치에서 후드와 마스크를 쓴 남자가 혼자 중얼거리고 있다. 대본 종이가 손에서 펄럭인다. 가까이 가 보니 승현이다. 그가 나를 알아보고 어색하게 대본을 접는다. “아, 들렸어요? 상대역이 없어서 허공이랑 연습 중이었어요.”',
+        yes:['“상대역 해 드릴까요?”라고 한다', '그는 잠깐 놀라더니 대본을 반으로 접어 건넸다. “여기부터, 편하게 읽어 줘요.” 내가 한 줄 읽자 그는 눈을 감고 대답했고, 허공이던 대사가 처음으로 제자리를 찾은 것 같았다.'],
+        no:['“방해 안 할게요”라며 옆 잔디에 자리를 잡는다', '“방해라니요, 멀리서 들리는 인기척이 오히려 도움 돼요.” 그는 다시 대본을 펴고 소리를 낮춰 연습했다. 한 번씩 이쪽을 보며 눈으로 웃는 게 느껴졌다.']},
+      love:{title:'돗자리 위의 마스크',
+        text:'한강 둔치 돗자리 위에 승현이 편의점 봉투를 풀어 놓는다. 주변에 사람이 드문 구석을 이리저리 살피더니, 그제야 마스크를 턱 아래로 내린다. “이 자리, 오래 찾았어요. 여기서만 숨 쉬는 얼굴이에요.”',
+        yes:['“이 얼굴이 제일 좋아요”라고 말한다', '그는 귀까지 빨개져서 컵라면 뚜껑만 만지작거렸다. 한참 뒤에야 “그 말은 대본에 쓰면 안 되겠네요, 연기가 안 될 것 같아서”라고 중얼거렸다. 나란히 앉은 어깨가 슬쩍 기울어 맞닿았다.'],
+        no:['“누가 보면 마스크 다시 써요”라고 챙겨 준다', '“역시 현실적이에요.” 그는 순순히 마스크를 올리고도 눈웃음으로 고마움을 대신했다. 대신 라면 국물을 한 숟갈 먼저 떠서 내 쪽으로 밀어 주었다.']},
+    },
+  },
+  geonwoo: {
+    office:{
+      pre:{title:'조사한 식당 목록',
+        text:'점심시간에 사무실 근처 골목을 걷는데 건우가 서류 가방을 든 채 길가에 서 있다. 나를 보더니 헛기침을 하고 주머니에서 접은 종이를 꺼낸다. “이 주변 식당을 조사했습니다. 소음, 대기 시간, 메뉴 다양성 순입니다. 아, 아니, 이건 그냥 추천입니다.”',
+        yes:['“그럼 일 순위 가게로 같이 가요”라고 한다', '그는 허둥대다 종이를 접어 넣고 반 걸음 앞서 걸었다. 식당에 앉자 “제가 이렇게 먼저 말을 거는 건 드문 일입니다”라고 굳은 얼굴로 고백했다. 귀끝이 빨갰다.'],
+        no:['“오늘은 일정이 있어서요, 목록은 사진 찍어 갈게요”라고 한다', '“네, 그렇게 하십시오. 다음에 결과 보고 부탁드립니다.” 건우는 정중하게 목례했지만 입꼬리가 올라가 있었다. 그날 오후 그에게서 “아까 그 종이, 삼 순위 집이 제일 낫습니다”라는 짧은 문자가 왔다.']},
+      love:{title:'모퉁이에서 기다리는 사람',
+        text:'퇴근길 건물 모퉁이에 건우가 서류 가방을 두 손으로 든 채 서 있다. 나를 보더니 넥타이를 한 번 매만진다. “우연입니다. 아니, 우연은 아니고… 이십 분 정도 기다렸습니다.” 엄격하던 사람이 이렇게 솔직한 건 오직 나한테만이다.',
+        yes:['“기다려 줘서 고마워요”라며 팔짱을 낀다', '그는 순간 굳었다가 천천히 어깨 힘을 풀었다. “…이런 접촉에는 동의서를 받아야 하는데 말입니다.” 한 박자 늦은 농담에 둘 다 웃었고, 그의 걸음이 내 속도에 맞춰졌다.'],
+        no:['“다음엔 먼저 문자 줘요, 나가는 길에 바로 만나게요”라고 한다', '“그렇군요. 합리적인 개선안입니다.” 그는 진지하게 메모하는 시늉까지 했다. 걷는 동안 우리 손등이 몇 번 스쳤고, 그는 그때마다 헛기침을 했다.']},
+    },
+    books:{
+      pre:{title:'같은 책을 향한 손',
+        text:'서점 서가 앞에서 책을 뽑으려는데 옆에서 뻗은 손과 동시에 닿는다. 건우다. 그는 화들짝 손을 거두고 허리를 숙인다. “실례했습니다. 먼저 보십시오. 아니, 먼저 잡으셨으니 당연히…” 그의 손에는 이미 법서가 세 권이나 들려 있다.',
+        yes:['“같이 볼래요? 책은 한 권인데 읽는 건 둘이 할 수 있어요”라고 한다', '그는 한참 책 표지만 바라보다가 “…그 제안은 처음 받아 봅니다”라며 옆에 섰다. 한 페이지를 나란히 읽는 동안 그의 어깨가 아주 조금씩 내려왔다. 책을 사 들고 나올 때 그가 계산대에서 내 몫까지 내려고 해 한참 실랑이했다.'],
+        no:['책을 양보하고 다른 서가로 간다', '“감사합니다. 대신 다음 책은 제가 양보하겠습니다.” 그는 정중히 고개를 숙였다. 잠시 뒤 내 손에 쥐여진 책 사이에 포스트잇이 하나 끼어 있었다. “이 책의 삼장이 좋습니다.”']},
+      love:{title:'북카페의 소설책',
+        text:'서점 안 북카페 구석에서 건우가 법서 대신 소설책을 읽고 있다. 표지를 가린 채 내가 다가오자 황급히 책을 덮는다. “이건 그냥… 사건 당사자의 심리를 이해하려는 겁니다.” 변명이 서툴러서 오히려 귀엽다.',
+        yes:['“재밌어요? 나도 읽어 보고 싶은데”라고 한다', '그는 망설이다 책을 내 쪽으로 밀었다. “가장 마음에 든 문장에 줄을 쳐 놓았습니다. 읽어 보십시오.” 줄 친 문장은 이별이 아니라 곁에 머무는 일에 대한 것이었고, 우리는 말없이 한참 같은 페이지를 보았다.'],
+        no:['“비밀로 해 줄게요, 대신 다 읽으면 줄거리 말해 줘요”라고 한다', '“…계약 성립입니다.” 건우는 안경을 고쳐 쓰며 진지하게 대답했다. 그날 밤 그가 문자로 줄거리를 열 줄 넘게 보내왔는데, 마지막 줄은 “당신 생각이 났습니다”였다.']},
+    },
+  },
+  yuchan: {
+    office:{
+      pre:{title:'점심 메뉴라는 버그',
+        text:'점심시간 골목에서 유찬이 노트북 가방을 멘 채 메뉴판 앞을 서성인다. 나를 발견하자 반갑지만 어색한 얼굴로 다가온다. “점심 메뉴 정하는 게 하루 중 제일 큰 버그예요. 재현율이 매일 백 퍼센트라서.” 말은 장난인데 눈은 진지하게 구조를 찾고 있다.',
+        yes:['“그럼 같이 정해요, 내가 고를게요”라고 한다', '내가 가게를 하나 골라 들어가자 그는 신기한 듯 따라왔다. “결정을 위임하니까 처리 속도가 엄청 빨라졌네요.” 맛있게 먹고 나오는 길에 그가 “내일도 위임해도 돼요?”라고 슬쩍 물었다.'],
+        no:['“저는 도시락 싸 왔어요, 맛있게 드세요”라고 한다', '“아, 그렇군요. 준비성이 완벽하네요.” 유찬은 머쓱하게 머리를 긁적이며 물러났다. 오후에 메신저로 “점심은 결국 김밥으로 해결. 오류 없음”이라는 메시지가 와 있었다.']},
+      love:{title:'퇴근 커밋',
+        text:'퇴근길 건물 앞에서 유찬이 노트북 가방을 멘 채 휴대폰 화면을 보여 준다. 오늘 일정 끝이라는 의미의 이모지 하나가 찍혀 있다. “오늘은 일 끝, 병합 완료예요. 이제 남은 건 당신과 걷는 브랜치뿐이에요.” 얼굴이 빨개진 채로 용케 끝까지 말한다.',
+        yes:['“그 브랜치, 지금 같이 걸어요”라며 나란히 걷는다', '그는 입을 벌린 채 한 박자 늦게 웃었다. “…이 정도 성공률이면 배포해도 되겠네요.” 걷는 내내 우리 손등이 스쳤고, 그가 먼저 슬쩍 한 걸음 가까이 붙었다.'],
+        no:['“오늘은 일찍 쉬어요, 내일 이어서 걸어요”라고 한다', '“알겠어요, 내일 이어서 실행하는 걸로.” 유찬은 순순히 가방끈을 고쳐 멨다. 헤어질 때 휴대폰으로 작은 별 하나가 도착했다. 그의 방식대로의 굿나잇이었다.']},
+    },
+    night:{
+      pre:{title:'편의점 컵라면 비교',
+        text:'야식 거리 편의점 진열대 앞에서 유찬이 컵라면 두 개를 손에 들고 비교 중이다. 나를 보고 반가워하며 둘 다 내민다. “이쪽은 면발, 이쪽은 국물이 좋대요. 근데 둘 다 사면 성능이 중복되니까 고민이에요.” 야근을 마치고 나온 얼굴이 피곤한데도 눈은 반짝인다.',
+        yes:['“하나씩 사서 나눠 먹어요”라고 한다', '그는 둘의 장점을 합친 최적해라며 감탄했다. 편의점 앞 테이블에 나란히 앉아 면과 국물을 바꿔 먹다 보니 서로의 젓가락이 부딪혔다. “…이건 예상 못 한 이벤트 발생이네요.” 그가 웃으며 시선을 피했다.'],
+        no:['“저는 이미 저녁 먹었어요, 하나만 골라요”라고 한다', '“그럼 면발 쪽으로 최종 결정.” 유찬은 결정 하나에 뿌듯해하며 계산대로 갔다. 나오는 길에 작은 젤리 봉지를 내밀었다. “골라 준 값이에요.”']},
+      love:{title:'꼬치 포장마차의 정상 동작',
+        text:'야식 거리 포장마차 의자에 유찬과 나란히 앉아 꼬치를 고르고 있다. 그는 주문서를 받아 들고 진지하게 체크박스를 채우는 척한다. “오늘은 당신 입맛에 맞춰서 최적화했어요. 이건 매운맛 한 개, 순한맛 한 개, 오류 없음.”',
+        yes:['“믿고 먹어 볼게요”라며 한 입 베어 문다', '맛있다고 하자 그가 안도한 듯 웃으며 소스가 묻은 내 입가를 가리켰다. “…정상 동작 확인.” 닦아 주려던 손을 멈춘 채 귀까지 빨개진 모습이 사랑스러웠다.'],
+        no:['“오늘은 내가 주문할게요”라며 주문서를 가져온다', '“위임 완료.” 유찬은 순순히 주문서를 넘겼다. 내가 고른 꼬치가 나오자 그는 한 입 먹고 눈을 크게 떴다. “이건 내 알고리즘에 없던 조합인데 되게 좋네요.”']},
+    },
+  },
+  ujin: {
+    museum:{
+      pre:{title:'전시장의 색 이름',
+        text:'미술관 직물 전시실에서 우진이 유리 진열장 앞에 허리를 숙이고 서 있다. 손끝은 허공에서 천의 결을 따라 움직이고 있다. 나를 알아보자 낮게 말한다. “이 쪽빛, 이름이 거짓말을 안 해요. 한 번 봐 봐요.”',
+        yes:['옆에 서서 같은 색을 오래 바라본다', '한참 후 우진이 조용히 말했다. “이 색은 시간이 지나도 물이 안 빠지는 사람 같아요.” 나란히 서 있는 동안 우리 팔이 거의 닿을 만큼 가까웠고, 그는 거기서 한 걸음도 물러나지 않았다.'],
+        no:['“저는 옆 전시실부터 둘러볼게요”라고 한다', '“그래요, 천천히 둘러봐요. 마음에 드는 색 하나 찾으면 알려 줘요.” 우진은 부드럽게 웃으며 다시 진열장으로 몸을 돌렸다. 나가는 길 출구에서 그가 작은 엽서 한 장을 건넸다. 쪽빛이었다.']},
+      love:{title:'소매와 같은 색',
+        text:'미술관 전시실에서 우진이 그림 앞에 서 있다가 내 쪽을 돌아본다. 그의 시선이 내 소매 끝에 머무른다. “이 그림 속 회청색이요, 지금 입은 옷이랑 같은 색이에요.” 그림과 나를 번갈아 보는 눈이 다정하다.',
+        yes:['“정말요? 나란히 서 볼게요”라며 그림 옆에 선다', '그는 한 걸음 물러서서 이마를 살짝 기울여 한참 나를 봤다. “…역시 색은 거짓말을 안 하네요. 이 그림보다 당신 쪽이 더 선명해요.” 말을 마치고 어색한 듯 시선을 천장으로 돌렸다.'],
+        no:['“우연이겠죠, 설명서나 읽을래요”라고 웃는다', '“우연도 색이 맞아야 생기는 거예요.” 우진은 부드럽게 말하고는 설명서를 같이 들여다보았다. 종이 위에서 손끝이 스치자 둘 다 못 본 척 같은 줄을 읽었다.']},
+    },
+    mall:{
+      pre:{title:'스카프 매대의 손끝',
+        text:'백화점 잡화 코너 스카프 매대 앞에서 우진이 천을 하나하나 손끝으로 확인하고 있다. 내가 지나가자 고개도 들지 않고 말한다. “지금 걸음 소리가 연한 베이지 같네요. 이쪽으로 와 봐요, 이 천 만져 봐요.”',
+        yes:['다가가서 천을 직접 만져 본다', '부드러운 결이 손바닥에 감겼다. 우진은 내 반응을 보고 만족한 듯 조용히 웃었다. “그 표정이면 됐어요. 이 천은 당신 같은 사람이 만지면 더 예뻐져요.”'],
+        no:['“구경만 할게요, 오늘은 사지 않을 거예요”라고 한다', '“구경도 중요한 작업이죠.” 우진은 천을 접어 매대에 돌려놓았다. 다음에 필요하면 같이 고르자는 말을 아주 작게 덧붙였다.']},
+      love:{title:'목에 둘러 주는 색',
+        text:'백화점 매장에서 우진이 스카프 두 장을 양손에 들고 나를 앞에 세운다. 어느 쪽이 어울리는지 한참 저울질한다. “이쪽은 낮 같고, 이쪽은 저녁 같아요. 오늘의 당신은 어느 쪽이에요?”',
+        yes:['“저녁 쪽이요”라며 목을 내민다', '그는 숨을 고르며 스카프를 내 목에 천천히 둘러 매듭을 지어 주었다. 손등이 목선 가까이 스치자 우리 둘 다 움직임을 멈췄다. “…역시 이 색이에요.” 그가 거울 속 나를 오래 바라봤다.'],
+        no:['“낮 쪽이요, 일할 때 어울리게요”라고 말한다', '“좋은 선택이에요. 일하는 당신 얼굴이 제일 단단해서 그 색이 맞아요.” 우진은 스카프를 접어 내 손에 얹어 주었다. 내 말을 이렇게 오래 기억해 주는 사람이 곁에 있다는 게 새삼스러웠다.']},
+    },
+  },
+};
+
+// 도시 산책: 졸업 뒤에는 학교 대신 시내 8곳을 돌아다닌다(스케줄 칸을 쓰지 않고 한 달 3번). 장소에서 쇼핑도 한다. ENGINE 구간(DOM 금지)
+// 장면 글은 city_friends.js (CT_FRIEND[장소]), city_lovers_a/b/c.js (CT_LOVER_A/B/C[인물][장소] = {pre, love})
+const CITY_PLACES = {
+  office: {name:'회사 근처', icon:'🏢', cost:0, hp:-2, stress:-1, eff:{work:1.4, bond:0.6},            desc:'점심 골목과 퇴근길 횡단보도. 동료나 아는 얼굴을 마주치기 쉬워요.'},
+  cinema: {name:'영화관',   icon:'🎬', cost:0, hp:0,  stress:-5, eff:{sense:1.2, self:0.8},            desc:'팝콘 냄새와 어두운 객석. 혼자도, 둘이도 좋은 곳.'},
+  museum: {name:'미술관',   icon:'🖼️', cost:0, hp:1,  stress:-6, eff:{sense:1.4, know:0.8},            desc:'조용한 전시실. 마음이 느려지는 곳이에요.'},
+  mall:   {name:'백화점',   icon:'🛍️', cost:0, hp:-1, stress:-4, eff:{charm:1.2, sense:0.6},           desc:'쇼윈도와 에스컬레이터. 구경만 해도 기분이 풀려요.'},
+  beauty: {name:'뷰티 스토어', icon:'💄', cost:0, hp:0,  stress:-4, eff:{charm:1.5, sense:0.5},           desc:'샘플을 발라 보고 수다를 떠는 곳. 요즘 유행이 다 모여 있어요.'},
+  books:  {name:'서점',     icon:'📖', cost:0, hp:1,  stress:-4, eff:{know:1.6, ins:0.8},              desc:'책 냄새가 나는 서가. 의외의 사람을 만나기도 해요.'},
+  river:  {name:'한강공원', icon:'🌉', cost:0, hp:3,  stress:-8, eff:{self:1.4, dare:0.5},             desc:'강바람과 돗자리. 걷기만 해도 숨이 트여요.'},
+  night:  {name:'야식 거리', icon:'🌃', cost:0, hp:-1, stress:-6, eff:{bond:1.4, neg:0.6},              desc:'불 켜진 포장마차와 골목. 밤에 마음이 풀리는 사람들이 모여요.'},
+};
+const CITY_KEYS = Object.keys(CITY_PLACES);
+const cityOn = S => S.m >= CAMPUS_END;                      // 졸업하면 캠퍼스 대신 도시
+const CT_LOVER_ALL = () => Object.assign({}, typeof CT_LOVER_A !== 'undefined' ? CT_LOVER_A : {}, typeof CT_LOVER_B !== 'undefined' ? CT_LOVER_B : {}, typeof CT_LOVER_C !== 'undefined' ? CT_LOVER_C : {});
+for(const key of CITY_KEYS){ const p = CITY_PLACES[key], id = 'ct_' + key; ACTS[id] = {id, ct:key, slots:1, cat:'캠퍼스', icon:p.icon, name:p.name, desc:p.desc, cost:0, eff:{}}; }
+
+// 이 장소를 추천할 만한 사람들: 이미 알고 있고, 이 장소를 단골로 하는 남자 주인공
+function cityRecommend(S, place){
+  const LV = CT_LOVER_ALL(), out = [];
+  for(const id of Object.keys(LV)){
+    const set = LV[id][place], v = S.love[id]; if(!set || !LOVERS[id] || !v) continue;
+    if(v.stage === -9 || v.stage === -2 || v.stage > 2) continue; out.push(id);
+  }
+  return out.sort((a, b) => S.love[b].aff - S.love[a].aff);
+}
+
+function cityVisit(S, key){
+  const p = CITY_PLACES[key], ch = [], out = {id:'ct_' + key, ch, note:'', place:key};
+  S.cpLeft = Math.max(0, cpLeft(S) - 1);
+  if(p.hp) bump(S, 'hp', Math.round(p.hp / 2), ch);
+  if(p.stress) bump(S, 'stress', Math.round(p.stress / 2), ch);
+  const e = {}; for(const k in p.eff) e[k] = p.eff[k] * 0.5; fx(S, e, ch);
+  out.enc = cityEncounter(S, key, ch) || cityQuiet(S, key, ch); out.note = p.desc;
+  return out;
+}
+function cityQuiet(S, place, visitCh){
+  const p = CITY_PLACES[place], line = pick(['오늘은 아는 얼굴이 보이지 않았다. 그래도 도시의 소음이 오히려 편했다.', '한참을 걸었지만 마주친 사람은 없었다. 혼자 걷는 퇴근길도 나쁘지 않다.', '아무도 마주치지 않았다. 대신 쇼윈도에 비친 내 모습이 생각보다 괜찮아 보였다.']);
+  return {id:`ct_q_${place}_${S.m}_${Math.floor(R() * 1e4)}`, speaker:'', title:p.name, place:'city', img:`art/ct_${place}.webp`, text:S => `${p.desc}\n\n${line}`,
+    choices:[{label:'다음에 또 와야지', sub:'', run(S){ return {text:'한 바퀴 돌고 나니 머리가 한결 가벼워졌다.', chips:(visitCh || []).slice()}; }}]};
+}
+function cityEncounter(S, place, visitCh){
+  const LV = CT_LOVER_ALL(), FR = typeof CT_FRIEND !== 'undefined' ? CT_FRIEND : {};
+  if(R() < 0.15) return null;
+  const cands = [];
+  for(const id of Object.keys(LV)){
+    const set = LV[id][place], v = S.love[id]; if(!set || !LOVERS[id] || !v) continue;
+    if(v.stage === -9 || v.stage === -2 || v.stage > 2 || v.cpAt === S.m) continue;
+    const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3.2 + v.aff / 20, kind:'lover', id, sc});
+  }
+  (FR[place] || []).forEach(sc => cands.push({w:2.2, kind:'friend', sc}));
+  if(!cands.length) return null;
+  const c = weightedPick(cands), pl = CITY_PLACES[place];
+  if(c.kind === 'lover' && typeof loverStoryFor === 'function' && R() < 0.6 && S.m - (S.lsAt == null ? -9 : S.lsAt) >= 1){ const st = loverStoryFor(S, c.id); if(st){ S.lsAt = S.m; S.love[c.id].cpAt = S.m; return st; } }
+  const sc = c.sc;
+  if(c.kind === 'friend') return {id:`ct_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'city', img:`art/ct_${place}.webp`, cut:CP_CUT[sc.who] || null, text:S => sc.text,
+    choices:[
+      {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch, mood:'shy'}; }},
+    ]};
+  const id = c.id, lv = LOVERS[id];
+  return {id:`ct_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:`${pl.name} · ${sc.title}`, place:'city', img:`art/ct_${place}.webp`, cut:id, text:S => sc.text,
+    choices:[
+      {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch, mood:'shy'}; }},
+    ]};
+}
+
+// ───── 쇼핑: 장소별로 사고 싶은 것이 다르다. price 는 만원. who:true 면 함께 갈 사람(썸·연인)이 있을 때 그 사람 호감도 오른다 ─────
+const CITY_SHOP = {
+  office: [
+    {id:'lunch',   icon:'🍱', name:'동료와 점심 한 끼',  price:2,  desc:'관계 +1.2, 스트레스 -2.',                         fx:{bond:1.2, stress:-2}},
+    {id:'coffeeset', icon:'☕', name:'팀 커피 돌리기',   price:3,  desc:'관계 +1.5, 협상 +0.6.',                           fx:{bond:1.5, neg:0.6}},
+  ],
+  cinema: [
+    {id:'ticket1', icon:'🎟️', name:'영화표 한 장',      price:2,  desc:'혼자 보는 영화. 감각 +1.2, 스트레스 -8.',          fx:{sense:1.2, stress:-8}},
+    {id:'ticket2', icon:'🎫', name:'영화표 두 장',      price:4,  desc:'함께 볼 사람과. 호감 +3, 스트레스 -6.',            fx:{sense:0.8, stress:-6}, who:3},
+    {id:'popcorn', icon:'🍿', name:'팝콘 세트',         price:1,  desc:'스트레스 -2.',                                    fx:{stress:-2}},
+  ],
+  museum: [
+    {id:'exh1',    icon:'🖼️', name:'전시 관람권',       price:2,  desc:'감각 +1.6, 학식 +0.6.',                           fx:{sense:1.6, know:0.6}},
+    {id:'exh2',    icon:'🎨', name:'전시 관람권 두 장',  price:4,  desc:'함께 감상. 호감 +3, 감각 +1.',                     fx:{sense:1.0}, who:3},
+    {id:'catalog', icon:'📔', name:'전시 도록',         price:5,  desc:'학식 +1.5, 감각 +1.',                             fx:{know:1.5, sense:1}},
+  ],
+  mall: [
+    {id:'outfit',  icon:'👗', name:'새 옷 한 벌',       price:15, desc:'매력 +1.6, 나 +1.',                               fx:{charm:1.6, self:1}},
+    {id:'bag',     icon:'👜', name:'가죽 가방',         price:40, desc:'매력 +2.4, 나 +2.',                               fx:{charm:2.4, self:2}},
+    {id:'giftbox', icon:'🎁', name:'선물 세트',         price:8,  desc:'다음 데이트에서 호감 +5. 쓰면 사라져요.',          item:'gift'},
+  ],
+  beauty: [
+    {id:'skincare',icon:'🧴', name:'스킨케어 세트',     price:6,  desc:'매력 +1.2, 스트레스 -2.',                         fx:{charm:1.2, stress:-2}},
+    {id:'lip',     icon:'💄', name:'립 틴트',           price:2,  desc:'매력 +0.6, 나 +0.4.',                             fx:{charm:0.6, self:0.4}},
+    {id:'perfume', icon:'🌸', name:'향수',              price:25, desc:'매달 매력이 오르고 데이트 호감이 +1 더 오른다.',     item:'perfume'},
+  ],
+  books: [
+    {id:'novel',   icon:'📕', name:'소설책 한 권',      price:1,  desc:'감각 +0.6, 스트레스 -3.',                         fx:{sense:0.6, stress:-3}},
+    {id:'bookset', icon:'📚', name:'전공 서적 세트',    price:15, desc:'학식 +2.5, 통찰 +1 (최대 3회).',                   item:'books'},
+    {id:'notebook',icon:'📓', name:'다이어리와 펜',     price:2,  desc:'나 +1, 실무 +0.6.',                               fx:{self:1, work:0.6}},
+  ],
+  river: [
+    {id:'ramen',   icon:'🍜', name:'한강 라면',         price:1,  desc:'체력 +3, 스트레스 -4.',                           fx:{stress:-4}, hp:3},
+    {id:'bike',    icon:'🚲', name:'자전거 대여',       price:1,  desc:'함께 타요. 호감 +3, 체력 +2.',                     fx:{dare:0.5}, hp:2, who:3},
+    {id:'mat',     icon:'🧺', name:'돗자리와 간식',     price:3,  desc:'스트레스 -6, 나 +0.6.',                           fx:{stress:-6, self:0.6}},
+  ],
+  night: [
+    {id:'late',    icon:'🍢', name:'야식 한 상',        price:3,  desc:'체력 +3, 스트레스 -6.',                           fx:{stress:-6}, hp:3},
+    {id:'dinner2', icon:'🍻', name:'둘이 한잔',         price:6,  desc:'함께한 사람과 호감 +3, 스트레스 -5.',               fx:{stress:-5}, who:3},
+    {id:'taxi',    icon:'🚕', name:'택시로 귀가',       price:2,  desc:'체력 +2. 집에 편하게 간다.',                       fx:{}, hp:2},
+  ],
+};
+// 같이 간 사람: 공식 연인이 있으면 그 사람, 없으면 호감이 가장 높은 썸·연인
+function cityCompanion(S){
+  const off = typeof officialOf === 'function' ? officialOf(S) : null; if(off && S.love[off] && S.love[off].stage >= 1) return off;
+  const c = Object.keys(S.love).filter(i => { const v = S.love[i]; return v && v.stage !== -9 && v.stage !== -2 && v.stage >= -1 && v.stage <= 2; }).sort((a, b) => S.love[b].aff - S.love[a].aff);
+  return c[0] || null;
+}
+// 구입: 실패하면 안내 문구, 성공하면 null (결과 문장은 S._shopNote)
+function cityBuy(S, place, id){
+  const it = (CITY_SHOP[place] || []).find(x => x.id === id); if(!it) return '없는 물건이에요';
+  if(!S.hired) return '취업한 뒤에 쇼핑할 수 있어요';
+  if(S.cash < it.price) return '자금이 모자라요';
+  if(it.item){ const r = buyItem(S, it.item); if(r) return r; S._shopNote = `${ITEMS[it.item].name}을(를) 샀다.`; return null; }
+  let who = null; if(it.who){ who = cityCompanion(S); if(!who) return '함께할 사람이 아직 없어요'; }
+  S.cash -= it.price; const ch = [];
+  if(it.fx && Object.keys(it.fx).length) fx(S, it.fx, ch);
+  if(it.hp) bump(S, 'hp', it.hp, ch);
+  if(who) addAff(S, who, it.who + (owned(S, 'perfume') ? 1 : 0), ch);
+  S._shopNote = `${it.name}을(를) 샀다.` + (who ? ` ${LOVERS[who].name}와(과) 함께였다.` : '');
+  return null;
 }
 
 // 승진·연봉·보너스·장학금·상점. ENGINE 구간(DOM 금지)
@@ -4648,6 +4724,846 @@ function givePiece(S, ch){ const st = SS(S); st.pieces = Math.min(10, st.pieces 
 function rivalMood(S, d, ch){ const st = SS(S); const b = st.rival; st.rival = clamp(st.rival + d, -10, 10); if(ch) push(ch, `${RIVAL} 관계`, st.rival - b); }
 const rivalState = S => { const r = SS(S).rival; return r >= 4 ? 'ally' : r <= -4 ? 'enemy' : 'neutral'; };
 
+
+// 특별 이벤트 A: 서하린 삼각관계 · 1학년 MT · 신입 환영회. ENGINE 구간(DOM 금지)
+// SPECIAL 이벤트는 cond 가 맞으면 그 달에 우선 나온다(한 번만). 로컬 도구는 _sx 접두어.
+
+// 효과 → 칩 순으로 결과 객체를 만든다. more: {aff:[id,Δ], rv:Δ, mood:'shy', run(ch)}
+const _sxR = (S, o, text, more) => {
+  const ch = [], m = more || {};
+  if(m.aff) addAff(S, m.aff[0], m.aff[1], ch);
+  if(o) fx(S, o, ch);
+  if(m.rv) rivalMood(S, m.rv, ch);
+  if(m.run) m.run(ch);
+  const out = {text, chips:ch};
+  if(m.mood) out.mood = m.mood;
+  return out;
+};
+// ── 삼각관계 도우미 ──
+const _sxId = S => SF(S).triWho || triMan(S);
+const _sxM = S => { const id = _sxId(S) || 'minjun'; return {id, n:LOVERS[id].name, cp:isCouple(S, id)}; };
+const _sxLive = (S, id) => !!id && !!LOVERS[id] && isMet(S, id) && S.love[id].stage !== 3; // 아직 이어지고 있는 상대
+const _sxStart = S => { const id = triMan(S); return !!id && _sxLive(S, id); };
+const _sxNext = (prev, gap) => S => { const id = SF(S).triWho; return afterEv(S, prev, gap) && _sxLive(S, id); };
+// 인물마다 흔들릴 때의 말투
+const _sxVoice = {
+  jaewoo:'…둘 다 나한테는 소중한 사람이라서, 이런 건 처음이야. 내 꿈 얘기만 하던 내가 누구 마음을 이렇게 오래 생각해 본 적이 없거든.',
+  minjun:'나, 이런 거 잘 못하는 거 알잖아. …근데 가만히 있으면 안 될 것 같아서, 도시락 싸는 것보다 어렵네.',
+  hajin:'솔직히 말할게. 나 지금 정리 못 하고 있어. 회사 일은 잘만 정리하는 대표가 이래도 되나 싶다.',
+  taeoh:'천천히 생각하고 싶은데… 두 분이 기다려 주질 않네요. 아니, 기다려 주고 있어서 더 미안한 걸지도요.',
+  jihu:'…곤란하군요. 이런 사안에는 익숙하지 않습니다. 변명처럼 들리겠지만, 가볍게 대하고 있지는 않습니다.',
+  dohyun:'아, 씨, 나 이런 거 진짜 싫은데. …근데 도망은 안 간다. 도망치면 둘 다 다치니까.',
+  sian:'시나리오라면 쉬웠을 텐데요. 현실은 대사가 정해져 있지 않아서, 저도 다음 문장이 안 나옵니다.',
+  geonwoo:'…정리해서 말씀드리려고 했습니다. 그런데 정리가 되질 않습니다. 이런 적은 처음이라서요.',
+  yuchan:'에러가 두 개 동시에 떠. 어느 쪽부터 잡아야 할지 모르겠어. 하나 고치면 다른 쪽이 죽을 것 같아서.',
+  ujin:'두 가지 색이 한 천에 번지면… 어느 쪽도 원래 색이 아니게 되잖아요. 그게 제일 무서워요.'
+};
+const _sxIda = n => josa(n, '이다', '다');
+
+// ════════ 특별 이벤트 ════════
+const SPECIAL_A = [
+// ════════ 신입 환영회 ════════
+(() => {
+  const V = {
+    beauty:{where:'회사 근처의 와인 바', mood:'화사한 조명 아래 잔이 부딪히는데, 이야기는 전부 매출과 다음 시즌 트렌드다', stunt:'신제품 슬로건 즉석 짓기', senior:'옆자리 선배가 내 립 색을 슬쩍 보고는 “발색 좋네, 근데 오늘은 다 지워질 거야”라며 웃는다'},
+    pd:{where:'촬영팀 단골 고깃집', mood:'불판 연기 속에서 소주잔이 줄지어 돌고, 막내는 가위와 집게를 쉬지 않고 잡는다', stunt:'촬영 현장 성대모사', senior:'옆자리 선배가 슬레이트 치는 시늉을 하며 “컷, 첫 잔 다시 가자”라고 한다'},
+    writer:{where:'방송국 뒤편 포장마차', mood:'작가실 사람들이 대사 같은 농담을 주고받고, 잔이 비면 이야기가 하나씩 채워진다', stunt:'즉석 한 줄 대사 이어 쓰기', senior:'옆자리 선배 작가가 내 얼굴을 한참 보더니 “눈이 이야기를 담고 있네”라고 평한다'},
+    actor:{where:'연습실 근처의 회식집', mood:'잔보다 시선이 먼저 도는 자리다. 누구나 서로의 표정과 평판을 곁눈으로 살핀다', stunt:'30초 즉석 연기', senior:'옆자리 선배 배우가 고개를 기울이고 “카메라 앞에선 어떻게 웃어?”라고 묻는다'},
+    lawyer:{where:'사무실 옆 한정식집의 별실', mood:'목소리는 낮고 잔은 정확히 칠 부만 채워진다. 건배 한 번에도 격식이 있다', stunt:'판례 퀴즈', senior:'옆자리 시니어가 건배사 대신 “오늘 들은 이야기는 이 방 안에서만”이라고 말한다'},
+    dev:{where:'사무실 근처의 치킨 호프', mood:'맥주잔 옆에 노트북 스티커가 굴러다니고, 대화는 장애와 배포 이야기로 흘러간다', stunt:'장애 변명 즉흥 발표', senior:'옆자리 선배가 코드 리뷰하듯 내 말을 한 줄씩 짚으며 고개를 끄덕인다'},
+    designer:{where:'작업실 아래층의 선술집', mood:'원단 샘플과 스케치북이 안주 접시 사이에 섞여 있고, 모두의 손끝에 색이 묻어 있다', stunt:'냅킨에 3분 스케치', senior:'옆자리 선배가 내 소매 단을 쓱 만져 보고는 “바느질 보는 눈이 있네”라고 한다'},
+    other:{where:'사무실 근처의 단골 식당', mood:'새로 들어온 사람을 살피는 눈이 열댓 개, 잔은 쉬지 않고 돈다', stunt:'즉석 장기자랑', senior:'옆자리 선배가 내 첫인상을 묻지도 않았는데 평가하기 시작한다'}
+  };
+  const vo = S => V[S.track] || V.other;
+  const co = S => (CAREERS[S.track] && CAREERS[S.track].company) || '회사';
+  const rk = S => rankName(S) || '신입';
+  return {id:'sp_welcome', once:true,
+    cond:S => !!S.hired && S.hiredAt != null && !S.switched && S.m >= S.hiredAt && S.m - S.hiredAt <= 1 && !inLawSchool(S),
+    speaker:'', title:'신입 환영회', place:'night', img:'art/ct_night.webp',
+    beats:[
+      '출근한 지 얼마 안 된 어느 저녁. 퇴근 시간이 되자 팀 전체가 일어났다. 팀장이 손뼉을 한 번 치며 말한다. “오늘은 신입 환영회. 빠지면 서운하지.”',
+      '질문은 없었다. 이런 문장 뒤에는 거절하는 선택지가 없다는 걸, 마흔의 나는 몸으로 안다. 수백 번 견뎠던 자리다. 첫 잔의 압박, 두 번째 잔의 본심, 세 번째 잔부터의 후회까지.',
+      '그래도 이번엔 다르다. 같은 자리라도 이번엔 내가 어떻게 앉을지 고를 수 있다.'
+    ],
+    text:S => { const v = vo(S); const hard = S.stress >= 60; return `${co(S)}의 신입 ${josa(rk(S), '이', '가')} 된 나를 위한 자리는 ${v.where}에 마련돼 있다. ${v.mood}. ${v.senior}. 팀장이 내 앞에 빈 잔을 놓고 가득 채우며 말한다. “첫 잔은 받는 거지?” 분위기가 달아오르자 누군가 외친다. “신입, ${v.stunt}!” 모두의 시선이 나에게 온다. ${hard ? '요즘 쌓인 피로가 어깨에 무겁게 얹혀 있다.' : '마흔의 기억이 말한다. 이 몇 분이 앞으로 일 년의 공기를 정한다고.'} 어떻게 할까?`; },
+    choices:[
+      {label:'분위기를 이끈다', sub:'장기자랑 · 일 +· 스트레스 +3', run(S){
+        const v = vo(S); const ok = (S.st.charm + S.st.dare) / 2 + rand(-10, 10) >= 36;
+        if(ok){ S.album.push('신입 환영회에서 장기자랑으로 팀의 마음을 샀다'); return _sxR(S, {work:2.5, bond:2, stress:3, hp:-4, cash:-3}, `나는 잔을 들고 일어나 ‘${v.stunt}’을 시작한다. 처음엔 어색했지만 세 마디째에 웃음이 터졌고, 팀장이 무릎을 치며 “이 신입 물건이네!” 하고 외쳤다. 옆자리 선배가 슬쩍 다가와 속삭인다. “오늘부터 네 편 한 명 늘었다.” 대신 목은 쉬었고 지갑도 가벼워졌다.`, {mood:'happy'}); }
+        S.album.push('신입 환영회에서 장기자랑에 나섰다가 크게 구르기도 했다'); return _sxR(S, {work:1, bond:1, stress:5, hp:-4, self:-1, cash:-3}, `‘${v.stunt}’에 나섰지만 중간에 말이 꼬였다. 정적이 잠깐 흘렀고, 얼굴이 불에 덴 듯 뜨겁다. 그러다 팀장이 “용기는 합격!” 하고 잔을 부딪혀 주자 웃음이 번졌다. 잘하지는 못했지만, 도망치지 않은 신입으로는 기억될 것 같다.`, {mood:'shy'}); }},
+      {label:'조용히 한 잔만 받는다', sub:'통찰 · 나 +1 · 일 +1', run(S){
+        const v = vo(S);
+        if(S.st.ins >= 45){ S.album.push('신입 환영회에서 조용히 팀의 지형을 읽었다'); return _sxR(S, {ins:1, self:1, work:2, stress:1}, `첫 잔만 받고 나머지는 물로 대신한다. 그 덕에 눈이 맑다. 팀장 말에 누가 먼저 웃는지, 누가 잔을 비우지 않는지, 어느 선배끼리 눈을 피하는지가 한눈에 읽힌다. ${v.senior}. 이 사람은 나중에 내 편이 될 사람이다. 마흔의 눈이 이럴 때는 쓸모가 있다.`); }
+        return _sxR(S, {ins:1, self:1, work:1, stress:1}, `“죄송한데 오늘은 첫 잔만 받겠습니다.” 팀장은 눈썹을 올렸지만 곧 “그래, 천천히 가자” 하고 넘어갔다. 장기자랑은 다른 신입에게로 돌아갔다. 나는 맞장구를 치며 사람들의 이야기를 들었다. 눈에 띄지는 않았지만, 말을 잘 들어 주는 신입이라는 인상은 남은 듯하다.`); }},
+      {label:'일찍 일어난다', sub:'스트레스 -4 · 나 +2 · 일 -2', run(S){
+        if(S.st.neg >= 45){ return _sxR(S, {stress:-4, self:2, work:-1}, `“내일 아침 자료가 남아 있어서, 이만 먼저 일어나겠습니다. 이 자리 초대해 주셔서 감사합니다.” 말투와 타이밍을 계산해서 말하니 팀장도 “책임감 있네” 하고 보내 준다. 문 밖의 밤공기가 시원하다. 아쉬움은 조금 남지만 마음은 가볍다.`); }
+        S.album.push('신입 환영회를 일찍 빠져나왔다'); return _sxR(S, {stress:-4, self:2, work:-2, bond:-1}, `“죄송합니다, 먼저 가보겠습니다.” 일어서는 순간 몇몇 시선이 서늘하게 따라온다. 팀장이 “요즘 애들은…” 하고 중얼거리는 소리도 들린다. 문을 나서자 밤공기가 시원하지만, 마음 한켠에는 내일 아침 출근길의 어색함이 미리 놓여 있다.`, {mood:'serious'}); }}
+    ]};
+})(),
+
+// ════════ 1학년 MT ════════
+(() => {
+  // 이미 만난 남주가 있으면 스치듯 등장
+  const cameo = S => {
+    const ids = Object.keys(LOVERS).filter(i => isMet(S, i)).sort((a, b) => affOf(S, b) - affOf(S, a));
+    const id = ids[0]; if(!id) return '';
+    if(id === 'minjun') return '주머니 속 휴대폰이 짧게 떤다. 한민준이다. “MT 간다며. 밥은 챙겨 먹어.” 짧은 문장이 이상하게 마음을 데운다.';
+    if(id === 'jaewoo') return '주머니 속 휴대폰이 짧게 떤다. 서재우의 메시지다. “MT 재밌게 놀아. 술은 적당히.” 웃을 때 사라지던 눈이 떠오른다.';
+    return `${LOVERS[id].name}의 안부 메시지가 도착해 있다. 짧은 한 줄인데도 한참 들여다본다.`;
+  };
+  const lines = [
+    {id:'sp_mt_1', once:true, cond:S => S.m >= 2 && S.m <= 4,
+      speaker:'서하린', title:'MT, 이어달리기', place:'campus', img:'art/cp_field.webp', cut:'harin', cut2:'soyeon',
+      beats:[
+        '과 전체 MT 날. 대절 버스 창가에 앉자마자 지수가 마이크를 잡았다. “자, 다 같이 노래 한 곡씩! 거부권 없음!” 버스가 흔들릴 때마다 풍선처럼 웃음이 튕긴다.',
+        '태윤은 출발한 지 오 분 만에 내 어깨 쪽으로 기울어 잠들었다. 소연은 그 머리를 슬쩍 반대편으로 밀며 간식 봉지를 뜯는다. 마흔의 나는 이런 소란을 그리워했다는 걸, 소란 한가운데서야 안다.',
+        '펜션에 도착하자 서하린은 제일 먼저 조 편성표를 확인하고 있었다. 일정표를 사본까지 챙긴 사람이다. “같은 팀이에요. 대항전에서 발목 잡지 말아 주세요.” 인사인지 경고인지 모를 말투였다.'
+      ],
+      text:S => `오후 레크리에이션의 마지막 종목은 팀 이어달리기다. ${cameo(S)} 우리 팀은 근소하게 앞서 있다. 그런데 마지막 주자인 하린이 코너에서 발을 헛디뎌 주저앉았다. 발목을 잡은 손이 떨리는데도 그녀는 “괜찮아요. 뛰겠습니다” 하며 일어서려 한다. 소연이 걱정스레 나를 본다. 모두의 시선이 나를 향한다. 이 순간, 나는 이기고 싶은가, 그녀 곁에 서고 싶은가.`,
+      choices:[
+        {label:'내가 대신 뛴다', sub:'체력 -6 · 하린 관계 +2', run(S){
+          SF(S).mtRace = 'carry';
+          const win = S.st.dare + S.hp / 3 + rand(-10, 10) >= 40;
+          return _sxR(S, {hp:-6, bond:1, charm:0.5}, `“앉아 있어요. 제가 뛸게요.” 하린을 부축해 앉히고 바통을 받았다. ${win ? '마지막 코너를 숨이 터지도록 달려 결승선을 먼저 끊었다. 환호 속에서 하린이 올려다본다.' : '아쉽게 간발의 차로 졌다. 그래도 우리 팀은 환호했다.'} “…이건 빚이에요.” 하린이 고개를 돌리며 말했다. 귀 끝이 붉다.`, {rv:2, mood:'shy'}); }},
+        {label:'곁에서 같이 천천히 완주한다', sub:'관계 +3 · 하린 관계 +1', run(S){
+          SF(S).mtRace = 'together';
+          return _sxR(S, {bond:3, self:1}, `나는 하린의 팔을 어깨에 두르고 한 걸음씩 걸었다. 팀은 꼴찌가 됐지만 소연과 지수가 끝까지 박수를 쳤다. “꼴찌네요.” 하린이 숨을 고르며 중얼거렸다. “…이상하게 기분은 나쁘지 않아요.” 입꼬리가 아주 조금 올라갔다.`, {rv:1, mood:'tender'}); }},
+        {label:'이기기 위해 바통을 넘긴다', sub:'일 +1 · 하린 관계 -2 · 나 -1', run(S){
+          SF(S).mtRace = 'win';
+          return _sxR(S, {work:1, self:-1, stress:2}, `나는 곁에 있던 지수에게 바통을 밀어 넘겼고, 지수는 질풍처럼 달려 우승을 가져왔다. 환호 속에서 하린은 혼자 절뚝이며 걸어 나왔다. “합리적인 판단이었어요.” 칭찬 같지만 눈은 웃지 않았다. 소연이 의미심장하게 나를 흘끗 본다.`, {rv:-2, mood:'serious'}); }}
+      ]},
+    {id:'sp_mt_2', once:true, cond:S => S.m >= 2 && S.m <= 5 && afterEv(S, 'sp_mt_1', 0),
+      speaker:'서하린', title:'MT, 모닥불과 고백 게임', place:'night', img:'art/cp_garden.webp', cut:'harin', cut2:'jisu',
+      beats:[
+        '밤. 펜션 마당에 장작이 쌓였고, 누군가 불을 붙이자 모두의 얼굴이 주황빛으로 물든다.',
+        '태윤이 기타를 잡았지만 코드를 세 개밖에 몰라서 같은 노래가 세 번 반복됐다. 지수가 박수를 치며 따라 부르고, 소연은 내 옆에서 손을 쬐며 조용히 웃는다.',
+        '분위기가 무르익자 누군가 종이컵을 돌렸다. “고백 게임 하자! 쪽지에 속마음 한 줄씩 써서 뽑는 거야. 뽑힌 사람은 진실 하나, 아니면 도전 하나!”',
+        '내 순서. 접힌 쪽지를 펼친다. 거기에는 이렇게 적혀 있다. ‘지금 가장 말하고 싶은데 못 한 말.’'
+      ],
+      text:S => { const r = SF(S).mtRace; const hz = r === 'carry' ? '낮의 일 때문인지 하린이 불꽃 너머에서 자꾸 이쪽을 본다.' : r === 'together' ? '하린이 불꽃 너머에서 낮보다 훨씬 편한 얼굴로 앉아 있다.' : r === 'win' ? '하린은 불빛이 닿지 않는 자리에서 팔짱을 낀 채 앉아 있다.' : '하린은 불꽃 너머에서 조용히 불을 보고 있다.'; return `모든 눈이 나에게 모였다. ${hz} 마흔의 비밀은 어디까지 말할 수 있을까. 거짓 없는 진실도, 장난 같은 도전도 고를 수 있다. 어쩌면 둘 다 아닌 방법도.`; },
+      choices:[
+        {label:'진실을 고른다', sub:'나 +2 · 관계 +3 · 하린 관계 +1', run(S){
+          S.album.push('MT 모닥불 앞에서 지금이 소중해서 무섭다고 털어놓았다');
+          return _sxR(S, {self:2, bond:3, stress:-3}, `“요즘 자주 무서워. 지금 이 시간이 갑자기 사라질까 봐. 너희랑 이렇게 있는 게 너무 소중해서.” 마흔의 비밀은 숨기고, 진심만 꺼냈다. 지수는 눈물을 글썽였고 소연은 말없이 내 손을 잡았다. 불꽃 너머의 하린이 아주 잠깐 고개를 숙이는 게 보였다.${S.st.ins >= 45 ? ' 그 입술이 “…알 것 같아요”라고 소리 없이 움직인 것 같기도 하다.' : ''}`, {rv:1}); }},
+        {label:'도전을 고른다 — 보고 싶은 사람에게 전화한다', sub:'도전 +1 · 호감 +4', run(S){
+          const ids = Object.keys(LOVERS).filter(i => isMet(S, i)).sort((a, b) => affOf(S, b) - affOf(S, a)); const id = ids[0];
+          if(id){ const n = LOVERS[id].name; return _sxR(S, {dare:1, stress:2}, `환호 속에서 휴대폰을 꺼내 ${n}에게 전화를 건다. 신호음 세 번 뒤, 낮은 목소리가 받았다. 나는 불빛을 등지고 말했다. “…보고 싶어서 걸었어요.” 건너편이 한참 조용하더니 “지금 어디야?” 하고 묻는다. 뒤에서 아이들이 비명을 질렀다. 얼굴이 불보다 뜨겁다.`, {aff:[id, 4], mood:'shy'}); }
+          return _sxR(S, {dare:1, bond:2, stress:-3}, `환호 속에서 휴대폰을 꺼내 엄마에게 전화를 건다. “엄마, 그냥… 보고 싶어서.” 건너편에서 엄마의 웃음이 번졌다. “얘가 술 마셨니?” 마흔의 내가 한참 못 했던 말을 이제야 했다. 모닥불이 번져 보였다.`); }},
+        {label:'자리를 빠져나와 불 뒤편으로 간다', sub:'하린 관계 +2 · 스트레스 -2', run(S){
+          const r = SF(S).mtRace;
+          const line = r === 'carry' ? '“낮의 일은… 고마웠어요. 빚은 갚을 거예요. 제 방식대로요.”' : r === 'together' ? '“꼴찌였는데 말이죠. 그렇게 오래 웃어 본 건 오랜만이었어요.”' : r === 'win' ? '“낮의 판단이 틀렸다고는 생각 안 해요. 다만… 합리적인 것과 다정한 것이 다르다는 건 알겠어요.”' : '“시끄러운 건 잘 못 견뎌서요. 그래도 오늘은 나쁘지 않았어요.”';
+          return _sxR(S, {stress:-2, self:1}, `웃음소리를 뒤로하고 펜션 뒤편으로 돌아가니, 장작 더미에 서하린이 혼자 앉아 있다. 모닥불 빛이 하트형 얼굴의 윤곽을 따라 일렁이고 주근깨가 평소보다 도드라져 보인다. 그녀는 놀란 듯 몸을 세우다가 이내 힘을 풀었다. ${line} 하늘에는 별이 많았다. 우리는 아무 말 없이 한참 같은 방향을 봤다.`, {rv:2, mood:'shy'}); }}
+      ]}
+  ];
+  return lines;
+})(),
+
+// ════════ 서하린 삼각관계 ════════
+{id:'sp_tri_1', once:true, cond:S => S.m >= 30 && _sxStart(S),
+  speaker:RIVAL, title:'창가 자리', place:'cafe', img:'art/ct_books.webp', cut:'harin',
+  beats:[
+    '오후, 익숙한 거리의 서점 카페. 창가 자리에서 낯익은 웃음소리가 들린다.',
+    '서하린이다. 하트처럼 갸름한 얼굴, 단정하게 틀어 올린 오번 머리, 코끝에 흩어진 주근깨. 세상에서 웃음을 가장 아끼는 사람이 지금 소리 내어 웃고 있다.',
+    '그녀의 맞은편에는 내가 아는 사람이 앉아 있다. 하린은 컵을 두 손으로 감싸 쥔 채, 자기도 모르게 몸을 앞으로 기울이고 있다.',
+    '마흔의 기억 속에 이런 장면은 없다. 서하린이 누군가를 이렇게 바라보던 얼굴은.'
+  ],
+  text:S => { const {n, cp} = _sxM(S); const rv = SS(S).rival; return `맞은편에 앉은 사람은 ${n}${_sxIda(n)}. ${cp ? '내 연인 앞에서 라이벌이 처음 보는 얼굴을 하고 있다.' : '내가 마음에 두고 있는 사람 앞에서 라이벌이 처음 보는 얼굴을 하고 있다.'} 가슴 한쪽이 따끔하다. ${rv >= 4 ? '하린과는 꽤 가까워졌는데도, 이 장면은 낯설다.' : rv <= -4 ? '하린과 틀어진 지금이라 더 신경이 쓰인다.' : '아직 이 감정에 이름을 붙이기 싫다.'} 어떻게 할까?`; },
+  choices:[
+    {label:'자연스럽게 다가가 합석한다', sub:'도전 · 하린 관계 -1', run(S){
+      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'join'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 처음 목격했다');
+      const bold = S.st.dare >= 45 || S.st.charm >= 50;
+      if(bold) return _sxR(S, {dare:1, charm:0.5, stress:2}, `“여기 자리 있죠?” 웃으며 의자를 당겨 앉았다. ${josa(n, '은', '는')} 반가운 얼굴로 자리를 내주었고, 하린의 웃음은 서리처럼 얼어붙었다. “…우연이네요.” 그녀가 컵을 천천히 내려놓았다. 작은 전쟁이 시작됐다는 걸 둘 다 알았다.`, {aff:[id, 2], rv:-1, mood:'serious'});
+      return _sxR(S, {stress:4}, `“저, 같이 앉아도…” 목소리가 생각보다 작게 나왔다. ${josa(n, '은', '는')} 웃으며 자리를 내주었지만 하린의 시선은 날카롭게 나를 훑었다. 대화는 어색한 침묵과 컵 부딪히는 소리로 채워졌다. 앉기만 했을 뿐, 이긴 기분은 아니다.`, {aff:[id, 1], rv:-1, mood:'serious'}); }},
+    {label:'못 본 척 돌아선다', sub:'스트레스 +3 · 나 -1', run(S){
+      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'avoid'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 목격하고 모른 척 지나쳤다');
+      return _sxR(S, {stress:3, self:-1}, `나는 문고리를 잡았다가 손을 뗐다. 안 들어가는 편이 어른스럽다고 스스로를 설득하며 거리로 나왔지만, 걸음이 이상하게 빨랐다. 유리창 너머에서 하린이 문득 고개를 들었다. 눈이 마주쳤는지는 확신할 수 없다. 다만 오늘 밤은 ${n}의 문자에 답장을 쓰다 지우다를 반복할 것 같다.`); }},
+    {label:'나중에 하린에게 담담히 묻는다', sub:'통찰 +1 · 하린 관계 +1', run(S){
+      const {id, n} = _sxM(S); SF(S).triWho = id; SF(S).triSaw = 'ask'; lvSet(S, id, 'triSeen', S.m); S.album.push('하린이 그에게 다가가는 걸 보고 직접 물어보았다');
+      return _sxR(S, {ins:1.5, stress:1}, `다음 날 복도에서 하린을 불러 세웠다. “어제 서점 카페에서 ${josa(n, '과', '와')} 계셨죠.” 하린의 주근깨가 붉게 번졌다. “…그게 서윤 씨와 무슨 관계죠?” 방어하듯 말했지만 눈은 흔들렸다. 나는 대답 대신 고개만 끄덕였다. 그것만으로도 서로 무엇을 확인했는지 알았다.`, {rv:1, mood:'shy'}); }}
+  ]},
+
+{id:'sp_tri_2', once:true, cond:_sxNext('sp_tri_1', 2),
+  speaker:RIVAL, title:'선전포고', place:'night', img:'art/ct_river.webp', cut:'harin',
+  beats:[
+    '삼 일 뒤, 해 질 무렵. 하린이 먼저 나를 불러냈다. 장소는 강변 산책로, 약속 시각 오 분 전에 이미 와 있는 사람답게 그녀는 벤치 옆에 꼿꼿이 서 있었다.',
+    '“용건부터 말씀드릴게요.” 목소리는 평소처럼 단정했다. 다만 손가락이 소매 끝을 계속 만지작거렸다.',
+    '“저, 좋아하게 된 것 같아요. 그 사람을요.” 처음 듣는 문장이었다. 서하린의 입에서 ‘것 같아요’라는 말이 나오다니.',
+    '“숨기고 접근하는 건 비겁하니까요. 알고 계시는 게 공정하다고 생각해서 말씀드려요. 정정당당하게 해요. 서로.”'
+  ],
+  text:S => { const {n, cp} = _sxM(S); const sw = SF(S).triSaw; return `하린이 눈을 피하지 않고 내 대답을 기다린다. ${cp ? `${n}${josa(n, '은', '는').slice(n.length)} 내 연인이라는 사실을 알면서도 한 선언이다. 뺏겠다는 말이 아니라, 마음을 속이지 않겠다는 말이라고 그녀는 덧붙였다.` : `아직 누구도 ${n}의 마음을 얻은 건 아니다.`} ${sw === 'avoid' ? '그날 모른 척 지나친 내가 새삼 부끄럽다.' : sw === 'join' ? '그날 합석했던 내 모습이 떠올라 조금 민망해진다.' : '그날 복도에서의 질문이 이 대화의 시작이었다.'} 코끝의 주근깨가 붉어진 게 보인다. 나는 뭐라고 답할까?`; },
+  choices:[
+    {label:'“좋아요. 정정당당하게.”', sub:'경쟁 · 도전 +1 · 하린 관계 +1', run(S){
+      SF(S).triStance = 'fight'; S.album.push('하린과 정정당당하게 겨루기로 약속했다');
+      return _sxR(S, {dare:1, stress:2}, `“좋아요. 정정당당하게. 거짓말도, 뒷말도, 몰래 하는 것도 없이요.” 하린이 손을 내밀었다. 악수는 서늘하고 짧았다. “약속했어요. 나중에 변명하지 마세요.” 그녀가 돌아서며 말했다. 나는 그 단정한 등을 보며 이상하게 이 사람을 싫어할 수 없다고 생각했다.`, {rv:1, mood:'serious'}); }},
+    {label:'“…난 물러설게요.”', sub:'양보 · 호감 -3 · 나 -2', run(S){
+      const {id} = _sxM(S); SF(S).triStance = 'yield'; S.album.push('하린 앞에서 한 걸음 물러서겠다고 말했다');
+      return _sxR(S, {self:-2, stress:3}, `나도 모르게 그 말이 나왔다. 하린의 표정이 굳었다. “양보받은 마음을 받으려고 이 말을 한 게 아니에요.” 목소리가 낮게 떨렸다. “그건… 저를 이기지도 못하는 사람 취급하는 거예요.” 그녀의 눈이 번쩍였다가 이내 흔들렸다. 물러선다는 건 상대에게 가장 아픈 모욕일 수도 있다는 걸 마흔의 나는 알았을 텐데.`, {aff:[id, -3], rv:2, mood:'serious'}); }},
+    {label:'“그 사람에게도 솔직히 말할 거예요. 당신의 선언까지.”', sub:'솔직 · 호감 +2 · 통찰 +1', run(S){
+      const {id} = _sxM(S); SF(S).triStance = 'open'; S.album.push('하린에게 그에게도 솔직히 말하겠다고 선언했다');
+      return _sxR(S, {ins:1, stress:2}, `“그건… 규칙에 없는데요.” 하린이 당황해서 말을 잃었다. “제 입으로 말해야 할 일이에요. 서윤 씨가 전해 주는 건 공정하지 않아요.” 나는 웃으며 고개를 끄덕였다. 마음을 숨기는 쪽이 오히려 비겁하다고 생각했을 뿐이다. 하린이 어이없다는 듯, 그러나 처음으로 웃었다.`, {aff:[id, 2], mood:'surprised'}); }}
+  ]},
+
+{id:'sp_tri_3', once:true, cond:_sxNext('sp_tri_2', 2),
+  speaker:RIVAL, title:'흔들리는 사람', place:'cafe', img:'art/ct_museum.webp', cut:'harin',
+  beats:[
+    '요즘 그의 말수가 줄었다. 약속 장소에 언제나 일찍 와 있던 사람이 이번에는 십 분 늦게 도착했다.',
+    '하린이 이미 마음을 전했다는 걸 안다. 그가 내 눈을 똑바로 보지 못하니까.',
+    '조용한 전시실 벤치. 그가 한참을 망설이다 입을 열었다.'
+  ],
+  text:S => { const {id, n, cp} = _sxM(S); const st = SF(S).triStance; const hes = _sxVoice[id] || '…나도 내 마음을 모르겠어. 두 사람 다 소중해서 더 어렵다.'; return `“${hes}” ${n}${josa(n, '은', '는').slice(n.length)} 두 사람 사이에서 흔들리고 있다는 사실을 숨기지 못한다. ${st === 'fight' ? '정정당당하자던 하린과의 약속이 떠오른다.' : st === 'yield' ? '물러선다고 말한 내 입이 얼마나 가벼웠는지 이제야 안다.' : st === 'open' ? '솔직히 말하겠다고 한 사람은 나다.' : ''} ${cp ? '연인의 흔들리는 눈을 보는 것은 생각보다 아프다.' : '마음을 확인하지 못한 사이에서 흔들리는 눈을 보는 것은 생각보다 아프다.'} 나는 어떻게 대답할까?`; },
+  choices:[
+    {label:'그의 마음을 존중한다며 한 걸음 물러선다', sub:'양보 · 호감 -2 · 하린 관계 +1', run(S){
+      const {id, n} = _sxM(S); SF(S).triTalk = 'step'; S.album.push('흔들리는 그에게 한 걸음 물러서겠다고 했다');
+      return _sxR(S, {self:1, stress:3}, `나는 담담하게 말했다. 어느 쪽을 고르든 그 마음을 존중하겠다고. ${n}${josa(n, '은', '는').slice(n.length)} 멍하니 나를 보다가 고개를 숙였다. 안도한 얼굴인지 서운한 얼굴인지 알 수 없었다. 돌아서는 길에 이상하게 눈이 시렸다. 이 선택이 옳았는지는, 아직 모르겠다.`, {aff:[id, -2], rv:1}); }},
+    {label:'같은 마음이라고, 하린에게 지지 않겠다고 말한다', sub:'경쟁 · 매력·도전 판정 · 호감 +', run(S){
+      const {id, n} = _sxM(S); SF(S).triTalk = 'push'; S.album.push('그에게 하린에게 지지 않겠다는 마음을 보여 주었다');
+      const ok = (S.st.charm + S.st.dare) / 2 + rand(-10, 10) >= 38;
+      if(ok) return _sxR(S, {dare:1, stress:2}, `“저도 같은 마음이에요. 그리고 서하린에게 지고 싶지 않아요.” 말하고 나서 얼굴이 뜨거워졌지만 시선은 피하지 않았다. ${n}${josa(n, '은', '는').slice(n.length)} 놀란 듯 눈을 크게 뜨더니 천천히 웃었다. “…그렇게 정면으로 말하는 사람은 처음이에요.” 흔들리던 눈빛이 잠시 나에게 멈췄다.`, {aff:[id, 5], mood:'shy'});
+      return _sxR(S, {stress:4}, `“저도 같은 마음이에요. 그리고… 하린한테 질 수 없어요!” 의욕이 앞서 목소리가 커졌다. ${n}${josa(n, '은', '는').slice(n.length)} 당황해서 주위를 둘러봤다. 진심은 전해졌지만 너무 밀어붙였다는 후회가 뒤늦게 올라온다. 그래도 마음은 숨기지 않았다.`, {aff:[id, 1], mood:'shy'}); }},
+    {label:'솔직히 불안하다고 털어놓는다', sub:'솔직 · 호감 +3 · 나 +1', run(S){
+      const {id, n} = _sxM(S); SF(S).triTalk = 'open'; S.album.push('그에게 솔직한 불안을 털어놓았다');
+      const deep = S.st.ins >= 40;
+      return _sxR(S, {self:1, bond:1}, `“솔직히 말하면 저도 불안해요. 하린이 대단한 사람이라는 걸 아니까요. 그래서 이기고 싶은 마음보다, 이 마음을 숨기지 않는 쪽을 고를게요.” ${n}${josa(n, '은', '는').slice(n.length)} 한참 말이 없다가 조용히 숨을 내쉬었다. ${deep ? '내 말의 이면까지 읽은 듯한 눈이었다. “…그 불안, 내가 더 크게 만들고 있었네요.”' : '“…고마워요, 말해 줘서.”'}`, {aff:[id, deep ? 5 : 3], mood:'tender'}); }}
+  ]},
+
+{id:'sp_tri_4', once:true, cond:_sxNext('sp_tri_3', 2),
+  speaker:RIVAL, title:'번진 소문', place:'rain', img:'art/cover.webp', cut:'harin',
+  beats:[
+    '월요일 아침부터 분위기가 이상했다. 내가 다가가면 대화가 뚝 끊긴다.',
+    '단체방과 복도에서 도는 이야기는 이랬다. 내가 하린 몰래 그에게 하린의 험담을 했고, 하린의 고백이 틀어진 것도 나 때문이라는 것.',
+    '사실이 아니다. 한 번도 입에 올린 적 없는 문장들이다. 그런데 누군가 그럴듯하게 짜 맞췄다. 마치 그날 그 자리에 있었던 것처럼.',
+    '점심 뒤, 하린이 아무 말 없이 나를 불러 세웠다. 얼굴이 전에 없이 하얗다. “확인하겠어요. 사실인가요?”'
+  ],
+  text:S => { const {n} = _sxM(S); const rv = SS(S).rival; return `하린이 잔뜩 굳은 얼굴로 서 있다. ${rv >= 3 ? '하지만 그 눈빛에는 믿고 싶은 마음이 보인다.' : rv <= -3 ? '눈빛에는 이미 결론을 내린 사람의 차가움이 있다.' : '눈빛은 나를 심판하려는 것과 믿으려는 것 사이에서 흔들린다.'} 이 소문은 곧 ${n}의 귀에도 들어갈 것이다. 해명하든 침묵하든, 지금 내 선택이 하린과 그 사람 모두에게 남는다.`; },
+  choices:[
+    {label:'출처를 거슬러 올라가 직접 해명한다', sub:'협상·통찰 판정 · 하린 관계 ↑', run(S){
+      const {id} = _sxM(S); const rv = SS(S).rival; S.album.push('번진 소문의 출처를 직접 찾아 해명했다');
+      const ok = (S.st.neg + S.st.ins) / 2 + (rv >= 3 ? 8 : 0) + rand(-10, 10) >= 38;
+      if(ok){ SF(S).triCleared = true; return _sxR(S, {neg:1, ins:1, stress:3}, `나는 소문이 처음 나온 단체방의 순서를 되짚고, 같은 자리에 있었다는 사람들의 말을 모아 하린 앞에 내밀었다. 알고 보니 누군가의 말을 잘못 전해 들은 것이 시작이었다. 하린은 한참 자료를 들여다보다가 고개를 숙였다. “…사과할게요. 확인도 없이 의심했어요.” 서하린이 먼저 사과하는 모습은 처음 본다.`, {aff:[id, 1], rv:2, mood:'shy'}); }
+      return _sxR(S, {neg:0.5, stress:5}, `자료를 모아 해명했지만 출처를 끝까지 잡지는 못했다. 하린은 고개를 끄덕였지만 반만 믿는 눈이었다. “일단은… 알겠어요.” 소문은 가라앉았으나 찜찜한 앙금이 남았다.`, {rv:0, mood:'serious'}); }},
+    {label:'대응하지 않고 시간에 맡긴다', sub:'스트레스 +4 · 나 +1', run(S){
+      const {id, n} = _sxM(S); const rv = SS(S).rival;
+      if(rv >= 3){ SF(S).triCleared = true; S.album.push('소문 속에서 하린이 먼저 나를 믿어 주었다'); return _sxR(S, {self:1, stress:3}, `아무것도 하지 않고 일주일을 견뎠다. 그런데 어느 날 하린이 단체방에 글을 남겼다. “제가 직접 확인한 바로는 사실이 아닙니다. 확인되지 않은 말을 퍼뜨리는 건 중단해 주세요.” 짧고 서늘한 문장이었다. 하린이 내 앞에서 팔짱을 낀 채 말했다. “오해하지 마세요. 정확하지 않은 정보가 싫을 뿐이에요.” 하지만 귀 끝이 붉었다.`, {aff:[id, 1], rv:2, mood:'shy'}); }
+      return _sxR(S, {self:1, stress:4}, `나는 변명하지 않기로 했다. 해명할수록 구차해질 것 같았다. 하지만 일주일이 지나도 소문은 가라앉지 않았고, ${n}의 문자도 뜸해졌다. 하린은 나를 볼 때마다 시선을 피했다. 침묵은 가끔 가장 큰 오해가 된다.`, {aff:[id, -2], rv:-2, mood:'serious'}); }},
+    {label:'마흔의 기억 속 하린의 약점으로 역공한다', sub:'하린 관계 -3 · 선명도 -3', run(S){
+      const {id} = _sxM(S); SF(S).triDirty = true; S.borrowed = (S.borrowed || 0) + 1; S.album.push('소문에 맞서 하린의 약점을 꺼냈다가 후회했다');
+      return _sxR(S, {clarity:-3, stress:4, self:-2}, `나는 마흔의 기억 속에서 하린이 가장 숨기고 싶어 했던 한 문장을 꺼내 그녀 앞에 던졌다. 소문은 거짓말처럼 멈췄다. 하린의 얼굴이 새하얗게 변했다. “…그걸, 어떻게.” 한 번도 본 적 없는 눈이었다. 이겼다는 느낌은 없었다. 대신 사람이 부서지는 소리를 들은 것 같았다.`, {aff:[id, -2], rv:-3, mood:'sad'}); }}
+  ]},
+
+{id:'sp_tri_5', once:true, cond:_sxNext('sp_tri_4', 2),
+  speaker:RIVAL, title:'마지막 대답', place:'night', img:'art/ct_night.webp', cut:'harin',
+  beats:[
+    '결국 그가 대답을 내놓았다. 하린에게 먼저, 나에게는 그다음에. 순서를 정했다는 것조차 그에게는 큰 용기였을 것이다.',
+    '강변도 서점도 아닌 평범한 길모퉁이에서 하린과 마주쳤다. 오번 머리가 오늘은 조금 흐트러져 있고, 눈가의 주근깨 위로 붉은 기운이 번져 있다.',
+    '“들었어요.” 하린이 담담하게 말했다. 담담하려고 애쓰는 목소리라서 더 쓰라렸다. “이긴 사람이 누구인지는 중요하지 않다고 생각했는데… 막상 이러니까 중요하네요.”',
+    '그녀는 가방끈을 꽉 쥐었다. “마지막으로 하나만 묻고 싶어요. 저를… 처음부터 그저 경쟁 상대로만 보셨어요?”'
+  ],
+  text:S => { const {n, cp} = _sxM(S); const f = SF(S); const rv = SS(S).rival;
+    const head = f.triDirty ? '그날 내가 꺼낸 문장이 아직 우리 사이에 차갑게 남아 있다.' : f.triCleared ? '소문이 걷힌 뒤 서로를 보는 눈이 조금 달라졌다.' : '말하지 못한 것들이 쌓인 채 여기까지 왔다.';
+    return `${head} ${cp ? `${n}${josa(n, '은', '는').slice(n.length)} 내 곁에 남았고, 하린은 혼자 이 결과를 받아들이려 한다.` : `${n}의 대답은 하린에게도, 나에게도 완전히 한쪽이 아니었다.`} ${rv >= 3 ? '하린은 어쩐지 나에게 화를 내지 못하는 얼굴이다.' : rv <= -3 ? '하린의 어깨는 분노와 슬픔 사이에서 팽팽하다.' : '하린은 눈물이 나는 걸 필사적으로 참고 있다.'} 지금 내가 하는 말이 이 삼각관계의 마지막 문장이 된다.`; },
+  choices:[
+    {label:'손을 내밀며 진심을 말한다', sub:'화해 · 하린 관계 +3 · 호감 크게 +', run(S){
+      const {id, n} = _sxM(S); const f = SF(S); const rv = SS(S).rival;
+      if(rv >= -3 && !f.triDirty){ f.triDone = 'ally'; lvSet(S, id, 'triEnd', 'ally'); S.album.push('서하린과 정정당당한 경쟁 끝에 화해했다');
+        return _sxR(S, {self:2, bond:2, stress:-4}, `“처음엔 경쟁 상대였어요. 하지만 지금은 아니에요. 당신은 한 번도 비겁하지 않았으니까요.” 내가 손을 내밀자 하린은 한참 그 손을 보다가 천천히 맞잡았다. “…서윤 씨는 정말 곤란한 사람이에요.” 처음으로 소리 내어 웃었다. 우는 얼굴 반, 웃는 얼굴 반이었다. 길 끝에서 ${n}${josa(n, '이', '가').slice(n.length)} 그 모습을 조용히 보고 있었다.`, {aff:[id, 8], rv:3, mood:'happy'}); }
+      f.triDone = 'neutral'; lvSet(S, id, 'triEnd', 'neutral'); S.album.push('서하린과 어색한 휴전으로 마무리했다');
+      return _sxR(S, {self:1, stress:2}, `손을 내밀었지만 하린은 잡지 않았다. “마음은 받아 둘게요. 그 이상은… 아직 못 하겠어요.” 그녀가 고개를 숙이고 돌아섰다. 내가 쌓은 것들이 한 번에 지워지지는 않는다. 그래도 최소한, 마지막 말은 진심이었다.`, {aff:[id, 3], rv:1, mood:'sad'}); }},
+    {label:'아무 말 하지 않고 하린의 자존심을 지켜 준다', sub:'휴전 · 호감 +2 · 나 +1', run(S){
+      const {id} = _sxM(S); const f = SF(S); f.triDone = 'neutral'; lvSet(S, id, 'triEnd', 'neutral'); S.album.push('하린이 스스로 물러서도록 아무 말도 하지 않았다');
+      const retreat = f.triStance === 'yield' || SS(S).rival >= 5;
+      return _sxR(S, {self:1, stress:1}, `나는 아무 말도 하지 않고 하린이 먼저 고개를 들 때까지 기다렸다. ${retreat ? '“…이만 물러설게요. 이건 제가 정한 거예요. 누구에게 양보받은 게 아니라.” 그녀의 목소리는 단정하고 맑았다. 그것이 그녀가 지키려던 마지막 자존심이었다.' : '“…대답은 안 하셔도 돼요.” 하린이 가방끈을 고쳐 쥐고 돌아섰다. 걸음은 곧았지만 어깨는 조금 내려와 있었다.'} 멀어지는 오번 머리가 가로등 아래서 한 번 반짝였다.`, {aff:[id, 2], rv:0, mood:'tender'}); }},
+    {label:'“이번엔 제가 이겼네요.” 승자의 말을 한다', sub:'냉전 · 하린 관계 -4 · 호감 -', run(S){
+      const {id, n} = _sxM(S); const f = SF(S); f.triDone = 'enemy'; lvSet(S, id, 'triEnd', 'enemy'); S.album.push('서하린에게 승자의 말을 던져 냉전이 되었다');
+      return _sxR(S, {self:-2, stress:3}, `“이번엔 제가 이겼네요.” 말하고 나서 입안이 썼다. 하린의 눈이 얼음처럼 굳었다. “…기억해 두겠어요. 그 말.” 그녀는 돌아서며 낮게 덧붙였다. “다음엔, 제가 이길 거예요.” 이후 ${n}${josa(n, '은', '는').slice(n.length)} 나를 한참 바라봤다. 이겼는데도 잃은 것이 더 많은 것 같은 밤이었다.`, {aff:[id, -6], rv:-4, mood:'serious'}); }}
+  ]}
+];
+// 중첩 배열(MT 두 편)을 펼쳐서 등록한다. 신입 환영회·MT가 삼각관계보다 앞에 오도록 순서를 유지한다.
+SPECIAL.push(...SPECIAL_A.flat());
+
+// 특별 이벤트 B: 강라온 혐관(앙숙) 서사 — 스타일리스트 직업 한정, 8개(sp_raon_1 ~ 8). ENGINE 구간(DOM 금지)
+// 흐름: 1 담당 배정(거부) → 2 현장 충돌 → 3 공개 말다툼·악수 거부 → 4 일을 건 대립 → 5 전환(생방송 사고) → 6 서툰 사과 → 7 들키면 안 되는 설렘 → 8 마음 확인
+// 로컬 헬퍼는 _sr 접두어. 혐관 구간(1~4)의 호감은 0~15 로 낮게 유지, 적대 단계는 lvSet(S,'raon','hostile',n)
+const _srStart = S => {
+  if(!S.love.raon) S.love.raon = {aff:0, stage:-1, since:S.m};
+  else if(S.love.raon.aff > 6) S.love.raon.aff = 6;   // 이미 안면이 있어도 이 구간에서는 앙숙으로 시작한다
+  S.seen['meet_raon'] = true;
+};
+const _srEnsure = S => { if(!S.love.raon) S.love.raon = {aff:0, stage:-1, since:S.m}; return S.love.raon; };
+const _srHost = (S, n) => { lvSet(S, 'raon', 'hostile', n); const v = S.love.raon; if(v && v.aff > 15) v.aff = 15; };
+const _srCapMax = (S, c) => { const v = S.love.raon; if(v && v.aff > c) v.aff = c; };
+const _srOut = (S, o, d, text, mood) => { const ch = []; if(d) addAff(S, 'raon', d, ch); if(o) fx(S, o, ch); const out = {text, chips:ch}; if(mood) out.mood = mood; return out; };
+const _srOk = S => isMet(S, 'raon');
+const _srEasy = S => S.st.ins >= 45 || S.st.know >= 45 || lvFlag(S, 'raon', 'braced');   // 라온이 좋아하는 통찰·학식이 높거나 보강을 해 두었으면 전환이 쉽다
+
+const SPECIAL_B = [
+
+// ════════ 1. 담당 배정 ════════
+{id:'sp_raon_1', cond:S => S.hired && S.track === 'stylist' && S.m >= 30 && S.m - (S.hiredAt || 0) >= 2 && !seen(S, 'sp_raon_1') && (!S.love.raon || (S.love.raon.stage === -1 && S.love.raon.aff < 40)),
+ speaker:'강라온', title:'세 번째 담당이 떠난 자리', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '모드 스튜디오 3층 회의실. 팀장이 서류철을 내 앞에 밀어 놓는다. “이번 달부터 강라온 담당이에요. 앞의 세 명이 두 달을 못 채웠고요.”',
+  '왜 못 채웠는지는 묻지 않아도 될 것 같다. 복도 끝에서 문이 거칠게 닫히는 소리가 들린다. 스태프들이 일제히 고개를 숙인다.',
+  '대기실 의자에 비스듬히 앉은 남자. 마스크, 눈까지 눌러쓴 모자, 모자 밖으로 삐져나온 라일락빛 머리카락 한 올. 그는 나를 보지도 않고 휴대폰만 넘긴다.',
+  '“또 새로 왔네. 어차피 한 달이잖아요. 옷 입혀 주실 필요 없어요. 내가 입고 싶은 거 입을 거니까.” 낮고 건조한 반말이 섞인 목소리. 화면 속의 웃음과는 딴판이다.',
+ ],
+ text:S => `${S.love.raon ? '예전에 복도에서 부딪혔던 마스크의 청년이 바로 이 사람이었다. 그때의 수줍은 목소리는 어디에도 없다. ' : ''}스캔들과 루머, 회사의 압박으로 그가 비틀려 있다는 소문은 들었다. 마흔의 나는 이런 눈을 알고 있다. 무너질까 봐 먼저 날을 세우는 눈. 어떻게 말할까?`,
+ choices:[
+  {label:'“입고 싶은 옷 보여 주세요. 안 어울리면 그때 말할게요.”', sub:'감각 · 호감 소폭', run(S){ _srStart(S); _srHost(S, 1);
+    if(S.st.sense >= 40){ return _srOut(S, {sense:0.5, work:1}, 2, `그는 비웃으며 입고 온 오버사이즈 재킷을 벗어 던졌다. 나는 소매 길이와 어깨선만 집어 한 번 접어 주었다. 십 초 뒤, 거울 앞에서 그의 눈이 아주 잠깐 멈췄다. “…뭐야, 이 사람.” 고맙다는 말은 없었지만 쫓겨나지도 않았다.`, 'shy'); }
+    return _srOut(S, {stress:3}, 0, `그가 던지듯 내민 재킷은 내가 보기에도 어울리지 않았다. “그것 봐요, 말할 것도 없잖아.” 비웃음을 뒤로하고 그는 먼저 나가 버렸다. 첫날부터 나는 졌다.`, 'serious'); }},
+  {label:'“담당이라서 있는 거예요. 싫으면 팀장님께 직접 말하세요.”', sub:'협상 · 관계 마찰', run(S){ _srStart(S); _srHost(S, 1);
+    if(S.st.neg >= 40){ return _srOut(S, {neg:0.5, self:1}, 1, `그가 처음으로 고개를 들었다. 모자 챙 아래에서 짜증 섞인 눈이 나를 훑었다. “…재수 없게 말하네.” 하지만 그는 팀장에게 가지 않았다. 앞의 세 명에게는 없던 일이라고, 나중에 막내가 속삭여 주었다.`, 'serious'); }
+    return _srOut(S, {stress:4}, -1, `“그럼 그렇게 하죠.” 그는 정말로 팀장에게 갔고, 나는 오후 내내 회의실에서 해명해야 했다. 첫 담당은 하루 만에 끝나지 않았지만, 이 사람은 사람을 시험하는 데 거리낌이 없다.`, 'serious'); }},
+  {label:'말없이 의상 행거를 정리하며 그의 움직임을 지켜본다', sub:'통찰 · 단서', run(S){ _srStart(S); _srHost(S, 1);
+    if(S.st.ins >= 45){ lvSet(S, 'raon', 'ankle', 1); return _srOut(S, {ins:0.8}, 1, `그는 앉을 때도, 일어설 때도 왼발에 체중을 싣지 않았다. 신발 끈은 유난히 단단히 묶여 있었고, 바지 밑단은 일부러 내려 있었다. 마흔의 눈으로만 읽히는 아주 작은 어색함. 나는 아무 말도 하지 않고 머릿속에 적어 두었다.`, 'serious'); }
+    return _srOut(S, {work:0.5}, 0, `한 시간 내내 그는 휴대폰만 봤고, 나는 행거만 정리했다. 스태프들이 눈치만 보는 이유는 알 것 같다. 그가 왜 저렇게까지 날을 세우는지는, 아직 알 수 없다.`, 'serious'); }},
+ ]},
+
+// ════════ 2. 현장 충돌 ════════
+{id:'sp_raon_2', cond:S => afterEv(S, 'sp_raon_1', 2) && _srOk(S),
+ speaker:'강라온', title:'화보 촬영장의 일침', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '잡지 화보 촬영 날. 스튜디오 가득 조명이 켜져 있는데 주인공은 한 시간째 대기실에서 나오지 않는다.',
+  '막내 어시스턴트가 세 번째로 문을 두드렸다. 안에서 의상이 벽에 부딪히는 소리가 났다. “이딴 걸 입으라고? 내 얼굴 팔아서 장사하는 거잖아!”',
+  '문이 열리고, 던져진 재킷이 막내의 발치에 떨어졌다. 막내는 눈물이 맺힌 채 옷을 주워 들었다. 스태프 서른 명이 숨을 죽이고 있다.',
+  '“울 거면 나가요. 어차피 내 이름 팔아서 월급 받는 사람들이.” 마스크 뒤의 목소리가 떨리는 걸 나만 알아챘다.',
+ ],
+ text:S => `이 사람은 지금 자기가 한 말에 자기가 더 다쳤다. 그런데 그걸 받아 주기엔 이 현장의 서른 명이 너무 아프다. 나는 마흔의 기억 속, 어떤 어른도 해 주지 않았던 말을 해야 하는 순간이다. 어떻게 할까?`,
+ choices:[
+  {label:'“현실을 봐요. 당신이 무너지면 이 사람들이 같이 무너져요.”', sub:'협상·통찰 · 호감 소폭 ↓ · 일침', run(S){ _srHost(S, 2);
+    if(S.st.ins >= 45){ lvSet(S, 'raon', 'pierced', 1); return _srOut(S, {ins:0.8, self:1.5, stress:3}, 0, `“월급 받는 게 아니라, 당신 이름으로 먹고사는 사람들이에요. 그래서 당신이 허세로 버티면 제일 먼저 다치는 건 저 막내예요. 나이 스물넷이면 그럴 수도 있어요. 하지만 스물넷이라는 게 면죄부는 아니에요.” 그의 눈이 흔들렸다. “…당신이 나에 대해 뭘 안다고.” 대답은 하지 않았다. 마스크 위로 눈이 붉어져 있었다.`, 'shy'); }
+    return _srOut(S, {neg:0.5, stress:4, self:1}, -1, `“현실을 봐요. 당신이 무너지면 같이 무너지는 사람들이 저기 서 있어요.” 현장이 얼어붙었다. 그는 한참 나를 노려보다가 “꺼져요”라고 뱉고 문을 닫았다. 후회는 없지만 마음은 쓰리다.`, 'serious'); }},
+  {label:'막내를 내보내고 문 앞에 둘만 남아 낮게 말한다', sub:'매력 · 사적인 훈계', run(S){ _srHost(S, 2);
+    if(S.st.charm >= 40){ return _srOut(S, {charm:0.5, bond:1}, 1, `“막내는 제가 달랠게요. 당신은 거울 한번 봐요. 그 표정으로 카메라 앞에 서면 사진이 거짓말을 해요.” 한참 말이 없던 그가 중얼거렸다. “…어른인 척하지 마요.” 하지만 문틈은 닫히지 않았다.`, 'shy'); }
+    return _srOut(S, {stress:3}, -1, `조용히 말하려 했지만 그는 비웃기만 했다. “설교는 무대 위에서 충분히 들어요.” 문이 닫혔다. 현장은 한 시간 더 지연됐고, 나는 사과문을 쓰는 사람이 되었다.`, 'serious'); }},
+  {label:'촬영을 잠시 멈추고 의상을 즉석에서 다시 짠다', sub:'감각 · 실력으로 입 막기', run(S){ _srHost(S, 2);
+    if(S.st.sense >= 45){ return _srOut(S, {sense:0.8, work:2}, 2, `나는 그가 던진 재킷을 뒤집어 안감 색을 드러내고, 소품 셔츠의 소매를 롤업해 새로 입혔다. 사진기자가 “이게 훨씬 낫다”고 중얼거렸다. 거울 앞에서 그가 말없이 서 있었다. “…내가 원한 건 아니지만.” 문장은 거기서 끊겼다. 입은 채로 촬영장에 걸어 나갔다.`, 'shy'); }
+    return _srOut(S, {skill:1, stress:3}, 0, `급하게 바꿔 봤지만 어딘가 덜 맞았다. 그는 거울을 보고 “이게 최선이에요?”라며 비꼬았다. 결국 촬영은 원래 의상으로 끝났고, 나는 자존심만 구겨졌다.`, 'serious'); }},
+ ]},
+
+// ════════ 3. 공개 말다툼과 거부당한 악수 ════════
+{id:'sp_raon_3', cond:S => afterEv(S, 'sp_raon_2', 2) && _srOk(S),
+ speaker:'강라온', title:'거부당한 악수', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '방송국 리허설 복도. 다른 팀 스태프와 매니저, 작가들이 오가는 한복판에서 그가 내 길을 막아섰다.',
+  '“내가 입겠다고 한 옷을 왜 마음대로 바꿨어요? 당신이 뭔데 내 무대를 정해요?” 목소리가 복도에 울린다. 시선이 몰린다.',
+  '“무대에 서는 건 당신이지만 카메라에 찍히는 건 우리 둘의 일이에요. 어제 약속한 시안대로 한 거예요.” 내 목소리도 낮지만 흔들리지 않는다.',
+  '결국 실장이 달려와 우리 사이에 섰다. “둘 다 그만. 서로 사과하고, 악수하세요.” 나는 손을 내밀었다. 그는 내 손을 한 번 보고, 고개를 돌렸다.',
+ ],
+ text:S => `허공에 뜬 내 손에 모든 시선이 꽂혀 있다. 스태프들 사이에서 수군거림이 번진다. “스타일리스트가 센터한테 대들었대.” “저러다 잘리지.” 그는 모자 챙 아래에서 시선을 피하고 있다. 어떻게 할까?`,
+ choices:[
+  {label:'손을 거두지 않고 그가 시선을 돌릴 때까지 기다린다', sub:'매력 · 침착함', run(S){ _srHost(S, 3);
+    if(S.st.charm >= 40){ return _srOut(S, {charm:0.8, self:1}, 1, `십 초, 이십 초. 복도가 조용해졌다. 그는 끝내 손을 잡지 않았지만 한쪽 발끝이 불안하게 움직였다. 실장이 헛기침을 하자 그가 먼저 자리를 떴다. “…이상한 사람.” 지나치는 순간 들린 중얼거림이 비웃음 같지 않았다.`, 'shy'); }
+    return _srOut(S, {stress:4, self:-0.5}, -1, `손을 든 채로 나는 한참 서 있었다. 그는 끝내 돌아보지 않았고, 사람들은 흩어졌다. 팔이 저릿했지만 더 저린 건 얼굴이었다.`, 'serious'); }},
+  {label:'손을 내리고 “악수는 일할 때 하는 거예요. 시안부터 맞춰요”라고 말한다', sub:'협상 · 공과 사 구분', run(S){ _srHost(S, 3);
+    if(S.st.neg >= 45){ return _srOut(S, {neg:0.8, work:2, bond:1}, 0, `실장이 안도의 한숨을 쉬었다. 나는 일 이야기로 곧장 돌아가 시안 두 개를 펼쳤다. 그가 따라오지 않으려다 멈칫했다. 스태프들 사이에서 “저 사람 뭐지”라는 말이 “저 사람 일은 하네”로 바뀌었다.`, 'serious'); }
+    return _srOut(S, {stress:3, work:0.5}, -1, `일 이야기를 꺼냈지만 분위기는 가라앉은 채였다. 그는 이어폰을 꽂았고, 대화는 일방적으로 끝났다. 일은 간신히 이어졌다.`, 'serious'); }},
+  {label:'“당신이 그렇게 구는 이유를 나는 알아요”라고 쏘아붙이고 자리를 뜬다', sub:'도전 · 스트레스 ↑ · 소문 ↑', run(S){ _srHost(S, 3);
+    if(S.st.dare >= 45){ return _srOut(S, {dare:0.8, self:1.5, stress:5}, -2, `복도에 정적이 흘렀다. 등 뒤에서 그가 숨을 삼키는 소리가 났다. 소문은 더 퍼지겠지만 이상하게도 속은 시원했다. 저녁에 막내가 건넨 말. “…저, 선배 편이에요.”`, 'serious'); }
+    return _srOut(S, {stress:7, work:-1}, -2, `쏘아붙이고 돌아섰지만 계단참에서 다리가 풀렸다. 소문은 한 시간 만에 층을 돌았다. “스타일리스트가 센터와 싸웠다.” 내일 팀장에게 불려갈 것이다.`, 'serious'); }},
+ ]},
+
+// ════════ 4. 갈등 최고조: 일을 건 선택 ════════
+{id:'sp_raon_4', cond:S => afterEv(S, 'sp_raon_3', 3) && _srOk(S),
+ speaker:'강라온', title:'이름을 걸고', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '컴백 쇼케이스를 일주일 앞둔 밤. 실장이 회의실 문을 닫고 서류를 펼쳤다. “소속사에서 콘셉트를 확정했어요. 청순한 순정남. 스캔들 이미지를 덮을 거예요.”',
+  '시안에는 무릎이 드러나는 반바지와 얇은 굽의 구두가 그려져 있다. 라온의 얼굴이 하얗게 굳는다. “…싫어요. 이건 못 해요.”',
+  '“라온 씨가 못 하겠다면 담당 스타일리스트를 교체할 거예요. 이번 시즌 계약도 없던 걸로 하고요.” 실장의 시선이 나를 향한다. “설득해 주세요. 부탁이 아니라 업무입니다.”',
+  '라온이 나를 노려본다. “당신이 나를 팔면 끝이에요. 알죠?” 그의 목소리가 쉬어 있다. 화가 아니라 겁이 난 사람의 목소리다.',
+ ],
+ text:S => `그가 왜 못 하겠다는지 이유는 말하지 않는다. ${lvFlag(S, 'raon', 'ankle') ? '나는 그의 왼발을 떠올린다. 반바지와 얇은 구두라면 감춰 온 것이 드러난다. ' : ''}이 자리에서 내 일자리와 그의 비밀 사이에 선이 그어진다. 나는 어떻게 선택할까?`,
+ choices:[
+  {label:'실장에게 “콘셉트를 바꾸지 않으면 제 이름을 빼 주세요”라고 말한다', sub:'협상 · 일을 걸다', run(S){ _srHost(S, 4);
+    if(S.st.neg >= 50){ return _srOut(S, {neg:1, work:2, self:2, stress:4}, 1, `“스타일링에 이유 없는 거부는 없어요. 이유를 들을 시간을 주세요. 그게 쇼케이스를 지키는 방법이에요.” 실장은 한참 침묵하다 안경을 벗었다. “…일주일 줄게요.” 라온은 말없이 나를 바라봤다. 믿는 눈은 아니었지만, 처음으로 피하지 않는 눈이었다.`, 'shy'); }
+    return _srOut(S, {work:-2, self:2, stress:8}, -2, `“그렇다면 담당 교체 건은 내일 알려 드릴게요.” 실장은 차갑게 말했다. 라온은 비웃지도, 고마워하지도 않았다. “당신 정말 바보 같네요.” 혼자 밤길을 걷는 동안 처음으로 내가 무엇을 걸었는지 실감했다.`, 'serious'); }},
+  {label:'라온에게 직접 말한다. “도망치지 말고 서든가 접든가 정해요”', sub:'도전 · 정면 승부', run(S){ _srHost(S, 4);
+    if(S.st.dare >= 45 || S.st.ins >= 45){ lvSet(S, 'raon', 'confronted', 1); return _srOut(S, {dare:0.8, self:1.5, stress:5}, 0, `“비겁한 척하지 마요. 겁나면 겁난다고 말해요. 그러면 나도 같이 싸워 줄 수 있으니까.” 그가 입술을 깨물었다. “…당신이랑 상관없는 일이에요.” 그러면서도 회의실을 나가지 않았다. 문 앞에서 한 번 멈췄다. “…내일 알려 줄게요.”`, 'shy'); }
+    return _srOut(S, {stress:6, self:1}, -2, `“당신이 뭔데요!” 그가 소리쳤고 컵이 바닥에서 깨졌다. 실장이 얼굴을 찌푸렸다. 그가 문을 박차고 나가고, 나는 남은 파편을 주웠다. 입안이 썼다.`, 'serious'); }},
+  {label:'지시를 따르는 척하며 몰래 의상에 보강 장치를 설계한다', sub:'실무·감각 · 비밀 작업', run(S){ _srHost(S, 4);
+    if(S.st.skill >= 45 || S.st.sense >= 45){ lvSet(S, 'raon', 'braced', 1); return _srOut(S, {skill:1, sense:0.5, work:1, stress:4}, 0, `나는 그날 밤 작업실에 남았다. 반바지의 안감에 얇은 압박 밴드를 꿰매 넣고, 구두의 안창을 두 겹으로 깔았다. 겉에서는 절대 보이지 않는다. 라온에게 알리지 않았다. 알면 또 화낼 테니까.`, 'serious'); }
+    return _srOut(S, {skill:0.5, stress:6}, -1, `밤새 안창을 덧대 봤지만 마음에 들지 않았다. 아무것도 숨기지 못한 채 날이 밝았다. 라온은 시안을 보고도 아무 말도 하지 않았다.`, 'serious'); }},
+ ]},
+
+// ════════ 5. 전환 사건: 생방송 무대 ════════
+{id:'sp_raon_5', cond:S => afterEv(S, 'sp_raon_4', 2) && _srOk(S),
+ speaker:'강라온', title:'생방송, 꺾인 발목', place:'night', img:'art/ct_cinema.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '컴백 첫 음악방송, 생방송 무대. 안개 기계 소리와 환호가 객석을 채운다. 나는 대기 구역 모니터 앞에서 팔짱을 낀 채 숨을 참는다.',
+  '후렴 직전, 센터 라온이 한 발을 디디다 휘청한다. 왼쪽 발목이 꺾이는 소리가 마이크 너머로 들리는 것 같다. 카메라가 흔들린다.',
+  '그는 쓰러지지 않았다. 이를 악물고 끝까지 춤을 췄고 마지막 포즈에서 웃었다. 무대 밖으로 나오자마자 무릎이 꺾였다.',
+  '한 시간 뒤. 실시간 검색어에는 ‘센터 사고’. 댓글은 쏟아진다. “연기하는 인성 쓰레기.” “센터 자격 없다.” 스태프들이 수군거린다. 라온은 사라졌다.',
+ ],
+ text:S => `비상계단 아래, 마스크를 벗은 라온이 얼음주머니를 발목에 대고 앉아 있다. 휴대폰 화면에는 악플이 줄줄이 흐른다. “…웃어요. 다들 그러잖아요. 쇼 하다 넘어졌다고.” 어깨가 가늘게 떨린다. ${lvFlag(S, 'raon', 'braced') ? '내가 몰래 넣어 둔 압박 밴드가 오늘 그의 인대를 살렸다는 걸 의사가 확인해 주었다. ' : ''}나는 어떻게 할까?`,
+ choices:[
+  {label:'말없이 재킷을 덮어 주고 풀린 붕대를 다시 감아 준다', sub:'실무 · 곁에 있어 준다', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const b = v.aff; v.aff = Math.max(v.aff, _srEasy(S) ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); fx(S, {skill:0.8, bond:2, self:1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('생방송 뒤 비상계단에서 라온의 발목을 감아 줌');
+    return {text:`그는 발을 빼려다 포기했다. 붕대를 감는 동안 아무도 말하지 않았다. 한참 뒤, 나직한 목소리. “…아팠어요. 한 달 전부터 계속. 쉬면 팀이 끝나고, 우리 엄마 병원비도…” 그는 말을 잇지 못했다. 나는 대답 대신 매듭을 단단히 묶었다. “그래요. 이제 혼자 안 아파도 돼요.” 그가 처음으로 마스크 없이 내 눈을 똑바로 봤다. 눈물이 고여 있었다.`, chips:ch, mood:'shy'}; }},
+  {label:'휴대폰을 뺏어 엎어 놓고 말한다. “읽지 마요. 이건 소음이에요. 현실은 지금 당신 발목이에요”', sub:'통찰·학식 · 전환이 쉬운 선택', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const easy = S.st.ins >= 45 || S.st.know >= 45; const b = v.aff; v.aff = Math.max(v.aff, easy ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); fx(S, {ins:0.8, self:1.5, stress:-1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('악플이 쏟아진 밤, 라온에게 현실을 보라고 말함');
+    return {text:`“당신이 처음 나에게 한 말이 이거였죠. 현실을 보라고.” 그는 쓴웃음을 지었다. “그땐 정말 싫었는데.” 나는 그의 발목을 가리켰다. “이게 현실이에요. 숫자도 댓글도 아니고요.” ${easy ? '내가 짚은 이야기는 그가 몇 번이고 속으로 되뇌던 문장이었다. 그가 고개를 푹 숙였다. 어깨가 떨렸다. “…아무도 그렇게 말해 주지 않았어요.”' : '그는 대답 대신 얼음주머니를 꼭 쥐었다. 아무 말 없이 한참 앉아 있다가 작게 말했다. “…병원은 같이 가요.”'}`, chips:ch, mood:'shy'}; }},
+  {label:'몰려온 기자와 스태프 앞을 막아서며 “이 사람 지금 아파요. 비켜 주세요”라고 말한다', sub:'매력·협상 · 감싸기', run(S){ const v = _srEnsure(S); lvf(S, 'raon').hostile = 0; const b = v.aff; v.aff = Math.max(v.aff, _srEasy(S) ? 39 : 38); const ch = []; push(ch, '강라온 호감', v.aff - b); const strong = S.st.neg >= 45 || S.st.charm >= 45; fx(S, {neg:0.5, charm:0.5, self:2, stress:4, work:strong ? 1.5 : -1}, ch); lvSet(S, 'raon', 'turned', S.m); S.album.push('기자들 앞에서 라온을 몸으로 막아섬');
+    return {text:`${strong ? '“지금 촬영본을 찍으면 내일 기사 제목이 바뀝니다. 이 사람의 사고가 아니라 이 사람의 부상으로요.” 기자들이 한 걸음 물러났다.' : '“비켜 주세요, 제발.” 목소리가 떨렸지만 나는 한 걸음도 물러서지 않았다.'} 등 뒤에서 라온이 숨을 삼켰다. 한참 뒤 그가 낮게 말했다. “…당신 정말 바보예요. 그런데…” 말끝을 흐리다 그가 모자를 눌러 썼다. “…고마워요.”`, chips:ch, mood:'shy'}; }},
+ ]},
+
+// ════════ 6. 서툰 사과와 어머니 이야기 ════════
+{id:'sp_raon_6', cond:S => afterEv(S, 'sp_raon_5', 2) && _srOk(S),
+ speaker:'강라온', title:'사과하는 법을 몰라서', place:'room', img:'art/bg_office.webp', cut:'raon', cutVar:'b',
+ beats:[
+  '이틀 뒤 이른 아침. 의상실 문이 조심스럽게 열렸다. 목발을 짚은 라온이 모자도 쓰지 않은 채 서 있다. 마스크도 없다.',
+  '“저기… 사과하러 왔는데, 사과를 어떻게 하는지 몰라서요.” 반말 대신 어색한 존댓말이 튀어나온다. 귀 끝이 빨갛다.',
+  '그의 손에는 보온 가방이 들려 있다. “어, 이건… 엄마가 보냈어요. TV에서 나 감싸 준 선생님이 누구냐고. 김밥이랑 반찬… 아니, 그런 게 아니라…”',
+  '그는 스스로도 우스운지 헛웃음을 흘리고, 곧 정색을 한다. 막내가 의상실 구석에서 이쪽을 보고 있다.',
+ ],
+ text:S => `엄마는 분식집을 접고 그를 뒷바라지했다고 한다. 지금은 병원에 있고, 그는 TV에서 웃는 모습만 보여 주고 싶었다고 했다. 날을 세운 건 아프다는 걸 들킬까 봐서였다고. 그가 서툴게 고개를 숙인다. “…그동안 죄송했어요.” 나는 어떻게 답할까?`,
+ choices:[
+  {label:'“사과는 됐어요. 대신 병원부터 가요. 내가 같이 가 줄게요.”', sub:'통찰 · 호감↑', run(S){ const ch = []; addAff(S, 'raon', 5, ch); fx(S, {ins:0.5, bond:2, self:1}, ch); _srCapMax(S, 39); lvSet(S, 'raon', 'mother', 1);
+    return {text:`그는 눈을 크게 떴다가 곧 시선을 피했다. “…그래도 돼요?” 병원 복도에서 그의 어머니가 나를 보고 두 손을 잡았다. “우리 아들, 사람 대하는 게 서툴러서… 고마워요.” 라온의 귀가 다시 빨개졌다. 돌아오는 길에 그가 불쑥 말했다. “…엄마가 웃은 거 오랜만이에요.”`, chips:ch, mood:'shy'}; }},
+  {label:'“막내에게도 사과해요. 그게 진짜 사과예요”', sub:'협상 · 단호한 어른', run(S){ const ch = []; addAff(S, 'raon', 4, ch); fx(S, {neg:0.8, self:1.5}, ch); _srCapMax(S, 39);
+    const brave = S.st.neg >= 40 || S.st.charm >= 40;
+    return {text:`그는 입술을 꾹 다물고 막내 앞에 섰다. ${brave ? '“저, 그때 던진 거… 미안해요. 정말.” 막내가 울음을 터뜨렸고, 스태프들이 웃으며 박수를 쳤다. 그는 어쩔 줄 몰라 하며 내 쪽을 보았다. “…이렇게 하는 거 맞죠?” 나는 고개를 끄덕였다.' : '“그… 미안해요.” 짧고 어색했지만 막내는 고개를 끄덕였다. 그는 땀을 닦으며 내게 속삭였다. “심장 터지는 줄 알았어요.”'}`, chips:ch, mood:'shy'}; }},
+  {label:'웃으며 보온 가방을 받는다. “어머니께 잘 먹겠다고 전해 주세요”', sub:'매력 · 호감↑', run(S){ const ch = []; addAff(S, 'raon', 6, ch); fx(S, {charm:0.5, bond:2, stress:-3}, ch); _srCapMax(S, 39);
+    return {text:`그는 한참 나를 보다가 이내 마음이 놓인 듯 웃었다. 처음 보는 진짜 웃음이었다. 김밥은 따뜻했고 단무지는 조금 짰다. “그거 엄마가 새벽부터 쌌거든요. 맛없어도 맛있다고 해야 해요.” 나는 웃음을 참지 못했다. 그의 어머니 이야기가 나오는 순간, 이 사람이 얼마나 외로웠는지 알 것 같았다.`, chips:ch, mood:'shy'}; }},
+ ]},
+
+// ════════ 7. 설렘, 그리고 들키면 안 되는 긴장 ════════
+{id:'sp_raon_7', cond:S => afterEv(S, 'sp_raon_6', 3) && _srOk(S),
+ speaker:'강라온', title:'가로등 그림자', place:'night', img:'art/ct_river.webp', cut:'raon', cutVar:'a',
+ beats:[
+  '재활 병원에서 돌아오는 밤. 그가 마스크와 모자, 두꺼운 후드를 겹겹이 쓰고 한강공원 벤치에 앉아 있다. “여기, 새벽엔 아무도 없대요.”',
+  '이어폰 한쪽을 내 귀에 꽂아 준다. 발매 전의 노래. 사실 이 곡의 도입부는 그가 병상에서 썼다고 한다.',
+  '“이상하죠. 처음엔 당신이 제일 싫었는데.” 그가 시선을 피한 채 웃는다. 어깨가 닿을 만큼 가깝다.',
+  '그때 맞은편 산책로에서 렌즈의 반사광이 번쩍였다. 라온의 몸이 굳는다. “…카메라예요.”',
+ ],
+ text:S => `아이돌과 스타일리스트가 새벽 강가에 함께 있는 사진은 곧 기사가 된다. 그의 팀, 그의 어머니, 나의 일. 모두가 얽혀 있다. 그가 내 손목을 쥔 채 속삭인다. “어떻게 해요?” 나는 어떻게 할까?`,
+ choices:[
+  {label:'후드를 깊게 씌워 주고 따로 갈라져 걷는다', sub:'감각 · 안전하게', run(S){ const ch = []; addAff(S, 'raon', 4, ch); fx(S, {sense:0.5, self:1, stress:3}, ch); _srCapMax(S, 39);
+    const ok = S.st.sense >= 40 || S.st.ins >= 40;
+    return {text:`${ok ? '나는 가로등 반대편으로 걸으며 그의 모자를 눌러 주고, 일부러 전화를 받는 척 큰소리로 말했다. “네, 의상 건이요.” 렌즈는 그 말에 방향을 틀었다.' : '급히 갈라져 걸었지만 심장이 터질 것 같았다. 다행히 사진은 찍히지 않았다.'} 멀어지는 길에서 그가 돌아보며 입 모양으로 말했다. 고마워요. 가슴이 뜨거워서 더 걷고 싶었다.`, chips:ch, mood:'shy'}; }},
+  {label:'“우리는 아티스트와 스타일리스트예요. 선을 넘으면 둘 다 끝나요”라고 말한다', sub:'나 · 거리 두기', run(S){ const ch = []; addAff(S, 'raon', 2, ch); fx(S, {self:2.5, stress:2}, ch); _srCapMax(S, 39); lvSet(S, 'raon', 'line', 1);
+    return {text:`그는 손목을 놓았다. 아주 잠깐 서운한 표정이 스쳤다. “…알아요.” 그러다 다시 고개를 들었다. “그래도 선 안에서 할 수 있는 건 있잖아요. 같이 밥 먹기. 안부 문자. 그 정도는 괜찮죠?” 나는 대답 대신 웃었다. 마흔의 내가 이십 대에는 하지 못했던 일, 선을 지키면서도 마음을 닫지 않는 것.`, chips:ch, mood:'shy'}; }},
+  {label:'그가 잡은 손을 놓지 않고 그림자 속으로 함께 숨는다', sub:'도전 · 설렘↑ · 위험', run(S){ const ch = []; const lucky = S.st.dare >= 45 || R() < 0.5; addAff(S, 'raon', lucky ? 6 : 4, ch); fx(S, {dare:0.8, stress:lucky ? 1 : 5, self:1}, ch); _srCapMax(S, 39);
+    return {text:`가로등 그림자가 우리를 삼켰다. 숨소리와 심장 소리가 겹쳤다. 그는 내 손을 놓지 않았고, 나도 놓지 않았다. ${lucky ? '불빛은 지나갔다. 그가 나직하게 웃었다. “…나, 지금 인생에서 제일 무서운데 제일 좋아요.”' : '렌즈가 오래 머물렀지만 결국 지나갔다. 둘 다 한참 말이 없었다. 그가 작게 말했다. “…다음엔 더 잘 숨을게요.”'}`, chips:ch, mood:'shy'}; }},
+ ]},
+
+// ════════ 8. 마음 확인 ════════
+{id:'sp_raon_8', cond:S => afterEv(S, 'sp_raon_7', 3) && _srOk(S) && S.m < 119,
+ speaker:'강라온', title:'가면을 벗는 밤', place:'night', img:'art/ct_night.webp', cut:'raon', cutVar:'a',
+ beats:[
+  '컴백 활동 마지막 방송이 끝난 밤. 스태프들이 철수한 주차장 옥상에서 라온이 먼저 올라와 기다리고 있다.',
+  '마스크도 모자도 없다. 도시의 불빛이 그의 얼굴을 비춘다. 목발은 이제 짚지 않는다. “오늘 처음으로 아프지 않게 마지막 무대를 마쳤어요.”',
+  '그가 들고 있던 작은 쇼핑백을 내민다. 안에는 접착 테이프, 줄자, 분필. 스타일리스트의 도구들이다. “필요할 것 같아서요. 선물이 이상하죠.”',
+  '“그리고 하고 싶은 말이 있어요.” 그는 숨을 크게 들이쉰다.',
+ ],
+ text:S => `${isCouple(S, 'raon') ? '이미 서로를 연인으로 부르고 있지만, 그는 말로 확인하고 싶어 한다. ' : ''}“처음엔 당신이 제일 싫었어요. 나보다 내 거짓말을 먼저 알아봐서. 그런데 그 사람이 내 발목도, 내 엄마도, 내 무서움도 다 알고도 도망가지 않았어요. 나, 당신을 좋아해요. 아이돌 말고, 강라온으로요.” 나는 어떻게 답할까?`,
+ choices:[
+  {label:'“나도 좋아해요. 마흔 살의 기억까지 다 털어놓고 싶을 만큼”', sub:'솔직함 · 호감 크게↑', run(S){ const ch = []; addAff(S, 'raon', 12, ch); fx(S, {self:2, bond:3, stress:-6}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('가면을 벗은 라온과 마음을 확인한 밤');
+    return {text:`“마흔이요?” 그가 고개를 갸웃했다가 이내 웃었다. “뭐든 괜찮아요. 당신이 어떤 사람이든.” 나는 그의 손을 잡았다. 이번에는 둘 다 피하지 않았다. 도시 야경 위로 바람이 지나갔다. 이마가 맞닿았다가 조심스럽게 떨어졌다. “…이제 진짜 비밀 하나 생겼네요, 우리.”`, chips:ch, mood:'shy'}; }},
+  {label:'“아이돌 라온이 아니라, 지금의 강라온이면 좋겠어요”', sub:'매력 · 호감 크게↑', run(S){ const ch = []; addAff(S, 'raon', 10, ch); fx(S, {charm:0.8, self:1.5, bond:2, stress:-4}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('아이돌이 아닌 강라온을 좋아한다고 말함');
+    const high = S.st.charm >= 45 || S.st.sense >= 45;
+    return {text:`그가 눈을 크게 떴다. 그리고 천천히, 아주 천천히 웃었다. ${high ? '“그 말이 이렇게 사람을 살릴 수도 있구나.” 그의 눈이 젖어 있었다.' : '“…그런 말, 처음 들어요.” 그가 서툴게 코를 훌쩍였다.'} 우리는 한동안 아무 말도 하지 않았다. 아래에서 자동차 불빛이 지나갈 때마다 그의 라일락빛 머리카락이 흔들렸다.`, chips:ch, mood:'shy'}; }},
+  {label:'“좋아해요. 하지만 우리가 정리할 것들이 있어요. 기다릴게요”', sub:'나 · 호감↑ · 어른의 약속', run(S){ const ch = []; addAff(S, 'raon', 9, ch); fx(S, {self:3, ins:0.5, stress:-3}, ch); lvSet(S, 'raon', 'arc_done'); S.album.push('라온과 서로의 마음을 확인하고 기다리기로 함');
+    return {text:`“소속사도, 팬들도, 어머니도 있어요. 서두르면 우리 둘 다 다쳐요.” 그는 입술을 깨물다가 천천히 끄덕였다. “그럼 약속해요. 내가 제대로 서면, 제일 먼저 말하러 올게요.” 새끼손가락이 걸렸다. 열 살짜리 같은 약속이 이상하게 든든했다. 마흔의 나는 몰랐다. 기다린다는 말이 이렇게 설렐 수 있다는 걸.`, chips:ch, mood:'shy'}; }},
+ ]},
+
+];
+SPECIAL.push(...SPECIAL_B);
+
+// 특별 이벤트 C: 시즌 휴가 동행 · 첫날밤 이후 인기 · 남자친구의 불안 (ENGINE 구간 안, DOM 금지)
+// 로컬 이름은 _sc 접두어. 이벤트 함수 mkVac(season, year, withLover) 로 휴가 34개를 찍어낸다.
+
+// ── 헬퍼 ──────────────────────────────────────────────────────
+// 연인과 동행 가능한 사람: 공식 연인이고, 호감 80 이상이며, 연인 단계(1·2)
+const _scCouple = S => { const id = officialOf(S); return id && affOf(S, id) >= 80 && isCouple(S, id) ? id : null; };
+// 첫날밤을 보낸 사람, 그 뒤 몇 달이 지났는지
+const _scNight = S => Object.keys(S.love).find(i => S.love[i].intimate) || null;
+const _scGap = S => { const n = _scNight(S); return n ? S.m - (S.love[n].intimateAt ?? S.m) : -1; };
+// 앞 이벤트(들) 중 본 것이 있으면 g개월 뒤, 하나도 못 봤는데 첫날밤이 한참 지났다면 그냥 진행
+const _scAfter = (S, ids, g) => { const hit = ids.filter(i => seen(S, i)); if(hit.length) return hit.some(i => afterEv(S, i, g)); return _scGap(S) >= 4; };
+// 호감 있는 비연인 중 최고 (공식·비밀 연인 제외)
+const _scSuitor = S => { const off = officialOf(S); const c = Object.keys(S.love).filter(i => i !== off && isMet(S, i) && !isCouple(S, i) && affOf(S, i) >= 20); c.sort((a, b) => affOf(S, b) - affOf(S, a)); return c[0] || null; };
+const _scName = id => (LOVERS[id] ? LOVERS[id].name : '그 사람');
+const _scOff = S => officialOf(S) || 'minjun';
+
+// ══════════ 1) 시즌 휴가 ══════════
+const _scSeasonKo = {summer:'여름', winter:'겨울'};
+const _scInSeason = (S, season, year) => { const mo = monthOf(S), y = yearOf(S); return season === 'summer' ? (y === year && (mo === 7 || mo === 8)) : ((y === year && mo === 12) || (y === year + 1 && mo === 1)); };
+
+const _scIntro = {
+  summer:[
+    '장마가 끝나고 달력의 휴가 칸이 하얗게 비어 있다. 사무실 에어컨 바람이 이제야 춥게 느껴진다.',
+    '매미 소리가 창문을 두드린다. 휴가 신청서는 책상 위에 올라와 있는데 날짜 칸은 아직 비어 있다.',
+    '한낮 아스팔트에서 아지랑이가 오른다. 쉬지 않으면 몸이 먼저 신호를 보낸다는 걸 마흔의 나는 안다.',
+    '여름 한가운데, 단톡방엔 휴가 계획 이야기뿐이다. 마흔의 나는 이 계절에 제대로 쉰 기억이 한 번도 없다.',
+  ],
+  winter:[
+    '연말 분위기가 도시에 내려앉는다. 연차가 남아 있다는 알림이 휴대폰 위로 뜬다.',
+    '첫눈 예보가 뉴스에 나온다. 올해를 닫기 전에 어디든 한 번은 떠나야 할 것 같다.',
+    '캘린더가 송년 약속으로 빼곡한데 휴가 칸만 하얗다. 겨울 공기가 코끝을 시리게 한다.',
+    '창밖으로 눈발이 날린다. 마흔의 나는 이 계절마다 이불 속에서 일 걱정만 했다.',
+  ],
+};
+
+// 친구(소연·지수)와 떠나는 장면
+const _scFriendScene = {
+  summer:[
+    ['바다로 당일치기를 간다. 해변에 돗자리를 펴고 컵라면을 끓여 먹으며 수다를 떤다.', '물에 들어가 한참 첨벙거렸다. 서로의 어색한 수영 실력에 배꼽을 잡다가 마음속 먼지가 씻겨 내려가는 기분이 들었다.'],
+    ['계곡 민박에서 평상에 누워 수박을 먹는다. 이야기가 끊겼다 이어지기를 반복한다.', '발을 담근 물이 얼음장처럼 차가웠다. 일 이야기 한마디 없이 하루가 흘렀고, 돌아오는 길에 둘 다 졸았다.'],
+    ['캠핑장에서 서툰 솜씨로 고기를 굽는다. 연기에 눈물이 나서 둘이 웃는다.', '밤하늘에 별이 쏟아졌다. 속마음을 이야기하다 문득 이런 친구가 곁에 있다는 게 얼마나 큰 행운인지 깨달았다.'],
+    ['워터파크에서 유수풀을 타며 떠다닌다. 어른 체면은 입구에 두고 왔다.', '튜브 위에서 둘이 소리를 지르며 미끄럼틀을 탔다. 서른 번쯤 웃고 나니 스트레스가 어디론가 사라져 있었다.'],
+  ],
+  winter:[
+    ['온천 마을로 짧은 여행을 간다. 따뜻한 물에 몸을 담그고 한 해를 되돌아본다.', '김이 서린 탕 안에서 올해 서러웠던 일과 고마웠던 일을 번갈아 털어놓았다. 몸이 풀리니 말도 같이 풀렸다.'],
+    ['스키장 슬로프 위에서 우스꽝스러운 자세로 내려온다. 장갑 낀 손으로 서로를 일으켜 준다.', '넘어지는 걸 서로 놀리다 눈싸움까지 번졌다. 코끝이 빨개진 얼굴로 먹은 어묵 국물이 유난히 맛있었다.'],
+    ['눈 내린 소도시 카페 골목을 걷는다. 따뜻한 핫초코 잔을 들고 창가에 오래 앉는다.', '창밖으로 눈이 쌓이는 동안 새해 소원을 하나씩 적어 교환했다. 서로의 글씨가 어쩐지 서로를 닮아 있었다.'],
+    ['연말 파티 겸 숙소 파자마 파티를 연다. 과자 봉지와 영화로 밤을 새운다.', '새벽까지 쓸데없는 이야기를 늘어놓다 이불 속에서 동시에 잠들었다. 거창하지 않아서 오래 기억에 남을 것 같다.'],
+  ],
+};
+
+// 직업별 자기계발
+const _scDev = {beauty:'신제품 성분 공부', pd:'기획안 한 편', writer:'미뤄 둔 원고', actor:'연기 워크숍', lawyer:'판례 스터디', dev:'사이드 프로젝트', designer:'포트폴리오 개편', director:'단편 콘티', stylist:'룩북 스크랩', brandceo:'브랜드 리서치', startup:'사업 계획서'};
+
+// 연인 동행: 인물 × 계절 → [초대 장면, 여행 결과, 여행지]
+const _scTrip = {
+  jaewoo:{
+    summer:['재우가 휴가 일정표를 내밀며 눈이 사라지게 웃는다. “이번엔 내가 다 짰어. 제주 바다, 사흘, 일 얘기 하면 벌금.”', '사흘 내내 재우는 휴대폰을 숙소 서랍에 가둬 두었다. 둘째 날 저녁 수평선을 보던 그가 불쑥 말했다. “성공하면 제일 먼저 너랑 이 바다에 다시 오고 싶어.” 벌금 통은 결국 그가 혼자 채웠다.', '제주 바다'],
+    winter:['재우가 스키 리조트 패키지를 흔든다. “이번 겨울은 눈 위에서 새해 계획 세우자. 넘어지면 내가 받아 줄게.”', '초급 슬로프에서 먼저 넘어진 건 재우였다. 눈 범벅이 된 채 웃는 그를 일으키다 나도 같이 주저앉았다. 리프트 위에서 그가 장갑 낀 손으로 내 손을 감쌌다. “네 계획표에도 내 자리 하나 남겨 줘.”', '강원 스키장'],
+  },
+  minjun:{
+    summer:['민준이 접은 종이를 내민다. 계곡 펜션 위치와 버스 시간이 손글씨로 빼곡하다. “너 더위 싫어하잖아. 그늘 쪽으로 알아봤는데… 같이 갈래?”', '펜션 평상에 발을 담그고 앉아 민준은 계곡 옆 테라스의 구조를 한참 눈으로 재 보았다. 수박을 나눠 먹다 그가 불쑥 말했다. “나중에 이런 집 지으면, 네 자리부터 만들 거야.” 말해 놓고 귀가 빨개져서 물에 발만 휘저었다.', '계곡 펜션'],
+    winter:['민준이 기차표 두 장을 내민다. “눈꽃열차래. 창이 커서 풍경이 도면 같대. 아, 아니 그냥 같이 보고 싶어서.” 표를 쥔 손끝이 붉다.', '창밖으로 가지마다 눈이 얹힌 산이 느리게 지나갔다. 민준은 풍경 대신 자꾸 유리에 비친 내 얼굴을 보다가 들켰다. “…저 눈, 너 닮았어. 녹는 게 아니라 쌓이는 쪽.” 서툰 문장이 따뜻해서 나는 어깨를 그에게 기댔다.', '눈꽃열차'],
+  },
+  hajin:{
+    summer:['하진이 노트북을 덮고 곧장 말한다. “바다 보러 가요. 해외 휴양지로 항공권 끊었어요. 일은 접고, 거절은 안 받습니다.” 직설적인데 눈이 조금 불안하다.', '해변 선베드에서 하진은 십 분 만에 노트북 가방을 찾았다. 내가 말없이 가방을 치우자 그는 항복하듯 웃었다. “쉬는 법을 모르는 사람이라서요. 가르쳐 줘요.” 석양 아래서 그가 처음으로 아무것도 계획하지 않고 내 손을 잡았다.', '해외 휴양지'],
+    winter:['하진이 스노보드 패키지 화면을 들이민다. “겨울엔 도전이죠. 같이 타요. 못 타도 괜찮아요, 못 타는 걸 인정하는 게 시작이니까.”', '나는 세 번 넘어졌고 하진은 네 번 넘어졌다. 눈밭에 드러누워 숨을 몰아쉬다가 그가 웃음을 터뜨렸다. “지는 것도 같이 하니까 괜찮네요.” 곤돌라 안에서 그가 직설적으로 말했다. “좋아해요. 오늘은 그 말만 하고 싶었어요.”', '스노보드 리조트'],
+  },
+  taeoh:{
+    summer:['태오가 필름 카메라를 만지작거리며 천천히 말한다. “동해에서 일출을 찍고 싶은데, 같이 가요. 서두르지 않아도 되니까 하루 더 묵고요.”', '새벽 네 시 모래사장에서 태오는 셔터를 누르지 않고 한참 수평선만 보았다. 해가 올라오는 순간 그가 카메라를 내게 돌렸다. “오늘은 풍경 말고 이 얼굴을 담고 싶어서요.” 필름 한 롤이 전부 같은 사람으로 채워졌다.', '동해 일출 바다'],
+    winter:['태오가 오래된 기차 시간표를 펼친다. “눈꽃열차가 있대요. 창가 쪽 두 자리요. 느리게 가는 기차에서 눈 오는 거 같이 봐요.”', '기차가 간이역마다 오래 쉬어 갔다. 태오는 눈 쌓인 플랫폼을 찍고, 나는 그 옆모습을 몰래 보았다. 종점이 가까워질 무렵 그가 말했다. “이 여행은 기억으로만 현상할래요. 필름은 아껴 두고요.”', '눈꽃열차'],
+  },
+  raon:{
+    summer:['라온이 모자를 눌러쓴 채 문자 한 통을 보내 온다. “컴백 끝났어요! 해외에 아무도 모르는 작은 섬 있어요. 변장하고 가요, 제가 다 준비했어요!” 느낌표가 줄줄이 달려 있다.', '섬에는 우리를 아는 사람이 한 명도 없었다. 마스크도 모자도 벗은 라온은 해변에서 아이처럼 파도를 쫓아다녔다. 밤에 평상에 누워 그가 별을 보며 말했다. “무대 위보다 여기서 더 진짜 나인 것 같아요.” 나는 그의 손을 가만히 잡았다.', '해외의 작은 섬'],
+    winter:['라온이 매니저 몰래 겨우 얻은 휴가를 자랑한다. “이틀 비었어요! 아무도 안 보는 작은 온천 예약했어요. 변장은 이번에도 완벽하고요.”', '김이 서린 노천탕 옆 휴게실에서 라온은 모자를 벗고 오랜만에 편하게 졸았다. 눈 내리는 소리를 같이 듣다가 그가 중얼거렸다. “팬들한텐 미안한데, 지금 이 시간은 저만 갖고 싶어요.” 그 욕심이 밉지 않았다.', '프라이빗 온천'],
+  },
+  jihu:{
+    summer:['지후가 일정표를 건조하게 출력해 온다. “바다 쪽 리조트를 알아봤습니다. 이틀입니다. 자외선 차단제와 여분의 모자는 제가 챙기겠습니다. 가시겠습니까?”', '지후는 파라솔 아래서도 내 어깨에 선크림부터 확인했다. 파도 소리 속에서 그는 평소보다 말이 적었다. 해 질 녘 그가 건조한 목소리로 말했다. “제 휴가 중 가장 비효율적이고, 가장 만족스러운 시간입니다.” 입꼬리가 아주 조금 올라갔다.', '바다 리조트'],
+    winter:['지후가 예약 확인 메일을 보여 준다. “온천 스파 리조트입니다. 겨울 피로에는 효과적이라고 합니다. 근거 자료도 첨부했습니다.” 첨부 파일 이름이 우스꽝스럽다.', '로비 라운지에서 둘이 따뜻한 차를 마셨다. 지후는 근거 자료 대신 창밖의 눈을 오래 보았다. “오늘은 데이터가 필요 없네요.” 그의 어깨 힘이 풀려 있어서 내 마음도 느슨해졌다.', '온천 스파'],
+  },
+  dohyun:{
+    summer:['도현이 촬영 가방을 어깨에 걸치고 툭 던진다. “야, 계곡 캠핑 가자. 장비는 내가 다 챙겼어. 카메라는 두고 간다. …진짜로.” 말끝에 헛기침이 붙는다.', '불멍 앞에서 도현은 카메라 없이도 프레임을 짜듯 손으로 네모를 만들어 나를 비췄다. “이 컷은 편집 안 해도 돼.” 라면 냄비가 끓어 넘치는 소동 끝에 그가 거칠게 웃었다. “오길 잘했네. 내가 이런 거 할 줄 알았냐.”', '계곡 캠핑'],
+    winter:['도현이 리프트권 두 장을 던지듯 내민다. “이번 달은 쉬는 달이다. 스키장 가자. 못 타면 내가 잡아 줄 테니까 쫄지 마.” 거친 말투에 어색한 다정함이 묻어 있다.', '도현은 잡아 준다던 말을 지켜 내 뒤에서 허리를 받치고 같이 내려왔다. 중간에 둘이 눈밭에 넘어졌고, 그가 욕 대신 크게 웃었다. “너랑 있으면 일 생각이 안 난다. 위험한 사람이야.”', '스키장'],
+  },
+  sian:{
+    summer:['시안이 조용히 그림엽서 한 장을 건넨다. 작은 섬의 선착장이 그려져 있다. “이 섬에서 아무것도 안 쓰고 안 찍는 며칠을 보내고 싶어요. 같이 가 줄래요?”', '섬 마을 골목에서 시안은 오래된 담벼락과 빨랫줄을 보며 아무 말도 하지 않았다. 저녁 방파제에서 그가 낮게 말했다. “이 장면은 대본에 쓰지 않을래요. 내가 기억하고 싶어서요.” 파도 소리가 그의 문장 사이를 채웠다.', '작은 섬 마을'],
+    winter:['시안이 출력한 항공권을 조심스럽게 내민다. “눈 내리는 소도시가 있어요. 영화제가 아니라 그냥 산책하러요. 같이 걷고 싶어서요.”', '낯선 도시의 골목에서 우리는 지도 없이 걸었다. 눈 쌓인 다리 위에서 시안이 걸음을 멈췄다. “여기서 컷 하고 싶지 않네요.” 그의 입김과 내 입김이 겹쳐 흩어졌다. 나는 그 장면을 대본 대신 마음에 적어 두었다.', '해외 눈 소도시'],
+  },
+  seunghyun:{
+    summer:['승현이 마스크를 턱에 걸친 채 속삭인다. “사람 없는 해변을 하나 알아요. 새벽에 출발하면 아무도 몰라요. 이번엔 진짜 비밀 여행이에요.” 눈이 장난스럽게 휘어진다.', '새벽 해변에는 정말 우리 둘뿐이었다. 마스크를 벗은 승현은 맨얼굴로 모래를 밟으며 대사처럼 크게 웃었다. “배우 말고 사람으로 사는 하루 같아요.” 돌아오는 차 안에서 그는 내 어깨에 기대 곤히 잠들었다.', '외딴 해변'],
+    winter:['승현이 모자 아래로 조심스럽게 말한다. “조용한 온천 마을이 있어요. 거기선 마스크 안 써도 돼요. 눈 내리는 날 같이 가요.”', '조용한 온천 마을에서 승현은 마스크 없이 거리를 걸었다. 아무도 그를 알아보지 못하는 게 신기하다는 듯 몇 번이나 뒤를 돌아보았다. 숙소 창가에서 눈을 보며 그가 말했다. “오늘 일은 대본에 없어서 다행이에요.”', '온천 마을'],
+  },
+  geonwoo:{
+    summer:['건우가 코팅한 일정표를 내민다. 분 단위로 정리돼 있다. “바다 숙소를 예약했습니다. 일정은… 너무 빡빡합니까? 줄일 수 있습니다.” 말끝이 수줍게 흐려진다.', '일정표는 첫날 오전에 이미 무너졌다. 파도에 샌들이 떠내려가자 건우가 허둥지둥 쫓아가다 넘어졌다. 바닷물에 젖은 그가 멍하니 웃었다. “…계획에 없던 일인데, 나쁘지 않습니다.” 그날부터 일정표는 접힌 채 주머니에서 나오지 않았다.', '바닷가 숙소'],
+    winter:['건우가 헛기침을 하며 예약 화면을 보여 준다. “온천… 숙소입니다. 방은 따로 잡았습니다. 아, 불편하시면 취소 가능합니다.” 귀끝이 새빨갛다.', '다다미 휴게실에서 건우는 정자세로 차를 마시다가 내가 웃자 어깨를 풀었다. 밤에 눈 내리는 정원을 같이 보며 그가 서툴게 말했다. “저는 표현이 서툰 사람입니다. 그래도 오늘은 즐거웠다고, 기록해 두겠습니다.”', '온천 숙소'],
+  },
+  yuchan:{
+    summer:['유찬이 휴대폰을 흔들며 말한다. “와이파이 안 되는 계곡을 찾았어요. 오프라인 모드로 이틀, 어때요. 알림 서버를 잠깐 내리는 거죠.” 장난 같지만 눈빛은 진지하다.', '신호 한 칸 없는 계곡에서 유찬은 처음에 휴대폰을 몇 번이나 꺼냈다가 넣었다. 세 시간쯤 지나자 그는 물소리만 들었다. “제 머릿속 프로세스가 처음으로 전부 종료됐어요.” 그가 내 어깨에 조용히 머리를 기댔다.', '신호 없는 계곡'],
+    winter:['유찬이 기차 예약 화면을 캡처해 보여 준다. “눈꽃열차 있어요. 창가 좌석 두 개, 재현 가능한 낭만입니다.” 어색한 농담 끝에 그가 먼저 웃는다.', '열차 안에서 유찬은 눈 쌓인 풍경을 보며 말이 줄었다. 종점 근처에서 그가 작게 말했다. “버그 없는 순간이 있다면 지금 같은 거겠죠.” 따뜻한 캔커피 두 개가 우리 손 안에서 천천히 식어 갔다.', '눈꽃열차'],
+  },
+  ujin:{
+    summer:['우진이 원단 샘플 같은 색 견본을 펼친다. “이 청록색, 실제로 보러 가요. 해외 바다요. 사진은 색을 속이거든요.” 손끝이 견본 위를 부드럽게 쓸고 있다.', '해변에서 우진은 바다의 색 이름을 하나씩 지어 불렀다. 물빛이 변할 때마다 “지금은 비단 같은 청록”이라고 속삭였다. 저녁이 되자 그가 내 손등을 보며 말했다. “이 색이 제일 좋아요. 햇볕 닿은 살구빛, 거짓말 안 하는 색.”', '해외의 청록빛 바다'],
+    winter:['우진이 흰 천 한 조각을 만지작거리며 말한다. “눈 오는 날의 흰색은 백 가지가 넘어요. 온천 마을에서 그걸 같이 세어 볼래요?”', '노천탕 너머 눈 덮인 숲을 보며 우진은 흰색의 이름을 하나씩 말했다. 나는 중간에 세기를 포기했고, 그는 웃으며 내 어깨에 담요를 둘렀다. “세다 보니 제일 따뜻한 흰색이 지금이네요.”', '설경 온천 마을'],
+  },
+};
+const _scAbroad = {'hajin:summer':1, 'raon:summer':1, 'ujin:summer':1, 'sian:winter':1};
+
+// 쓸 수 있는 만큼만 쓴다: 부족하면 비용·효과를 줄인다
+const _scPay = (S, lo, hi) => { const want = Math.round(rand(lo, hi)); if(S.cash >= want + 15) return {pay:want, k:1, tight:false}; return {pay:Math.min(want, Math.max(8, Math.round(Math.max(S.cash, 0) * 0.6))), k:0.6, tight:true}; };
+
+function mkVac(season, year, withLover){
+  const ko = _scSeasonKo[season], other = `sp_vac_${season}_${year}_${withLover ? 'n' : 'w'}`;
+  const bg = season === 'summer' ? 'art/bg_campus_summer.webp' : 'art/bg_campus_winter.webp';
+  const intro = _scIntro[season][(year + (withLover ? 1 : 0)) % 4];
+  const choices = [
+    {label:'혼자 조용히 보낸다', sub:'스트레스↓ 또는 자기계발', run(S){
+      const ch = [];
+      if(S.stress >= 55 || S.hp < 45){
+        fx(S, {stress:-16, hp:9, self:1}, ch);
+        return {text: season === 'summer' ? '에어컨을 약하게 틀어 놓고 낮잠을 자고, 해가 지면 동네 강변을 걸었다. 알림을 끄고 지낸 며칠 동안 어깨가 조금씩 내려왔다. 쉬는 것도 일이라는 말이 이제야 이해된다.' : '난방을 올리고 이불 속에서 책을 읽다 잠들기를 반복했다. 눈 오는 창밖이 조용해서 마음도 조용해졌다. 올해 쌓인 피로가 한 겹 벗겨진 기분이다.', chips:ch};
+      }
+      const topic = S.hired && _scDev[S.track] ? _scDev[S.track] : '미뤄 둔 공부';
+      bump(S, 'cash', -10, ch); fx(S, {skill:2, know:1.5, self:1.5, stress:-4}, ch);
+      return {text:`쉬는 날의 여유를 ${topic}에 쏟았다. 의외로 몸은 피곤하지 않았고, 마음이 오히려 맑아졌다. 마흔의 내가 미뤄 두기만 하던 일을 한 걸음 앞당긴 셈이다.`, chips:ch};
+    }},
+    {label:'소연이나 지수와 여행한다', sub:'관계↑ · 스트레스↓ · 자금↓', cut:'soyeon', run(S){
+      const ch = [], f = R() < 0.5 ? '소연' : '지수', sc = _scFriendScene[season][Math.floor(R() * 4)];
+      const p = _scPay(S, 20, 45); bump(S, 'cash', -p.pay, ch); fx(S, {bond:3 * p.k + 0.5, stress:-10 * p.k - 2, hp:3}, ch);
+      return {text:`${f}와 나는 ${sc[0]} ${sc[1]}${p.tight ? ' 통장이 빠듯해 일정을 짧게 줄였지만, 그만큼 서로에게 더 집중한 하루였다.' : ''}`, chips:ch};
+    }},
+  ];
+  if(withLover) choices.push({label:'남자친구와 둘이 간다', sub:'호감 크게↑ · 스트레스↓ · 자금↓', run(S){
+    const ch = [], id = _scCouple(S) || _scOff(S), nm = _scName(id), tr = (_scTrip[id] || _scTrip.minjun)[season];
+    const p = _scPay(S, _scAbroad[id + ':' + season] ? 70 : 40, _scAbroad[id + ':' + season] ? 90 : 65);
+    bump(S, 'cash', -p.pay, ch); addAff(S, id, Math.round(rand(8, 12)) * p.k, ch); fx(S, {stress:-12 * p.k - 3, hp:4, bond:2 * p.k, self:1}, ch);
+    S.album.push(`${year}년 ${ko}, ${josa(nm, '과', '와')} ${tr[2]}에 다녀옴`);
+    return {text:`${p.tight ? '통장이 빠듯해 일정을 짧게 줄였다. ' : ''}${tr[1]}`, chips:ch};
+  }});
+  return {id:`sp_vac_${season}_${year}_${withLover ? 'w' : 'n'}`,
+    cond:S => S.hired && _scInSeason(S, season, year) && (withLover ? !!_scCouple(S) : !_scCouple(S)) && !S.seen[other],
+    speaker:'', title:`${year} ${ko} 휴가`, place:'campus', img:bg,
+    text:S => withLover
+      ? `${intro} ${(_scTrip[_scCouple(S) || _scOff(S)] || _scTrip.minjun)[season][0]} 이번 ${ko}, 어떻게 보낼까?`
+      : `${intro} 함께 떠나자고 말할 사람은 아직 마음에 정하지 못했다. 이번 ${ko}, 어떻게 보낼까?`,
+    choices};
+}
+
+const _scVac = [];
+for(let y = 2018; y <= 2025; y++){ _scVac.push(mkVac('summer', y, true), mkVac('summer', y, false)); }
+for(let y = 2017; y <= 2025; y++){ _scVac.push(mkVac('winter', y, true), mkVac('winter', y, false)); }
+
+// ══════════ 2) 첫날밤 이후의 분위기와 인기 ══════════
+// 호감 있는 남주의 고백 (sp_pop_2a)
+const _scConf = {
+  jaewoo:'“솔직히 말할게. 나 요즘 네 얼굴만 보면 계산이 안 돼. 영업 하는 놈이 이러면 안 되는데. 나랑 진지하게 만나 보자.”',
+  minjun:'“저, 저기… 그냥 말할게. 요즘 너를 보면 도면이 하나도 안 그려져. 내가… 좋아해. 아니, 계속 좋아했는데, 요즘은 더.”',
+  hajin:'“돌려 말하지 않을게요. 요즘 당신이 눈에 계속 걸려요. 좋아합니다. 대답은 천천히 해도 되는데, 피하지는 말아요.”',
+  taeoh:'“요즘 당신을 천천히 보게 돼요. 한 컷에 다 담기지 않는 사람이라서요. 좋아해요. 서두르진 않을게요.”',
+  raon:'“저… 이런 말 해도 되는지 모르겠는데요. 요즘 계속 생각나요. 좋아해요! 아, 지금 말해 버렸다. 어떡하지.”',
+  jihu:'“업무 외의 이야기를 드려도 되겠습니까. 요즘 당신을 보면 평소와 다른 판단을 하게 됩니다. 호감이 있습니다. 정리해서 말씀드리는 겁니다.”',
+  dohyun:'“야, 돌려 말하는 거 못 하니까 그냥 말한다. 요즘 너 보면 정신이 팔려서 일이 안 돼. 나 너 좋아한다. 어쩔래.”',
+  sian:'“요즘 당신의 표정이 한 장면씩 머리에 남아요. 대사로 써 보려다 실패했습니다. 그냥 말할게요. 좋아합니다.”',
+  seunghyun:'“마스크 벗고 말할게요. 요즘 당신 앞에서만 연기가 안 돼요. 좋아해요. 이건 대본이 아니에요.”',
+  geonwoo:'“저는… 이런 말에 서툽니다. 다만 요즘 당신을 생각하는 시간이 계약서를 읽는 시간보다 길어졌습니다. 호, 호감이 있습니다.”',
+  yuchan:'“요즘 당신 생각이 백그라운드에서 계속 돌아요. 종료가 안 돼요. 그러니까… 좋아한다는 뜻이에요.”',
+  ujin:'“요즘 당신 색이 달라졌어요. 한 톤 깊어졌다고 해야 할까요. 그 색에 계속 눈이 가요. 좋아합니다.”',
+};
+// 남자친구의 불안 (sp_jeal_1: 요즘 누가 연락하느냐)
+const _scJ1 = {
+  jaewoo:'재우가 내 휴대폰 화면이 켜질 때마다 슬쩍 시선을 준다. 애써 웃음을 지으며 묻는다. “요즘 누가 자꾸 연락해? 아, 의심하는 건 아니고… 영업하는 놈이 촉이 좋아서 그래.”',
+  minjun:'민준이 도시락 가방 끈만 만지작거리다 겨우 입을 연다. “저기… 요즘 휴대폰 자주 울리던데. 누구야? 아, 아니, 말하기 싫으면 안 해도 되는데… 신경 쓰여서.”',
+  hajin:'하진이 나를 똑바로 본다. “돌려 말하지 않을게요. 요즘 누가 자꾸 연락하죠? 의심이 아니라 궁금한 겁니다. 근데 궁금한 게 신경 쓰이는 걸로 바뀌는 중이에요.”',
+  taeoh:'태오가 찻잔을 내려놓고 천천히 말한다. “요즘 누군가의 연락이 자주 오는 것 같아요. 묻지 않으려고 했는데, 계속 마음에 걸려서요.”',
+  raon:'라온이 휴대폰을 만지작거리며 눈을 피한다. “있잖아요, 요즘 누가 계속 연락해요? 저 질투 안 하려고 했는데… 아이돌이 이러면 안 되는 거죠? 근데 신경 쓰여요.”',
+  jihu:'지후가 평소처럼 건조하게 말하지만 컵을 쥔 손가락이 하얗다. “요즘 연락이 잦으신 분이 있다고 알고 있습니다. 확인하려는 건 아닙니다. 다만 제 판단 기준에 불확실성이 생겼습니다.”',
+  dohyun:'도현이 소파에 등을 기대며 거칠게 말한다. “야, 요즘 누가 자꾸 연락하냐. 신경 안 쓰는 척했는데 안 되네. 말해. 나 그런 거 못 참는다.”',
+  sian:'시안이 조용히 대본 대신 내 눈을 본다. “요즘 연락이 자주 오더군요. 장면의 단서처럼 자꾸 눈에 들어와요. 누구인지, 말해 줄 수 있어요?”',
+  seunghyun:'승현이 마스크를 만지작거리며 낮게 묻는다. “요즘 누가 자꾸 연락하는지… 물어봐도 돼요? 연기가 안 돼요. 표정이 자꾸 새어 나와서.”',
+  geonwoo:'건우가 헛기침을 한다. “저, 사실관계를 확인하고 싶습니다. 요즘 연락이 자주 오는 분이 있는 것으로… 아, 의심은 아닙니다. 다만 사실관계가 궁금합니다.”',
+  yuchan:'유찬이 노트북을 닫고 말한다. “요즘 알림이 자주 울리던데, 발신자가 누군지 물어봐도 돼요? 로그를 몰래 보는 건 아니고요, 그냥 계속 신경 쓰이는 이슈예요.”',
+  ujin:'우진이 손에 든 천 조각을 접었다 폈다 한다. “요즘 연락이 자주 오는 것 같아요. 색이 한 겹 탁해진 기분이 들어서요. 누구예요?”',
+};
+// 안심시켰을 때 그의 반응 (sp_jeal_1)
+const _scJ1ok = {
+  jaewoo:'“다 보여 줄게. 거래처, 후배, 그리고 광고 문자.” 휴대폰을 내밀자 재우는 화면을 한참 넘기다 웃으며 돌려줬다. “미안, 영업은 불안할 때 숫자부터 세거든. 네가 제일 큰 계약인 걸 잊고 있었네.”',
+  minjun:'휴대폰을 내밀자 민준이 손사래를 쳤다. “아냐, 안 봐도 돼! 네가 말해 주는 걸로 충분해.” 안심했는지 어깨가 쑥 내려갔고, 그는 도시락 뚜껑을 열어 내 쪽으로 밀어 주었다.',
+  hajin:'“연락한 사람, 용건, 내 대답까지 말해 줄게요.” 하진은 끝까지 듣고 짧게 숨을 내쉬었다. “…고마워요. 이렇게까지 말하게 해서 미안하고요. 직설은 제 특기인데 오늘은 제가 졌네요.”',
+  taeoh:'나는 하나씩 천천히 이야기했다. 태오는 말을 끊지 않고 끝까지 들은 뒤 조용히 웃었다. “이야기하는 목소리가 흔들리지 않네요. 그거면 충분해요.”',
+  raon:'“진짜 아무 사이 아니야.” 그러자 라온의 눈이 금세 풀렸다. “다행이다… 아, 저 지금 너무 티 났죠?” 그가 얼굴을 손으로 가리고 웃었다. 귀 끝이 새빨갰다.',
+  jihu:'나는 연락이 온 경위를 항목별로 설명했다. 지후는 끝까지 듣고 짧게 고개를 끄덕였다. “불확실성이 해소되었습니다.” 그리고 아주 작게 덧붙였다. “…설명해 주셔서 감사합니다.”',
+  dohyun:'“야, 이거 봐. 진짜 아무것도 아니잖아.” 휴대폰을 던지듯 내밀자 도현은 대충 훑더니 머쓱하게 머리를 긁었다. “…내가 괜히 성질냈다. 미안하다.”',
+  sian:'나는 연락한 사람과 용건을 차례로 이야기했다. 시안은 끝까지 눈을 맞추고 듣다가 고개를 끄덕였다. “해석을 잘못 했네요. 장면 하나 때문에 영화 전체를 의심할 뻔했어요.”',
+  seunghyun:'“아무 일도 아니에요. 정말.” 내 대답에 승현이 마스크를 벗고 길게 숨을 내쉬었다. “다행이다. 지금 표정은 연기 아니니까, 안심한 얼굴로 기억해 줘요.”',
+  geonwoo:'나는 차분히 사실관계를 하나씩 정리해 말했다. 건우는 끝까지 메모하듯 듣고는 굳은 얼굴을 풀었다. “…충분히 이해했습니다. 의심해서 죄송합니다.”',
+  yuchan:'“발신자는 이 사람이고 용건은 이거야.” 하나씩 설명하자 유찬이 천천히 고개를 끄덕였다. “이슈 종료입니다. 아니, 종료가 아니라 해결이요. 말해 줘서 고마워요.”',
+  ujin:'나는 있었던 일을 있는 그대로 이야기했다. 우진은 접었던 천 조각을 천천히 폈다. “색이 다시 맑아졌어요. 숨기지 않아 줘서 고마워요.”',
+};
+// 남자친구의 불안 (sp_jeal_2: 시선이 달라져서 불안하다)
+const _scJ2 = {
+  jaewoo:'“요즘 사람들이 네 얘기해. 길 가다가도 남자들이 돌아보고. 야, 나 자신 있는 놈인 줄 알았는데 아니더라. 네가 점점 내가 못 따라가는 사람이 될 것 같아서 무서워.” 재우가 눈이 사라지지 않는 얼굴로 쓸쓸하게 웃는다.',
+  minjun:'“너 요즘 어딜 가든 사람들이 쳐다봐. 나는 그냥 도면 그리는 평범한 사람인데… 네가 더 멀리 가 버리면 어쩌나 싶어서. 이런 말, 한심하지?” 민준이 고개를 푹 숙인다.',
+  hajin:'“솔직하게 말할게요. 당신이 요즘 달라졌고, 주변 시선이 달라졌고, 그게 나는 불안해요. 내가 가진 걸로 이 불안을 이길 수 있을지 계산이 안 돼요.” 하진은 평소와 다르게 말끝이 낮다.',
+  taeoh:'“요즘 당신이 빛이 달라졌어요. 사람들이 자꾸 돌아보는 걸 느껴요. 빛이 너무 좋으면 사진은 자꾸 날아가거든요. 저는 그게 무섭습니다.” 태오가 카메라를 내려놓는다.',
+  raon:'“저, 이상하죠. 매일 수만 명이 저를 보는데, 정작 다른 사람들이 당신을 보는 건 못 참겠어요. 이런 마음 처음이라 어떻게 해야 할지 모르겠어요.” 라온의 목소리가 작게 떨린다.',
+  jihu:'“솔직하게 보고드립니다. 요즘 당신을 향한 주변의 시선이 변했습니다. 저는 그것을 통제할 수 없고, 통제할 수 없는 변수는 불안을 만듭니다. 이 불안을 숨기고 싶지는 않았습니다.”',
+  dohyun:'“…야. 나 쪽팔린 얘기 하나 할게. 요즘 네가 어딜 가든 남자들이 쳐다보는 거 보면 속이 뒤집혀. 내가 그럴 자격이 없다는 것도 알아. 근데 안 되네.” 도현이 시선을 피한 채 거칠게 숨을 쉰다.',
+  sian:'“요즘 당신 곁에 다른 사람들의 시선이 자꾸 겹칩니다. 저는 그 장면의 연출을 맡을 수 없죠. 그게 이렇게 불안한 일인 줄 몰랐어요.” 시안이 조용히 손을 마주 잡는다.',
+  seunghyun:'“웃기죠? 제가 카메라 앞에선 수천 명한테 보이는데도 괜찮은데, 사람들이 당신을 보는 건 괜찮지가 않아요. 지금 제 표정, 연기가 아니에요.” 승현이 마스크 끈을 쥔다.',
+  geonwoo:'“…저는 이런 이야기를 하는 데 익숙하지 않습니다만, 요즘 당신을 바라보는 시선이 늘었습니다. 그것이 저를 불안하게 합니다. 이 감정을 정리해서 말씀드리는 데 오래 걸렸습니다.”',
+  yuchan:'“요즘 당신 주변에 신규 사용자가 폭주하는 느낌이에요. 저는 기존 사용자인데, 자꾸 대체될 것 같은 불안이 있어요. 이게 비합리적인 걸 알아도 종료가 안 돼요.”',
+  ujin:'“요즘 당신 색이 깊어져서, 사람들이 자꾸 걸음을 멈추고 봐요. 좋은 일인데 저는 자꾸 천 한 장 사이에 서 있는 기분이 들어요. 가려지고 싶지 않은데 가려질까 봐요.”',
+};
+const _scJ2ok = {
+  jaewoo:'나는 재우의 손을 잡았다. “나는 계속 너한테 돌아와. 내가 아는 서재우는 계약보다 사람을 먼저 보는 사람이야.” 그는 한참 말이 없다가 내 손등에 이마를 대고 낮게 웃었다. “…그 말, 계약서로 만들어 두고 싶다.”',
+  minjun:'“한심하지 않아. 내가 제일 안심하는 곳이 네 옆이야.” 민준이 고개를 들었다. 눈가가 붉었다. “…나 더 열심히 할게. 네 옆에 서 있어도 부끄럽지 않게.” 서툰 약속이 오래 마음에 남았다.',
+  hajin:'“계산 안 해도 돼요. 나는 이미 당신 쪽으로 기울어 있으니까.” 하진이 어이없다는 듯 웃더니 내 손을 두 손으로 감쌌다. “직설로 졌네요. 좋아요. 이번 판은 당신이 이긴 걸로.”',
+  taeoh:'“빛이 달라져도 카메라를 드는 사람은 당신뿐이에요.” 내 말에 태오가 천천히 웃었다. “…그 말은 필름에 담아 두고 싶네요. 두고두고 현상해 볼게요.”',
+  raon:'“수만 명이 봐도 나는 한 사람 앞에서만 이래.” 내가 말하자 라온의 눈이 둥글어졌다. “진짜요? …그럼 안 불안해할게요. 아니, 조금만 불안해할게요.” 그가 웃으며 손가락을 걸었다.',
+  jihu:'“변수가 늘어도 상수는 바뀌지 않습니다.” 내가 그의 말투로 대꾸하자 지후가 처음으로 소리 내어 웃었다. “…배우셨군요. 그 문장은 제 보고서에 인용하겠습니다.”',
+  dohyun:'“자격은 내가 정해. 나는 너 아니면 안 돼, 차도현.” 도현의 목덜미가 붉어졌다. “…아, 진짜. 사람 정신 못 차리게 하네.” 그가 거친 손으로 내 머리를 헝클어뜨리며 웃었다.',
+  sian:'“연출은 못 해도 같은 장면의 주인공은 당신이잖아요.” 내 말에 시안이 눈을 가늘게 뜨고 웃었다. “…이 대사는 쓰지 않고 기억만 할게요. 그게 더 오래 가니까요.”',
+  seunghyun:'“연기 아닌 표정, 좋아해요.” 내 말에 승현이 마스크를 벗고 웃었다. 눈가가 반짝였다. “…그럼 이 얼굴로 계속 곁에 있을게요. 지우지 말아요.”',
+  geonwoo:'“말씀해 주셔서 감사합니다. 저도 정리해서 답하겠습니다. 저는 당신 곁이 가장 편합니다.” 건우의 어깨 힘이 풀렸고, 굳은 입꼬리가 서툴게 올라갔다. “…기록해 두겠습니다.”',
+  yuchan:'“신규 사용자가 몇이든 기존 사용자 우선 정책은 안 바뀌어요.” 내 대답에 유찬이 어이없다는 듯 웃었다. “그 문장, 약관에 넣고 싶어요. 아니, 제 마음에요.”',
+  ujin:'“천 한 장이 있어도 나는 당신 쪽 색을 알아봐요.” 내 말에 우진이 천천히 숨을 내쉬었다. “…가려져도 알아봐 주는 사람이군요. 그럼 오래 같이 있을 수 있겠어요.”',
+};
+
+// 공통 조각들
+const _scAskSetting = S => S.hired ? '퇴근 무렵 건물 뒤편 화단' : '수업이 끝난 뒤 교정 정원';
+const _scNote = S => { const o = officialOf(S); return o ? ` ${_scName(o)}의 얼굴이 마음 한켠을 스친다.` : ''; };
+
+const _scPop = [
+// ── 1. 길에서 낯선 남자의 헌팅 ──
+{id:'sp_pop_1', cond:S => { const g = _scGap(S); return g >= 1 && g <= 3; },
+  speaker:'', title:'낯선 사람의 인사', place:'night', img:'art/ct_night.webp', cut:'stranger1', cutVar:'a',
+  beats:[
+    '집으로 가는 길, 야식 거리의 네온이 젖은 바닥 위에서 번진다. 요즘 이상하게 걸음이 가볍다.',
+    '“잠깐만요.” 세련된 코트 차림의 낯선 남자가 앞을 막는다. 사람을 많이 만나 본 듯 여유로운 미소다. “지나가다 눈이 마주쳐서요. 이런 거 처음 해 봐요. 번호 하나만 알려 줄래요?”',
+    '유리창에 비친 내 모습이 낯설다. 눈빛이 깊어졌고, 어깨에 힘이 빠져 있다. 마흔 때 동경하던 여유가 어느새 내 안에 있는 걸까.',
+  ],
+  text:S => `낯선 남자가 대답을 기다린다. 사람들의 시선이 힐끔 스쳐 간다.${_scNote(S)} 어떻게 할까?`,
+  choices:[
+    {label:'정중히 거절한다', sub:'나 +1 · 매력 +1', run(S){
+      const ch = []; fx(S, {self:1.5, charm:0.8, stress:-2}, ch);
+      return {text: '“마음에 둔 사람이 있어서요. 말 걸어 줘서 고마워요.” ' + (S.st.charm >= 45 ? '그는 아쉬운 듯 웃으며 손끝으로 이마를 짚어 인사했다. 거절당했는데도 기분 나쁜 얼굴이 아니었다. ' : '그는 잠깐 머쓱하게 서 있다가 길을 비켜 주었다. ') + '돌아서는 내 걸음이 한결 곧았다.', chips:ch};
+    }},
+    {label:'장난스럽게 받아넘긴다', sub:'도전 +1 · 매력 +1', run(S){
+      const ch = [];
+      if(S.st.dare >= 45){ fx(S, {charm:1.5, dare:1, self:1}, ch); return {text:'“번호는 비싸요. 커피 열 잔 값은 있어야 알려 드려요.” 그가 웃음을 터뜨리며 두 손을 들었다. “졌어요. 다음엔 열 잔 들고 올게요.” 가볍게 손을 흔들고 돌아서는 내 입가에도 웃음이 남았다.', chips:ch}; }
+      fx(S, {charm:0.8, stress:3}, ch); return {text:'“저 번호 안 팔아요!” 농담으로 받아쳤는데 그가 “그럼 이름만이라도”라며 한 걸음 더 다가왔다. 어색하게 웃으며 몇 번을 더 거절한 끝에야 겨우 빠져나왔다. 가슴이 괜히 두근거렸다.', chips:ch};
+    }},
+    {label:'연락처를 건넨다', sub:'들킬 위험↑ · 호감 흔들림', run(S){
+      const ch = []; S.popFlirt = (S.popFlirt || 0) + 1; if(officialOf(S)) addSusp(S, 6);
+      fx(S, {charm:1, self:-1, stress:3}, ch);
+      return {text:'번호를 불러 주고 나서야 손끝이 차가워졌다. 그는 “연락할게요” 하며 환하게 웃고 사라졌다. 별일 아닌 척 걸었지만 화면이 켜질 때마다 심장이 내려앉을 것 같았다.' + (officialOf(S) ? ` ${_scName(officialOf(S))}에게는 말하지 않았다.` : ''), chips:ch};
+    }},
+  ]},
+
+// ── 2a. 호감 있는 남주의 고백 ──
+{id:'sp_pop_2a', cond:S => _scGap(S) >= 1 && !seen(S, 'sp_pop_2b') && _scAfter(S, ['sp_pop_1'], 2) && !!_scSuitor(S),
+  speaker:'', title:'뒤늦은 고백', place:'campus', img:'art/cp_garden.webp',
+  text:S => { const id = _scSuitor(S) || 'minjun'; return `${_scAskSetting(S)}에서 ${josa(_scName(id), '이', '가')} 나를 불러 세운다. ${_scConf[id] || _scConf.minjun} 요즘 사람들 사이에서 내가 달라 보인다는 말이 많았는데, 이 사람도 그걸 본 걸까.${_scNote(S)}`; },
+  choices:[
+    {label:'정중히 거절한다', sub:'나 +2 · 상대 호감↓', run(S){
+      const ch = [], id = _scSuitor(S) || 'minjun'; addAff(S, id, -3, ch); fx(S, {self:2, stress:-1}, ch);
+      return {text:`“마음은 정말 고마워요. 그래도 받을 수 없어요.” ${_scName(id)}${affOf(S, id) >= 50 ? '의 얼굴이 잠시 무너졌다가 천천히 펴졌다. “알겠어요. 그래도 말하길 잘했어요.”' : '은 아쉬운 듯 웃으며 고개를 끄덕였다. “부담 줘서 미안해요.”'} 돌아서는 길이 아프면서도 단단했다.`, chips:ch};
+    }},
+    {label:'흔들린다. 대답을 미룬다', sub:'호감↑ · 스트레스↑ · 들킬 위험', run(S){
+      const ch = [], id = _scSuitor(S) || 'minjun'; addAff(S, id, 5, ch); fx(S, {stress:4, self:-1}, ch); lvSet(S, id, 'popShake');
+      if(officialOf(S)) addSusp(S, 4);
+      return {text:`“생각할 시간을… 조금만 줄래요.” 말해 놓고 입술을 깨물었다. ${_scName(id)}은 “기다릴게요”라고 짧게 답했다. 거절하지 못한 마음이 하루 종일 가슴에서 맴돌았다.`, chips:ch};
+    }},
+    {label:'좋은 사람으로 남자고 웃어넘긴다', sub:'관계 +1 · 호감 소폭↑', run(S){
+      const ch = [], id = _scSuitor(S) || 'minjun'; addAff(S, id, 1, ch); fx(S, {bond:1, ins:0.5}, ch);
+      return {text:`“그런 말 해 줘서 고마워요. 우리 앞으로도 좋은 사람으로 지내요.” ${_scName(id)}은 한순간 눈을 크게 떴다가 어색하게 웃었다. 분명한 대답은 아니었지만, 서로의 얼굴에 안도와 아쉬움이 함께 번졌다.`, chips:ch};
+    }},
+  ]},
+
+// ── 2b. 낯선 동료·선배의 고백 ──
+{id:'sp_pop_2b', cond:S => _scGap(S) >= 1 && !seen(S, 'sp_pop_2a') && _scAfter(S, ['sp_pop_1'], 2) && !_scSuitor(S),
+  speaker:'', title:'낯선 용기', place:'campus', img:'art/cp_garden.webp', cut:'stranger2', cutVar:'a',
+  text:S => `${S.hired ? '같은 층 다른 팀의 동료' : '같은 전공의 낯선 복학생'}가 나를 불러 세운다. “저기, 요즘 자주 눈에 들어와서요. 커피 한 잔만 해요. 부담 갖지 말고요.” 말을 걸어 본 적도 없는 사람의 얼굴이 조금 붉다. 얼마 전까지 없던 일이다.${_scNote(S)}`,
+  choices:[
+    {label:'정중히 거절한다', sub:'나 +2 · 매력 +1', run(S){
+      const ch = []; fx(S, {self:2, charm:1, stress:-1}, ch);
+      return {text:'“마음은 고마운데 커피는 어려울 것 같아요.” 그는 머쓱하게 웃으며 “그럴 줄 알았어요”라고 말했다. 돌아서면서 나는 스스로가 놀라웠다. 흔들리지 않고 말하는 내가 낯설면서 든든했다.', chips:ch};
+    }},
+    {label:'커피 한 잔 정도는 괜찮겠지', sub:'도전 +1 · 들킬 위험', run(S){
+      const ch = []; if(officialOf(S)) addSusp(S, 3);
+      fx(S, {dare:1, charm:1.5, stress:3}, ch);
+      return {text:'점심시간 십오 분, 카페 구석 자리. 그는 의외로 말이 재미있었고, 나는 그 사이 몇 번이나 휴대폰을 내려다봤다. 헤어질 때 그가 “다음엔 정식으로 한 잔 더요”라고 했다. 아무 일도 아닌데 마음이 이상하게 가라앉지 않았다.', chips:ch};
+    }},
+    {label:'소문이 날까 봐 선을 분명히 긋는다', sub:'통찰 +1 · 나 +1', run(S){
+      const ch = []; fx(S, {ins:1, self:1, stress:-1}, ch);
+      return {text:'“저는 이런 오해를 만들고 싶지 않아요. 앞으로 편하게 인사만 해요.” 단호한 말에 그는 놀란 표정으로 고개를 끄덕였다. 한결 가벼워진 마음으로 돌아서며 깨달았다. 선을 긋는 데도 연습이 필요하다는 걸.', chips:ch};
+    }},
+  ]},
+
+// ── 3. 소문과 시선, 소연의 놀림 ──
+{id:'sp_pop_3', cond:S => _scGap(S) >= 1 && _scAfter(S, ['sp_pop_2a', 'sp_pop_2b'], 2),
+  speaker:'소연', title:'소문의 한가운데', place:'cafe', img:'art/ct_mall.webp', cut:'soyeon', cutVar:'a',
+  beats:[
+    '소연이 빨대를 문 채 나를 아래위로 훑어본다. 일부러 눈을 가늘게 뜨고.',
+    '“너 요즘 소문난 거 알아? 어제도 누가 그러더라. ‘요즘 분위기가 달라졌다’고. 눈빛이 깊어졌다나, 여유가 생겼다나.”',
+    '소연이 몸을 내밀어 속삭인다. “이거 그냥 넘어갈 일 아닌데. 무슨 일 있었지? 연애 도사 다 됐네.”',
+  ],
+  text:S => `사람들의 시선이 정말 달라졌다. 복도에서도, 엘리베이터에서도 누군가 돌아본다.${officialOf(S) ? ` ${josa(_scName(officialOf(S)), '이', '가')} 이 소문을 알면 어떤 얼굴을 할까.` : ''} 소연의 장난스러운 눈이 대답을 기다린다.`,
+  choices:[
+    {label:'웃으며 칭찬으로 받아들인다', sub:'나 +2 · 매력 +2', run(S){
+      const ch = []; fx(S, {self:2, charm:2, stress:-2}, ch);
+      return {text:'“그래? 그럼 칭찬으로 들을게.” 어깨를 으쓱하자 소연이 박수를 쳤다. “바로 그거야! 그 여유!” 거울 속 내가 낯설지 않았다. 마흔의 내가 부러워하던 모습이 지금의 나라는 걸 인정하기로 했다.', chips:ch};
+    }},
+    {label:'일부러 소문을 즐기며 장난친다', sub:'매력 +3 · 질투 유발 위험', run(S){
+      const ch = []; S.popBuzz = 1; fx(S, {charm:3, dare:1, stress:1}, ch); if(officialOf(S)) addSusp(S, 2);
+      return {text:'“그래서 누가 그런 말을 했는데? 이름 불어 봐.” 장난으로 소연을 놀리자 둘이 한참 웃었다. 그런데 웃음 끝에 소연이 슬쩍 말했다. “근데 너무 즐기지는 마. 질투하는 사람 생기면 골치 아파.” 가볍게 넘겼지만 그 말이 마음에 얹혔다.', chips:ch};
+    }},
+    {label:'사실 좀 불편하다고 털어놓는다', sub:'관계 +2 · 통찰 +1', mood:'shy', run(S){
+      const ch = []; fx(S, {bond:2, ins:1, stress:-3}, ch);
+      return {text:'“사실… 시선이 따가울 때가 있어. 나는 그대로인데 사람들이 갑자기 다르게 봐.” 소연이 장난기를 거두고 내 손등을 토닥였다. “그럼 네가 중심을 잡아. 사람들은 네가 흔들리는 걸 보고 더 몰려드니까.” 의외로 단단한 조언이었다.', mood:'shy', chips:ch};
+    }},
+  ]},
+
+// ── 4. 인기에 취하는 밤 ──
+{id:'sp_pop_4', cond:S => _scGap(S) >= 1 && _scAfter(S, ['sp_pop_3'], 2),
+  speaker:'', title:'한꺼번에 다가오는 시선', place:'night', img:'art/ct_night.webp',
+  text:S => `모임 자리에서 사람들이 한꺼번에 몰려든다. 한 사람은 명함을 내밀고, 한 사람은 옆자리에 앉아 술잔을 채워 주고, 또 한 사람은 집까지 바래다주겠다며 웃는다.${S.popFlirt ? ' 그 속에는 지난번 번호를 받아 간 얼굴도 섞여 있다.' : ''} 취기가 오른 공기 속에서 내가 지금 얼마나 반짝이는지 알 수 있다. 어떻게 할까?`,
+  choices:[
+    {label:'한 발 물러나 현실을 본다', sub:'나 +2 · 통찰 +2 · 스트레스↓', run(S){
+      const ch = []; fx(S, {self:2, ins:2, stress:-3}, ch);
+      return {text:'잔을 내려놓고 숨을 골랐다. 이 시선들은 내가 누구여서가 아니라 지금 어떻게 보이느냐에 가깝다. 마흔의 내가 알던 사실이다. 정중히 인사하고 물 한 잔을 마시자 마음이 가라앉았다. 중심이 어디 있는지 다시 보였다.', chips:ch};
+    }},
+    {label:'인기를 마음껏 즐긴다', sub:'매력 +3 · 도전 +2 · 위험', run(S){
+      const ch = []; bump(S, 'cash', -10, ch);
+      if(S.st.ins >= 50 || S.self >= 60){ fx(S, {charm:3, dare:2, stress:-1}, ch); if(officialOf(S)) addSusp(S, 3);
+        return {text:'웃고, 받아치고, 적당한 선에서 손을 빼는 법을 나는 알고 있었다. 한밤의 공기가 달콤했다. 누구에게도 매이지 않은 채 반짝이는 기분이 스무 살의 특권처럼 느껴졌다. 집에 오는 길에는 오히려 머리가 맑았다.', chips:ch}; }
+      fx(S, {charm:2, dare:1, self:-2, stress:6, hp:-3}, ch); if(officialOf(S)) addSusp(S, 6);
+      return {text:'웃음이 쏟아지고 술잔이 오갔다. 누가 누구인지도 모를 만큼 취했을 때에야 정신이 들었다. 휴대폰에는 모르는 번호가 몇 개 늘어 있었다. 숙취보다 더 무거운 건 아침 거울 속의 흐릿한 눈빛이었다.', chips:ch};
+    }},
+    {label:'일찍 자리를 빠져나온다', sub:'스트레스↓ · 호감 소폭', run(S){
+      const ch = []; fx(S, {stress:-5, hp:2, self:1}, ch);
+      const o = officialOf(S); if(o){ addAff(S, o, 2, ch); }
+      return {text:'“내일 일찍 일어나야 해서요.” 인사를 하고 문을 나서자 찬 공기가 얼굴을 쓸고 갔다.' + (o ? ` 걸음을 옮기며 ${_scName(o)}에게 짧은 메시지를 보냈다. 답장이 금세 와서 마음이 놓였다.` : ' 사람 많은 곳에서 돌아와 혼자 걷는 밤길이 오히려 편안했다.'), chips:ch};
+    }},
+  ]},
+
+// ── 남자친구의 불안 1: 요즘 누가 자꾸 연락하느냐 ──
+{id:'sp_jeal_1', cond:S => !!officialOf(S) && _scGap(S) >= 1 && _scAfter(S, ['sp_pop_2a', 'sp_pop_2b'], 2),
+  speaker:'', title:'누가 자꾸 연락해?', place:'cafe', img:'art/ct_night.webp',
+  text:S => { const id = _scOff(S); return `${_scJ1[id] || _scJ1.minjun} ${S.popFlirt ? '번호를 건네준 날의 일이 가슴에 얹힌다.' : '뚜렷한 잘못은 없는데도 목이 마른다.'}${S.popBuzz ? ' 소연 앞에서 소문을 즐기던 내가 떠오른다.' : ''}`; },
+  choices:[
+    {label:'숨김없이 보여 주며 안심시킨다', sub:'호감↑ · 신뢰', run(S){
+      const ch = [], id = _scOff(S);
+      if(S.popFlirt){ addAff(S, id, 3, ch); fx(S, {stress:4, self:-1, bond:1}, ch); lvSet(S, id, 'jealHidden');
+        return {text:`${_scJ1ok[id] || _scJ1ok.minjun} 다만 낯선 남자에게 번호를 준 일만은 끝내 말하지 못했다. 안심하는 ${_scName(id)}의 얼굴을 보며 가슴 한쪽이 무겁게 가라앉았다.`, chips:ch}; }
+      addAff(S, id, 6, ch); fx(S, {stress:-2, bond:1}, ch); lvSet(S, id, 'jealTrust');
+      return {text:_scJ1ok[id] || _scJ1ok.minjun, chips:ch};
+    }},
+    {label:'서운함을 솔직히 말한다', sub:'나 +2 · 협상에 따라 호감 변화', run(S){
+      const ch = [], id = _scOff(S), nm = _scName(id);
+      if(S.st.neg + rand(-10, 10) >= 45){ addAff(S, id, 2, ch); fx(S, {self:2, bond:1}, ch); lvSet(S, id, 'jealTalk');
+        return {text:`“의심받는 기분이 들어서 조금 서운했어. 그래도 네가 불안한 건 이해해.” ${nm}은 말이 없다가 천천히 고개를 끄덕였다. “…내가 미안해. 불안을 묻는 것과 의심하는 건 다르다는 걸 알아야겠네.” 서로의 속도가 조금 맞춰졌다.`, chips:ch}; }
+      addAff(S, id, -3, ch); fx(S, {stress:4, self:1}, ch);
+      return {text:`“나를 못 믿는 것 같아서 서운해.” 말이 날카롭게 나가 버렸다. ${nm}의 표정이 굳었다. “…그런 뜻은 아니었는데.” 공기가 한참 식은 채 이야기가 끊겼다.`, chips:ch};
+    }},
+    {label:'장난으로 질투를 즐긴다', sub:'매력 +1 · 호감↓ 위험', run(S){
+      const ch = [], id = _scOff(S), nm = _scName(id); const d = -(4 + R() * 3) - (R() < 0.4 ? 3 : 0);
+      addAff(S, id, d, ch); fx(S, {charm:1, dare:0.5, stress:2}, ch);
+      return {text:`“누구일 것 같아? 알아맞혀 봐.” 웃으며 말하자 ${nm}의 웃음이 어색하게 멎었다. 그는 “…알았어”라고만 하고 시선을 돌렸다. 장난이 장난으로 닿지 않았다는 걸 침묵이 말해 주었다.`, chips:ch};
+    }},
+  ]},
+
+// ── 남자친구의 불안 2: 시선이 달라져서 불안하다 ──
+{id:'sp_jeal_2', cond:S => !!officialOf(S) && _scGap(S) >= 1 && _scAfter(S, ['sp_jeal_1'], 3),
+  speaker:'', title:'달라진 시선', place:'night', img:'art/ct_night.webp',
+  text:S => { const id = _scOff(S); return `${_scJ2[id] || _scJ2.minjun}${lvFlag(S, id, 'jealTrust') ? ' 지난번에 모든 걸 보여 줬던 날이 겹쳐 가슴이 더 아프다.' : ''}${S.popFlirt ? ' 번호를 준 일이 목 끝까지 올라왔다가 내려간다.' : ''}`; },
+  choices:[
+    {label:'손을 잡고 안심시킨다', sub:'호감↑↑ · 신뢰', run(S){
+      const ch = [], id = _scOff(S), nm = _scName(id); addAff(S, id, 8 + (lvFlag(S, id, 'jealTrust') ? 2 : 0), ch); fx(S, {stress:-4, bond:2}, ch); lvSet(S, id, 'jealHeld');
+      if(S.popFlirt) fx(S, {self:-1, stress:2}, ch);
+      S.album.push(`${nm}의 불안한 마음을 안아 줌`);
+      return {text:_scJ2ok[id] || _scJ2ok.minjun, chips:ch};
+    }},
+    {label:'매번 해명하기는 힘들다고 말한다', sub:'나 +2 · 통찰에 따라 호감 변화', run(S){
+      const ch = [], id = _scOff(S), nm = _scName(id);
+      if(S.st.ins + rand(-10, 10) >= 45){ addAff(S, id, 3, ch); fx(S, {self:2, ins:1}, ch);
+        return {text:`“네 불안은 알겠어. 그래도 나도 모든 걸 해명하는 건 지쳐. 같이 방법을 찾자.” ${nm}은 한참 생각하다가 고개를 끄덕였다. “…나도 내 불안을 네 책임으로 만들고 싶지 않아. 같이 줄여 가 보자.” 이야기가 한 칸 앞으로 나아갔다.`, chips:ch}; }
+      addAff(S, id, -3, ch); fx(S, {stress:3, self:1}, ch);
+      return {text:`“나도 힘들어. 매번 변명하는 사람이 되기는 싫어.” 말이 끝나자마자 후회가 밀려왔다. ${nm}의 어깨가 천천히 내려앉았다. “…그렇구나. 내가 부담이었네.” 대화가 거기서 끊겼다.`, chips:ch};
+    }},
+    {label:'장난으로 질투를 즐긴다', sub:'호감↓ 위험', run(S){
+      const ch = [], id = _scOff(S), nm = _scName(id); addAff(S, id, -(6 + R() * 4) - (S.popBuzz ? 2 : 0), ch); fx(S, {charm:1, stress:3}, ch);
+      return {text:`“어머, 그렇게 신경 쓰였어? 귀엽네.” 웃으며 한 말에 ${nm}이 웃지 않았다. “…나는 진지하게 말한 건데.” 그가 시선을 떨구는 순간, 이 장난은 지나쳤다는 걸 알았다.`, chips:ch};
+    }},
+  ]},
+];
+
+SPECIAL.push(..._scVac, ..._scPop);
 
 // 주 스토리 1~3장 (2016~2018) + 라이벌 랜덤 이벤트. ENGINE 구간(DOM 금지)
 // 로컬 헬퍼는 _sa 접두어. 효과 → 라이벌 관계 → 칩 순으로 만든다.
@@ -5730,12 +6646,12 @@ const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_K
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
-const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
+const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', city:'🏙️', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
-const DATE_ART = new Set(["dt_dohyun_1","dt_dohyun_2","dt_dohyun_3","dt_geonwoo_1","dt_geonwoo_2","dt_geonwoo_3","dt_jihu_1","dt_jihu_2","dt_jihu_3","dt_raon_1","dt_raon_2","dt_raon_3","dt_seunghyun_1","dt_seunghyun_2","dt_seunghyun_3","dt_sian_1","dt_sian_2","dt_sian_3","dt_yuchan_1"]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
+const DATE_ART = new Set(["dt_dohyun_1","dt_dohyun_2","dt_dohyun_3","dt_geonwoo_1","dt_geonwoo_2","dt_geonwoo_3","dt_hajin_1","dt_hajin_2","dt_hajin_3","dt_jaewoo_1","dt_jaewoo_2","dt_jaewoo_3","dt_jihu_1","dt_jihu_2","dt_jihu_3","dt_minjun_1","dt_minjun_2","dt_minjun_3","dt_raon_1","dt_raon_2","dt_raon_3","dt_seunghyun_1","dt_seunghyun_2","dt_seunghyun_3","dt_sian_1","dt_sian_2","dt_sian_3","dt_taeoh_1","dt_taeoh_2","dt_taeoh_3","dt_ujin_1","dt_ujin_2","dt_ujin_3","dt_yuchan_1","dt_yuchan_2","dt_yuchan_3"]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
@@ -5873,8 +6789,8 @@ function render(){
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
-  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도감
-  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'dex'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : '도감'; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'dex'] || ''; ic.dataset.painted = '1'; }
+  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도시 산책
+  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'city'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : `도시 ${cpLeft(S)}/${CAMPUS_VISITS}`; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'home'] || ''; ic.dataset.painted = '1'; }
   const full = !S.plan.some(x => !x);
   $('slots3').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
@@ -5943,6 +6859,38 @@ async function visitCampus(key){
     save(); render();
   } finally { visiting = false; }
   showCampus();
+}
+// ───── 도시 산책(졸업 뒤): 지도에서 장소를 고르면 사람을 만나고, 취업했다면 쇼핑도 한다 ─────
+const CT_PIN = {office:[14, 15], cinema:[50, 17], museum:[84, 17], mall:[18, 48], beauty:[80, 47], books:[15, 77], river:[52, 67], night:[86, 85]};
+const ctMapHTML = () => `<div class="cpmap ctmap" style="background-image:url(art/ct_map.webp)">${CITY_KEYS.map(k => { const p = CITY_PLACES[k], pos = CT_PIN[k], n = cityRecommend(S, k).length, side = pos[0] < 26 ? ' l' : pos[0] > 74 ? ' r' : ''; return `<button class="cpin${side}" data-pin="${k}" style="left:${pos[0]}%;top:${pos[1]}%"><i>${p.icon}</i><b>${p.name}</b>${n ? `<em>${n}</em>` : ''}</button>`; }).join('')}</div>`;
+function showCity(){
+  const left = cpLeft(S), dots = Array.from({length:CAMPUS_VISITS}, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
+  const rows = CITY_KEYS.map(k => { const p = CITY_PLACES[k], rec = cityRecommend(S, k).slice(0, 3).map(i => LOVERS[i].name).join('·');
+    return `<div class="ctrow"><button class="ctgo" data-go="${k}"><i>${p.icon}</i><span><b>${p.name}</b><small>${rec ? `💗 ${rec}` : p.desc}</small></span></button>${S.hired ? `<button class="ctshop" data-shop="${k}">🛒</button>` : ''}</div>`; }).join('');
+  openSheet(sheetHead('도시 산책', '졸업한 뒤엔 시내를 돌아다녀요. 💗 표시는 그곳을 좋아하는 사람이에요.') + `<div class="cpleft"><span>이번 달 남은 방문</span><span class="dots">${dots}</span><b>${left}/${CAMPUS_VISITS}</b></div>` + ctMapHTML() + `<div class="ctrows">${rows}</div><button class="act" id="ct-dex" style="margin-top:6px"><span class="top"><span class="ic">📖</span><b>엔딩 도감</b></span></button>`);
+  $('x').onclick = () => { closeSheet(); render(); };
+  document.querySelectorAll('.cpin').forEach(b => b.onclick = () => visitCity(b.dataset.pin));
+  document.querySelectorAll('.ctgo').forEach(b => b.onclick = () => visitCity(b.dataset.go));
+  document.querySelectorAll('.ctshop').forEach(b => b.onclick = () => showCityShop(b.dataset.shop));
+  $('ct-dex').onclick = showDex;
+}
+async function visitCity(key){
+  if(visiting) return; if(cpLeft(S) <= 0){ toast('이번 달 방문을 다 썼어요 (3/3)'); return; }
+  visiting = true; closeSheet();
+  try{
+    const out = cityVisit(S, key);
+    if(out.enc && !S.ending){ await playEvent(out.enc); }
+    save(); render();
+  } finally { visiting = false; }
+  showCity();
+}
+function showCityShop(place){
+  const p = CITY_PLACES[place], comp = cityCompanion(S), items = CITY_SHOP[place] || [];
+  const rows = items.map(it => { const poor = S.cash < it.price, full = it.item && owned(S, it.item) >= (ITEMS[it.item].stack || 1), need = it.who && !comp;
+    return `<button class="act" data-id="${it.id}" ${poor || full || need ? 'disabled' : ''}><span class="top"><span class="ic">${it.icon}</span><b>${it.name}</b></span><span class="em">${it.price}만원${full ? ' · 보유' : need ? ' · 함께할 사람 없음' : ''}</span><span class="d">${it.desc}</span></button>`; }).join('');
+  openSheet(sheetHead(`${p.icon} ${p.name} 쇼핑`, `자금 ${fmtMoney(S.cash)}${comp ? ` · 함께: ${LOVERS[comp].name}` : ''}`) + `<div class="acts">${rows}</div>`);
+  $('x').onclick = () => showCity();
+  document.querySelectorAll('#sheet .act[data-id]').forEach(b => b.onclick = () => { const r = cityBuy(S, place, b.dataset.id); if(r){ toast(r); return; } save(); toast(S._shopNote || '구입!'); render(); showCityShop(place); });
 }
 function openPicker(i, cat){
   activeSlot = i;
@@ -6241,8 +7189,8 @@ function initGame(){
   $('b-call').onclick = openPhone;
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
-  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #71 · 2026.10.11<br><span id="diag"></span></div>`);
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #72 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -6287,7 +7235,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#71 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#72 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

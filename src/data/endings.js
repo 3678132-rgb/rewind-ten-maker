@@ -2,8 +2,9 @@
 const FREE_MIN = 50, FREE_SUM = 192;
 
 // 빌린 인생 / 되풀이된 결혼 같은 보정을 반영한 최종 3축
+const borrowPenalty = S => Math.min(24, (S.borrowed || 0) * 2.2); // 미래 지식을 쓴 만큼 '일' 기둥에서 빠진다(내 손으로 만든 몫이 아니라서)
 function finalPillars(S){
-  const w = S.work - Math.min(32, S.borrowed * 2.8);
+  const w = S.work - borrowPenalty(S);
   let b = S.bond; const j = S.love.jaewoo;
   if(S.partner === 'jaewoo' && j && !j.fixed) b -= 18;
   return {work:clamp(w, 0, 100), bond:clamp(b, 0, 100), self:S.self};

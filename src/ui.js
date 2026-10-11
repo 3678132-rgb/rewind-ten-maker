@@ -272,6 +272,8 @@ const seasonPlace = ev => ev.place === 'campus' ? 'campus' : ev.place === 'room'
 function evOpen(ev, inner){
   const el = $('ev'), sp = seasonPlace(ev), img0 = ev.img === 'art/rival_harin.webp' && S ? (S.m >= 96 ? 'art/rival_harin_late.webp' : S.m >= 48 ? 'art/rival_harin_work.webp' : ev.img) : ev.img, img = img0 || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
   el.className = 'evcard on p-' + (ev.place || 'room'); paintEdge('card');
+  if(img && el.dataset.img && el.dataset.img !== img){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
+  el.dataset.img = img || '';
   el.style.backgroundImage = img ? `url(${img})` : 'none';
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
@@ -283,8 +285,11 @@ function playEvent(ev){
     const head = (ev.speaker ? `<span class="who">${esc(ev.speaker)}</span>` : '') + `<h2>${esc(ev.title)}</h2>`;
     const beats = (ev.beats || []).slice();
     const mc = /^st_(\d+)_1$/.exec(ev.id);
+    // 대사마다 일러스트가 바뀌는 이벤트(오프닝 등): beatImgs[i] 가 i번째 대사의 그림, 선택지 화면은 마지막 그림을 이어 쓴다
+    const bimgs = ev.beatImgs || null; let bi = 0; if(bimgs) bimgs.forEach(u => { const im = new Image(); im.src = u; });
     const nextBeat = () => {
-      if(beats.length){ const t = beats.shift(); evOpen(ev, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
+      if(beats.length){ const t = beats.shift(), ev2 = bimgs ? Object.assign({}, ev, {img: bimgs[Math.min(bi, bimgs.length - 1)]}) : ev; bi++; evOpen(ev2, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
+      if(bimgs) ev = Object.assign({}, ev, {img: bimgs[bimgs.length - 1]});
       const cs = ev.choices; evOpen(ev, head + `<div class="txt">${esc(ev.text(S))}</div>` + cs.map((c, k) => `<button class="ch" data-k="${k}"><b>${esc(c.label)}</b><span>${esc(c.sub || '')}</span></button>`).join(''));
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();

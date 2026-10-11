@@ -46,9 +46,9 @@ function milestoneEvent(S){
         return {text:sc.wait[1], chips:ch, mood:'shy'}; }},
     ]};
   // 키스는 바로 하지 않는다: 먼저 눈이 마주치는 장면(눈맞춤 그림·한 줄)에서 한 번 눌러야 키스 그림이 나온다
-  if(key === 'kiss'){ ev.beats = [(GAZE_LINES[id] || GAZE_LINES._)(lv.name)]; ev.beatImgs = [[`art/ms_${id}_gaze.webp`, `art/ms_${id}_kiss.webp`], `art/ms_${id}_kiss.webp`]; }
+  if(key === 'kiss'){ ev.beats = [(GAZE_LINES[id] || GAZE_LINES._)(lv.name)]; const g = [`art/ms_${id}_gaze.webp`, `art/ms_${id}_kiss.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_kiss.webp`, g]; } // 눈맞춤 그림에서 고르고, 받아들이면 키스 그림이 나온다
   // 첫날밤: 수줍은 순간(칭찬·입맞춤·닿는 손끝)을 한 번 거친 뒤 선택한다
-  if(key === 'night'){ ev.beats = [(NIGHT_LINES[id] || NIGHT_LINES._)(lv.name)]; ev.beatImgs = [[`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`], `art/ms_${id}_night.webp`]; }
+  if(key === 'night'){ ev.beats = [(NIGHT_LINES[id] || NIGHT_LINES._)(lv.name)]; const g = [`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_night.webp`, g]; }
   return ev;
 }
 // 첫날밤 직전: 수줍은 순간. 칭찬과 입맞춤, 닿는 손끝까지만 — 불이 꺼지는 데서 끊는다

@@ -443,3 +443,14 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .cpin:active:not(:disabled){transform:translate(-50%,-50%) scale(.96)}
 .cpin.l:active:not(:disabled){transform:translate(-30%,-50%) scale(.96)}
 .cpin.r:active:not(:disabled){transform:translate(-72%,-50%) scale(.96)}
+
+/* 성인 안내 */
+.agegate{position:absolute;inset:0;z-index:9999;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 30%,#2b3a8c,#0c1030 75%)}
+.agbox{width:100%;max-width:340px;background:#fff;border-radius:22px;padding:22px 20px;text-align:center;color:#2b3560;box-shadow:0 12px 40px rgba(0,0,0,.4);display:grid;gap:10px}
+.agmark{width:56px;height:56px;margin:0 auto;border-radius:50%;background:#e8334f;color:#fff;font-weight:800;font-size:22px;display:grid;place-items:center;border:4px solid #fff;box-shadow:0 0 0 3px #e8334f}
+.agbox h2{font-size:19px}.agbox p{font-size:13.5px;line-height:1.55;color:#556}
+.agbox label{font-size:12.5px;font-weight:700;text-align:left}
+.agbox select{font-size:16px;padding:10px;border-radius:12px;border:2px solid #d5dbf0;background:#f6f8ff;color:#2b3560}
+.agok{padding:12px;border-radius:14px;background:#4f63f0;color:#fff;font-weight:800;font-size:15px}
+.agno{padding:8px;color:#778;font-size:13px}
+#ag-msg{color:#d32f4a;font-size:12.5px;min-height:16px}

@@ -437,7 +437,7 @@ function playEvent(ev){
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(out.mood === 'shy' && ev.cut ? Object.assign({}, ev, {cutVar:'b'}) : ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : ev.cut ? '' : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(Object.assign({}, ev, out.mood === 'shy' && ev.cut ? {cutVar:'b'} : {}, ev.resultImgs && ev.resultImgs[+b.dataset.k] ? {img:ev.resultImgs[+b.dataset.k]} : {}), head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : ev.cut ? '' : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
@@ -559,7 +559,23 @@ function initGame(){
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
   $('ov').addEventListener('click', e => { if(e.target === $('ov') && !document.querySelector('#sheet #nx')){ closeSheet(); if(S) render(); } });
 }
-initTitle(); initGame(); paintIcons(); paintEdge('title');
+// ───── 성인 안내: 만 19세 이상만 이용(연 나이 기준 입력 확인, 이 기기에 저장) ─────
+const AGE_KEY = 'rt_adult_ok';
+function initAgeGate(){
+  const g = $('agegate'); if(!g) return;
+  let ok = false; try{ ok = localStorage.getItem(AGE_KEY) === '1'; }catch(e){}
+  if(ok){ g.style.display = 'none'; return; }
+  const sel = $('ag-year'), yNow = new Date().getFullYear();
+  sel.innerHTML = '<option value="">선택</option>' + Array.from({length:90}, (_, i) => yNow - i).map(y => `<option value="${y}">${y}년</option>`).join('');
+  $('ag-ok').onclick = () => {
+    const y = +sel.value; if(!y){ $('ag-msg').textContent = '태어난 해를 선택해 주세요.'; return; }
+    if(yNow - y < 19){ $('ag-msg').textContent = '만 19세 미만은 이용할 수 없어요.'; return; }
+    try{ localStorage.setItem(AGE_KEY, '1'); }catch(e){}
+    g.style.display = 'none';
+  };
+  $('ag-no').onclick = () => { try{ window.close(); }catch(e){} $('ag-msg').textContent = '창을 닫아 주세요.'; };
+}
+initTitle(); initGame(); paintIcons(); paintEdge('title'); initAgeGate();
 
 // 설치형 앱(PWA): 서비스워커로 그림을 기기에 캐시해 두 번째부터는 빠르게, 오프라인에서도 열린다
 try{ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {}); }catch(e){}

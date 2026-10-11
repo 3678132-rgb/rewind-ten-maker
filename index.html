@@ -381,6 +381,18 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .lcard.off{opacity:.62}
 .lcard .cbw{display:grid;gap:5px;justify-items:end;align-items:center}
 .lcard .mini.dt{font-size:11.5px;padding:5px 9px;border-radius:99px;background:#ffe3ea;color:#c2415f;border:0;font-weight:700;white-space:nowrap}
+
+/* ───── 캠퍼스 지도 ───── */
+.cpmap{position:relative;width:100%;aspect-ratio:1/1;max-height:42vh;border-radius:18px;overflow:hidden;margin:2px 0 6px;background:#dbe9c8 center/cover no-repeat;box-shadow:inset 0 0 0 2px rgba(255,255,255,.7),0 4px 14px rgba(30,40,80,.15)}
+.cpin{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;padding:5px 10px 5px 6px;border-radius:99px;background:rgba(255,255,255,.94);border:2px solid #fff;box-shadow:0 3px 10px rgba(20,30,70,.3);font-size:12.5px;font-weight:800;color:#2b3560;white-space:nowrap}
+.cpin i{font-style:normal;font-size:16px}
+.cpin.on{background:#4f63f0;color:#fff;border-color:#c7d0ff}
+.cpin:active{transform:translate(-50%,-50%) scale(.96)}
+.cphint{font-size:12px;color:var(--mute);text-align:center;margin:0 0 8px}
+.cpleft{display:flex;align-items:center;gap:10px;margin:2px 2px 8px;font-size:13px;font-weight:700;color:#2b3560}
+.cpleft .dots{display:flex;gap:5px}.cpleft .dots i{width:14px;height:14px;border-radius:50%;background:#dfe3ee;box-shadow:inset 0 0 0 2px #fff}.cpleft .dots i.on{background:#4f63f0}
+.cpleft b{margin-left:auto;color:#4f63f0}
+.cpleft .dots{flex:none}.cpleft .dots i{flex:none;display:block}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -391,7 +403,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #55 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #56 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -414,7 +426,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="fab c-pink" data-sheet="stat"><span class="ic" data-icon="stats"></span><span class="lb">능력치</span></button>
    <button class="fab c-orange" data-sheet="career"><span class="ic" data-icon="company"></span><span class="lb">진로</span></button>
    <button class="fab c-pink" data-sheet="love"><span class="ic" data-icon="heart"></span><span class="lb">연애</span></button>
-   <button class="fab c-purple" data-sheet="dex"><span class="ic" data-icon="dex"></span><span class="lb">도감</span></button>
+   <button class="fab c-purple" id="fab-cp" data-sheet="dex"><span class="ic" data-icon="dex" id="fab-cp-ic"></span><span class="lb" id="fab-cp-lb">도감</span></button>
   </div>
   <div class="side-r">
    <button class="fab c-green" data-sheet="stat"><span class="ic gauge" id="g-hp"></span><span class="lb">체력</span></button>
@@ -429,7 +441,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #55 · 2026.10.11</div>
+ <div id="buildtag">빌드 #56 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -1522,6 +1534,247 @@ function milestoneEvent(S){
       {label:sc.wait[0], sub:'조금 더 천천히 · 3개월 뒤 다시', run(S){
         const v = S.love[id], ch = []; v.lastMile = S.m; v.mileWait = S.m + 3; addAff(S, id, 3, ch); fx(S, {self:1.5}, ch);
         return {text:sc.wait[1], chips:ch, mood:'shy'}; }},
+    ]};
+}
+
+// 캠퍼스 산책: 교내 장소별 우연한 만남 장면 (ENGINE 구간 안, DOM 금지)
+// 장소 키: class 강의실 · library 도서관 · shop 매점/학생식당 · club 동아리실 · field 운동장 · garden 정원/뒤뜰 벤치
+
+// ── 친구 장면: 장소별 3개 (연애 없음) ──
+const CP_FRIEND = {
+  class:[
+    {who:'소연', title:'빌려 달라는 필기', text:'강의가 시작되기 직전, 소연이 헐레벌떡 옆자리로 미끄러져 들어온다. “어제 알바 끝나고 그대로 기절했어. 지난 시간 필기 좀 보여 줘, 제발.” 두 손을 모으고 올려다보는 얼굴이 십 년째 똑같다.',
+      yes:['노트를 통째로 내민다', '소연은 형광펜으로 칠한 내 노트를 보고 “너 이거 책으로 내야 돼”라며 감탄했다. 수업이 끝나자 그 애가 말없이 캔커피를 내 책상에 올려 두고 갔다.'],
+      no:['핵심만 짚어 주고 직접 쓰게 한다', '“요점은 이 세 줄이야. 나머지는 네 손으로 써야 남아.” 소연은 투덜대면서도 열심히 받아 적었다. 필기를 마친 그 애의 글씨가 어제보다 또박또박했다.']},
+    {who:'지수', title:'조별과제 팀 짜기', text:'교수님이 조별과제 팀을 짜라고 하자 강의실이 순식간에 소란스러워진다. 지수가 의자를 끌고 와 내 팔을 붙잡는다. “우리 같은 조 하자! 내가 자료 조사는 진짜 빨라, 대신 발표는 네가 해 줘.” 말이 끝나기도 전에 이미 조원 두 명을 더 모아 왔다.',
+      yes:['“좋아, 같이 하자”라고 답한다', '지수는 박수를 치며 단톡방부터 만들었다. 이름은 “우리 조 A+ 가자”였다. 수다가 반이었지만 첫 회의에서 역할이 깔끔하게 나뉘었다.'],
+      no:['“이번엔 다른 조원들과 해 볼게”라고 한다', '“아, 그래? 알겠어!” 지수는 서운한 기색 없이 금세 다른 조를 찾았다. 쉬는 시간에 그 애가 와서 “다음엔 꼭 같이 하자” 하며 사탕을 쥐여 주었다.']},
+    {who:'태윤', title:'졸음을 깨워 줘', text:'맨 뒷줄에서 태윤이 고개를 꾸벅이며 졸고 있다. 교수님이 출석부를 들고 한 줄씩 훑으며 내려오는 중이다. 태윤은 눈을 감은 채 입만 움직인다. “…나 자는 거 아냐. 생각하는 중이야.”',
+      yes:['팔꿈치로 슬쩍 깨운다', '태윤이 벌떡 일어나 “네!”를 외치는 바람에 강의실이 웃음바다가 됐다. 교수님도 웃으며 넘어가 줬다. 수업 뒤 태윤이 학식 쿠폰 한 장을 내 필통에 꽂아 두었다.'],
+      no:['모른 척하고 내 노트에 집중한다', '교수님은 태윤 쪽을 한 번 보더니 그냥 지나쳤다. 태윤은 끝까지 잤고, 수업이 끝나서야 “어, 벌써 끝났어?” 하고 눈을 비볐다. 그 얼굴이 하도 태평해서 화낼 수도 없었다.']},
+  ],
+  library:[
+    {who:'소연', title:'도서관 구석의 도시락', text:'열람실 구석 자리에서 소연이 책을 펴 놓고 한숨만 쉬고 있다. 눈 밑이 거뭇하다. 가까이 가 보니 책은 한 페이지도 안 넘어가 있다. “나 요즘 집안 일 때문에 머리가 복잡해서.” 소연이 겨우 웃어 보인다.',
+      yes:['옆에 앉아 이야기를 들어 준다', '복도 휴게 공간으로 나가 한참 이야기를 들었다. 소연은 울지 않고 끝까지 말했고, 말을 마치자 어깨가 한결 내려가 있었다. “너한테 말하길 잘했다.”'],
+      no:['조용히 간식만 책 위에 올려 둔다', '말없이 초코바 하나를 놓고 돌아섰다. 한참 뒤 휴대폰이 울렸다. “고마워. 나중에 다 얘기할게.” 급하게 묻지 않은 걸 그 애가 알아준 것 같았다.']},
+    {who:'태윤', title:'책 반납 대작전', text:'대출 데스크 앞에서 태윤이 책 열댓 권을 안고 휘청거리고 있다. 가장 위의 책이 떨어지려는 찰나다. “야, 잠깐만. 반납하는 건데 왜 이렇게 무겁지. 이거 다 읽었다고 하면 믿을래?” 표지를 보니 절반은 펼친 흔적도 없다.',
+      yes:['책을 절반 받아 같이 반납한다', '둘이 책을 나눠 들고 줄을 섰다. 데스크 직원이 “이 책들 다 연체될 뻔했어요”라고 하자 태윤이 얼굴을 붉혔다. 나오는 길에 그 애가 음료수를 사 주겠다고 우겼다.'],
+      no:['떨어지는 책만 받아 주고 웃는다', '위의 책 한 권만 받아서 올려 주자 태윤이 “역시 센스 있어” 하며 씩 웃었다. 나머지는 자기 힘으로 끝까지 날랐다. 반납을 마친 뒤 그 애는 어깨를 두드리며 으쓱했다.']},
+    {who:'지수', title:'소곤소곤 수다', text:'도서관 열람실 맞은편 자리에 지수가 앉았다. 책을 펴자마자 속삭이기 시작한다. “있잖아, 어제 우리 과 누구 소문 들었어? 완전 대박인데.” 옆 사람이 눈치를 주고 있는데도 지수는 신나서 입을 멈추지 않는다.',
+      yes:['“복도에서 들을게”라며 데리고 나간다', '복도 끝에서 지수의 수다를 들었다. 소문은 별것 아니었지만 이야기하는 표정이 하도 신나서 같이 웃었다. 돌아와서 한 시간은 둘 다 조용히 집중했다.'],
+      no:['쪽지에 “집중!”이라고 써서 밀어 준다', '지수는 쪽지를 보고 입을 틀어막으며 웃었다. 곧 “이따 밥 먹으면서 말해 줄게”라고 답장을 썼다. 한 장짜리 쪽지가 오늘 공부 시간을 지켜 주었다.']},
+  ],
+  shop:[
+    {who:'소연', title:'마지막 남은 삼각김밥', text:'매점 진열대에 참치마요 삼각김밥이 딱 하나 남았다. 손을 뻗는 순간 옆에서 다른 손이 나타났다. 소연이다. 우리 둘은 한참 서로의 손과 얼굴을 번갈아 보았다. “…양보하기 없기야.”',
+      yes:['“가위바위보 하자”라고 한다', '삼판양승 끝에 내가 졌다. 소연은 승리의 포즈를 하더니, 포장을 뜯어 반으로 나눠 주었다. “이길 줄은 알았지만, 혼자 먹으면 맛없잖아.”'],
+      no:['“네가 먹어”라며 양보한다', '소연은 눈을 가늘게 뜨고 나를 보더니 결국 삼각김밥을 집었다. 그리고 대신 컵라면 값을 자기가 내겠다고 했다. 이런 식으로 서로를 챙기는 건 십 년 전이나 지금이나 똑같다.']},
+    {who:'지수', title:'학식 메뉴 토론', text:'학생식당 줄에서 지수가 오늘의 메뉴판 앞에 서서 진지하게 고민하고 있다. “돈가스냐 제육이냐, 이건 인생의 갈림길이야.” 뒤에서 사람들이 한숨을 쉬는데도 지수의 표정은 심각하다. 내 쪽을 돌아보며 눈을 반짝인다. “너는 뭐 먹을 거야?”',
+      yes:['“우리 하나씩 시켜서 나눠 먹자”고 한다', '지수는 “천재다!”라며 쟁반을 들고 앞장섰다. 두 가지를 반씩 나눠 먹으니 메뉴 고민이 순식간에 해결됐다. 식사하는 내내 지수의 수다가 이어졌고, 줄어드는 접시가 아쉬웠다.'],
+      no:['“난 제육”이라고 먼저 정한다', '“그럼 난 돈가스! 이따 한 입씩만 교환하자.” 지수가 어느새 결정을 끝냈다. 단호하게 하나를 고르면 다른 사람의 고민도 끝난다는 걸 새삼 느꼈다.']},
+    {who:'소연', title:'계산대 앞에서', text:'매점 계산대 앞에서 소연이 지갑을 뒤집어 보고 있다. 카드가 안 보인다고 한다. 뒤에 줄이 길어지자 소연의 귀가 빨개진다. “미안, 조금만 기다려. 어디 뒀더라…” 나는 그 애가 최근 얼마나 빠듯하게 사는지 알고 있다.',
+      yes:['“내가 계산할게”라고 말한다', '소연은 잠깐 망설이다가 “…고마워, 꼭 갚을게” 하고 작게 말했다. 나오는 길에 그 애가 내 팔짱을 끼며 장난스럽게 웃었다. 그 웃음이 조금 젖어 있었다.'],
+      no:['“찾아볼 동안 내 뒤에 서 있어”라고 한다', '줄을 비켜 서서 소연의 가방을 함께 뒤졌다. 카드는 교재 사이에 끼여 있었다. 소연은 “이래서 널 곁에 둬야 해” 하며 활짝 웃었다.']},
+  ],
+  club:[
+    {who:'소연', title:'동아리방 소파 위에서', text:'동아리방 낡은 소파에 소연이 신발을 벗고 누워 있다. 팔로 눈을 가리고 있다. “나 오늘은 아무것도 안 할 거야. 건드리지 마.” 하지만 책상 위엔 내가 좋아하는 과자가 한 봉지 놓여 있다.',
+      yes:['옆에 눕듯이 앉아 같이 쉰다', '소파 팔걸이에 기대어 한참 멍하니 있었다. 소연이 팔을 내리고 “이러고 있으니까 살 것 같다”고 중얼거렸다. 이 정도로 충분한 오후가 있다는 걸 오랜만에 떠올렸다.'],
+      no:['“일어나, 정리 같이 하자”며 끌어낸다', '소연은 비명을 지르면서도 일어났다. 쌓인 박스를 같이 치우다 보니 어느새 웃고 있었다. 정리가 끝나자 그 애가 “역시 움직이니까 낫네”라고 인정했다.']},
+    {who:'태윤', title:'동아리 회비 정산', text:'동아리방 책상에서 태윤이 영수증을 한가득 펼쳐 놓고 이마를 짚고 있다. 계산기를 세 번 두드려도 숫자가 안 맞는다고 한다. “누가 마트에서 간식 사 놓고 영수증을 안 줬나 봐. 아니면 내가 잘못 센 건가.”',
+      yes:['같이 영수증을 맞춰 본다', '영수증을 날짜별로 분류하고 하나씩 더해 갔다. 십 분 만에 빠진 건 태윤이 직접 낸 이천 원이었다. 그 애는 “그냥 내가 쏜 거로 칠게” 하고 껄껄 웃었다.'],
+      no:['“회계 담당은 너잖아, 천천히 해”라고 응원한다', '태윤은 한숨을 쉬면서도 처음부터 다시 계산했다. 한 시간 뒤 맞췄다는 환호가 동아리방에 울렸다. 혼자 해냈다는 표정이 꽤 뿌듯해 보였다.']},
+    {who:'지수', title:'새 회원 환영 포스터', text:'동아리방에 지수가 색연필을 펼쳐 놓고 포스터를 그리고 있다. 가운데에 큼직하게 “지금 안 들어오면 후회!”라고 써 놓았다. “글씨체 어때? 좀 과한가? 근데 눈에 띄긴 하지?” 지수가 마커를 쥔 채 내게 몸을 돌린다.',
+      yes:['“여기 그림 하나 더 그려 넣자”고 거든다', '둘이 포스터 가장자리에 말풍선과 별을 그려 넣었다. 완성된 포스터는 유치했지만 이상하게 정이 갔다. 지수가 “이거 복도에 붙이면 전설 되겠다”며 신나게 테이프를 찾았다.'],
+      no:['“글씨는 좋은데 문장은 조금 줄이자”고 조언한다', '지수는 “오, 그건 맞네” 하며 한 줄을 지웠다. 줄이고 나니 문구가 훨씬 또렷했다. 그 애는 “역시 너랑 하면 완성도가 올라가”라고 말했다.']},
+  ],
+  field:[
+    {who:'소연', title:'트랙 위의 산책', text:'운동장 트랙 가장자리를 소연이 천천히 걷고 있다. 햇빛에 눈을 찡그린 채 이어폰을 한쪽만 꽂았다. 나를 발견하자 반쪽 이어폰을 빼서 손에 쥔다. “같이 걸을래? 오늘은 그냥 걷고 싶어.”',
+      yes:['“좋아, 한 바퀴 돌자”고 나란히 걷는다', '말없이 트랙을 한 바퀴 돌았다. 두 바퀴째 소연이 먼저 입을 열었다. “있잖아, 요즘 좀 불안했는데 걷다 보니 괜찮아졌어.” 바람이 둘 사이를 천천히 지나갔다.'],
+      no:['“난 스트레칭 좀 하고 올게”라며 잠깐 거리를 둔다', '소연은 고개를 끄덕이고 혼자 걸어갔다. 스트레칭을 마치고 쫓아가 보니 트랙 끝에서 기다리고 있었다. 그 애는 “어차피 네가 올 줄 알았어”라며 웃었다.']},
+    {who:'태윤', title:'풋살 인원 모집', text:'운동장 한쪽에서 태윤이 공을 들고 사람을 모으고 있다. 한 명이 모자라다고 한다. “야, 너 한 명만 채워 줘. 포지션은 아무 데나 서 있어도 돼. 진짜로, 부탁이야.” 상대 팀 사람들이 이미 몸을 풀고 있다.',
+      yes:['“좋아, 대신 골대 앞은 싫어”라고 뛰어든다', '엉겁결에 뛰었는데 이상하게 공이 내게로 왔다. 태윤이 “패스 패스!”를 외치다 내가 넣은 골에 펄쩍 뛰었다. 땀범벅이 된 채 마시는 물이 유난히 시원했다.'],
+      no:['“구경하면서 응원할게”라며 벤치에 앉는다', '태윤은 아쉬워하며 다른 사람을 찾았다. 벤치에서 박수를 쳐 주자 그 애가 두 손을 번쩍 들어 답했다. 경기가 끝난 뒤 얻어 마신 이온 음료가 달았다.']},
+    {who:'소연', title:'달리기 내기', text:'수업이 끝난 오후, 운동장에서 소연이 팔을 휙휙 돌리며 다가온다. “우리 달리기 내기 하자. 진 사람이 저녁 사는 거야.” 소연의 눈이 반짝인다. 마흔의 무릎이 살짝 걱정되지만, 지금의 다리는 스무 살이다.',
+      yes:['“좋아, 출발선에 서자”고 받아친다', '“셋, 둘, 하나!” 소연은 초반에 앞서갔지만 마지막 직선에서 내가 따라잡았다. 숨을 헐떡이며 둘이 잔디에 드러누웠다. 저녁은 결국 반반 내기로 했다.'],
+      no:['“내기 말고 그냥 같이 뛰자”고 제안한다', '소연은 잠깐 입을 삐죽이더니 나란히 뛰기 시작했다. 보폭을 맞추며 뛰자 말없이도 서로의 숨소리가 들렸다. 달리기가 끝나자 그 애가 “이게 더 좋다”고 말했다.']},
+  ],
+  garden:[
+    {who:'소연', title:'뒤뜰 벤치의 비밀 장소', text:'학교 뒤뜰, 사람이 잘 오지 않는 벤치에서 소연이 혼자 앉아 있다. 무릎 위에는 먹다 만 샌드위치가 있다. 나를 보자 옆자리를 두드린다. “여기 내 비밀 장소였는데, 너한테만 알려 주는 거야.”',
+      yes:['옆에 앉아 샌드위치를 나눠 먹는다', '바람에 나뭇잎 소리가 났다. 소연은 요즘 고민을 털어놓았고, 나는 판단하지 않고 끄덕이기만 했다. “너랑 있으면 말이 길어져.” 그 애가 웃으며 말했다.'],
+      no:['“혼자 있고 싶은 줄 알았어”라며 물러선다', '소연은 어깨를 으쓱하며 “그럴 땐 그냥 앉아도 돼”라고 했다. 나는 조금 떨어진 곳에 앉아 같은 하늘을 보았다. 대화는 없었지만 둘 다 편했다.']},
+    {who:'지수', title:'셀카 명소 발견', text:'뒤뜰 담쟁이 벽 앞에서 지수가 휴대폰을 높이 들고 이리저리 각도를 잡는다. 햇빛이 딱 좋다고 한다. “너 마침 잘 왔다! 나 좀 찍어 줘. 아니, 우리 같이 찍자!” 내 팔을 붙잡고 벽 앞으로 끌어당긴다.',
+      yes:['“좋아, 제대로 찍어 보자”고 포즈를 취한다', '열 장쯤 찍고 나서야 마음에 드는 한 장이 나왔다. 사진 속의 두 사람이 어색하게 환했다. 지수가 단톡방에 올리자 반응이 쏟아졌다.'],
+      no:['“찍는 건 내가 해 줄게”라며 카메라를 잡는다', '각도를 낮추고 햇빛을 등지게 해 주자 지수가 “우와 작가님!” 하고 환호했다. 사진 속의 그 애는 정말 밝아 보였다. “나도 너 찍어 줄게!”라고 외쳤지만 나는 손사래를 쳤다.']},
+    {who:'태윤', title:'벤치 위의 낮잠', text:'뒤뜰 벤치에 태윤이 모자로 얼굴을 덮고 누워 있다. 발끝으로 박자를 타고 있어서 아주 자는 건 아닌 듯하다. 내 발소리를 듣자 모자 밑에서 목소리가 올라온다. “이 벤치 자리 맡아 놨어. 앉으려면 값을 내.”',
+      yes:['“값은 뭔데?”라며 옆에 앉는다', '태윤은 모자를 올리고 씩 웃으며 요구했다. “오늘 있었던 일 하나만 들려줘.” 별것 없는 이야기를 하자 그 애가 깔깔 웃었다. 평범한 오후가 이상하게 오래 남았다.'],
+      no:['“그럼 다른 벤치 갈게”라고 한다', '“야, 농담이야, 농담!” 태윤이 벌떡 일어나 따라왔다. 결국 옆 벤치에 나란히 앉아 아무 말이나 나눴다. 우정이란 건 이렇게 시시한 시간으로 쌓인다.']},
+  ],
+};
+
+// ── 남자 주인공 장면: 인물 × 단골 장소 2곳 × (pre 사귀기 전 / love 연인) ──
+const CP_LOVER = {
+  jaewoo: {
+    club:{
+      pre:{title:'동아리방의 사업 계획서',
+        text:'동아리방 문이 열리고 재우 선배가 서류 뭉치를 흔들며 들어온다. “마침 잘 왔다! 내가 새로 짠 계획서인데, 첫 장만 읽어 봐. 아니, 읽으면서 표정을 보고 싶어.” 눈이 사라지도록 웃는 얼굴이 아직 아무 잘못도 하지 않은 사람의 것이다.',
+        yes:['첫 장을 읽고 솔직하게 의견을 말한다', '“여기 숫자는 조금 낙관적이에요. 대신 시작 문장은 좋아요.” 선배는 펜을 떨어뜨릴 뻔하더니 환하게 웃었다. “너 진짜 정확하다. 앞으로 내 첫 독자 해라.” 그가 서류를 건네다 손끝이 스쳤다.'],
+        no:['“다 읽고 다음에 말씀드려도 돼요?”라고 한다', '“그래, 천천히! 서두르면 나도 불안해진다.” 선배는 의외로 순순히 서류를 놓고 갔다. 나는 이 사람이 기다려 줄 줄도 안다는 걸 처음 알았다.']},
+      love:{title:'둘만 남은 동아리방',
+        text:'다들 돌아간 동아리방, 재우가 내 옆자리에 앉아 포스트잇을 붙이고 있다. 오늘 해야 할 일 칸 옆에 내 이름으로 된 빈 칸이 하나 생겼다. “여긴 네 칸. 뭘 쓸지는 네 마음대로야.” 마흔의 나는 이런 칸을 한 번도 받아 본 적이 없다.',
+        yes:['빈 칸에 내 계획을 적는다', '펜을 들어 한 줄을 적자 재우가 고개를 기울여 읽고는 “이거 먼저 하자”라며 자기 일정 위에 붙였다. 별것 아닌 포스트잇 한 장이 마음을 오래 따뜻하게 했다. 어깨가 맞닿은 채 우리는 불이 꺼질 때까지 앉아 있었다.'],
+        no:['“오늘은 네 일부터 정리해”라고 웃는다', '“정말? 그럼 내 거 먼저 끝내고 같이 가자.” 재우는 신나서 서류에 몰두했다. 나는 그 옆에서 책을 읽으며 이 여유가 나쁘지 않다고 생각했다. 그가 가끔 고개를 들어 나를 확인하고 웃었다.']},
+    },
+    shop:{
+      pre:{title:'매점 앞의 음료 한 캔',
+        text:'매점 앞 자판기 앞에서 재우 선배와 마주쳤다. 그는 동전을 짤랑이며 말한다. “너, 시험 기간에 뭐 마셔? 커피? 아니면 단 거? 오늘은 내가 살게. 선배의 특권이야.” 말투는 상쾌한데 동전을 세는 손이 서툴다.',
+        yes:['“그럼 선배 추천으로 부탁해요”라고 한다', '선배는 신중하게 고른 캔을 건네며 “이거 마시면 머리가 맑아진다”고 단언했다. 한 모금 마셔 보니 뜻밖에 맛있었다. “내 취향 잘 맞췄지?” 그가 으쓱했고, 병을 건네다 손이 스쳤다.'],
+        no:['“제 건 제가 살게요”라며 동전을 꺼낸다', '“오, 자립심 있네!” 선배는 웃으며 한 발 물러났다. 대신 자기 몫을 사더니 나와 건배하듯 캔을 부딪쳤다. 기분 상한 기색은 하나도 없었다.']},
+      love:{title:'학식 줄에서',
+        text:'학생식당 줄에 서 있는데 재우가 어느새 옆에 와 있다. 쟁반 위에는 계란말이 접시가 두 개다. 그가 내 쟁반에 하나를 슬쩍 올려 놓는다. “오늘 계란말이가 진짜 잘 됐대. 먹어 봐.” 똑같은 버릇이다. 마흔의 나는 이 장면을 안다.',
+        yes:['“고마워, 같이 먹자”며 자리를 잡는다', '창가 자리에 마주 앉아 계란말이를 나눠 먹었다. 재우는 먹다 말고 다음 주 계획을 늘어놓았는데, 이번엔 중간중간 내 의견을 물어 주었다. 그 질문 하나가 오래 마음에 남았다.'],
+        no:['“오늘은 내 몫은 내가 계산할게”라고 한다', '“그래, 대신 내일은 내가 산다?” 재우는 선뜻 웃으며 물러섰다. 각자 계산하고 합쳐 앉는 것이 의외로 편했다. 나는 내 쟁반을 들고 당당하게 걸었다.']},
+    },
+  },
+  minjun: {
+    class:{
+      pre:{title:'건축학과 작업실',
+        text:'건축학과 작업실 문틈으로 민준이 보였다. 모형 앞에서 커터칼을 쥔 채 머리를 긁고 있다. 나를 발견하자 허둥지둥 일어나다가 책상 모서리에 정강이를 부딪힌다. “아, 아니, 괜찮아. 아무것도 아니야! 구경하러 온 거야?”',
+        yes:['“응, 네 모형 보러 왔어”라고 들어간다', '민준은 귀 끝이 빨개져서 모형을 설명하기 시작했다. 말은 서툴지만 손끝은 정확했다. 마지막에 그가 작은 창문 하나를 가리켰다. “이 창은 네가 좋아할 것 같아서 넣었어.” 말을 뱉고는 스스로 놀라 입을 다물었다.'],
+        no:['“작업 방해될까 봐 복도에서 기다릴게”라고 한다', '민준은 “아냐, 방해 아냐!”라며 급히 의자를 하나 빼 주었다. 그리고 한참 뒤 아무렇지 않은 척 컵라면을 하나 건넸다. 서툴지만 따뜻한 사람이다.']},
+      love:{title:'밤샘 실습실',
+        text:'밤늦은 실습실, 민준이 도면 위에 엎드려 있다가 내 발소리에 놀라 고개를 든다. 책상 위에는 식은 도시락이 하나 놓여 있다. “아직 안 갔어? 나는… 이 선 하나만 마저 긋고 갈게.” 그가 불쑥 도시락을 반으로 가르듯 밀어 준다.',
+        yes:['옆에 앉아 도시락을 나눠 먹는다', '민준이 계란말이를 내 쪽으로 슬쩍 밀었다. 자꾸 선을 긋다 말고 나를 보는 눈이 이상하게 조심스러웠다. 먹는 동안 그가 “이 건물 완성되면 네가 제일 먼저 와 줬으면 좋겠어”라고 중얼거렸다. 손등이 살짝 스쳤다.'],
+        no:['“오늘은 일찍 자자. 내일 마저 하자”고 말한다', '민준은 연필을 쥔 채 잠깐 머뭇거리다가 도면을 접었다. “…네 말 들으니까 졸리다.” 불을 끄며 그가 먼저 문을 열어 주었다. 복도를 나란히 걷는 동안 우리는 조용했다.']},
+    },
+    field:{
+      pre:{title:'운동장의 어설픈 공',
+        text:'운동장 가장자리에서 민준이 혼자 공을 차고 있다. 발끝에 맞은 공이 자꾸 엉뚱한 방향으로 튀어 나간다. 나와 눈이 마주치자 민준이 얼굴을 붉히며 변명한다. “군대 가기 전에 체력 좀 길러 두려고… 이게 맞나?”',
+        yes:['공을 주워 같이 차 보자고 한다', '서툰 패스가 몇 번 오갔다. 민준은 공을 놓칠 때마다 “미안!”을 외치고, 나는 웃음을 참지 못했다. 마지막에 제대로 맞은 공이 골대 쪽으로 곧게 날아가자 그가 환하게 웃었다. 그 웃음이 눈부셨다.'],
+        no:['“무리하지 말고 천천히 해”라고 응원한다', '민준은 “응, 응” 하며 고개를 끄덕였다. 내가 벤치에서 지켜보는 동안 그의 공은 조금씩 똑바로 날아갔다. 마지막엔 나를 향해 손을 흔들었다.']},
+      love:{title:'달리는 저녁',
+        text:'해가 기울 무렵 운동장 트랙을 민준이 천천히 달리고 있다. 나를 발견하자 속도를 줄이고 숨을 몰아쉬며 다가온다. “같이… 걸을래? 나는 달린 거 아니고 걷는 거야.” 이마에 땀이 맺혀 있는데도 허세를 부린다.',
+        yes:['“그래, 같이 걷자”며 보폭을 맞춘다', '나란히 트랙을 걷는 동안 민준은 말수가 적었다. 바람이 불자 그가 슬쩍 바람 쪽에 서 주었다. 한 바퀴를 다 돌았을 때, 그가 작게 말했다. “네가 옆에 있으면 오래 걸어도 안 힘들어.”'],
+        no:['“오늘은 네 속도대로 뛰어. 내가 응원할게”라고 한다', '“진짜?” 민준은 놀란 듯하다가 다시 달려 나갔다. 트랙을 도는 그가 지나칠 때마다 나를 힐끗 보았다. 마지막 바퀴에서는 눈이 마주치자 웃으며 손을 흔들었다.']},
+    },
+  },
+  hajin: {
+    class:{
+      pre:{title:'특강이 끝난 강의실',
+        text:'특강이 끝난 강의실, 학생들이 빠져나간 뒤에도 하진이 칠판 앞에 서 있다. 내가 노트를 챙기는 사이 그가 먼저 돌아본다. “아까 질문, 맨 뒤에서 한 사람이죠? 좋았어요. 근데 이유를 모르고 던진 질문 같지는 않던데.” 직설적인 눈빛이 곧장 닿는다.',
+        yes:['“현실이 그렇게 흘러가는 걸 봤어요”라고 답한다', '하진은 잠깐 웃더니 명함을 꺼냈다. “그런 눈은 학교 밖에서 더 쓸모 있어요. 다음 멘토링에 와요.” 명함을 받다가 손끝이 스쳤다. 그의 손이 의외로 차분했다.'],
+        no:['“그냥 궁금해서 물어본 거예요”라고 얼버무린다', '“그럼 다음엔 더 궁금해해요.” 하진은 어깨를 으쓱하며 칠판 지우개를 집었다. 거절당한 사람치고는 아주 편안한 표정이었다. 나가는 길에 그가 덧붙였다. “언제든 와도 돼요.”']},
+      love:{title:'비어 있는 강의실',
+        text:'멘토링이 끝난 오후, 하진이 빈 강의실 교탁에 노트북을 올려놓고 자판을 두드리고 있다. 내가 문을 열자 고개를 들며 곧바로 말한다. “마침 잘 왔어요. 이 사업 모델에서 약한 곳이 어딘지 딱 하나만 짚어 봐요.” 내가 아는 이름의 서비스가 막 태어나는 화면이다.',
+        yes:['망설이지 않고 약점을 짚어 준다', '“여기요. 고객이 반복 구매할 이유가 없어요.” 하진이 손가락을 멈추더니 한참 화면을 봤다. “…그 말이 맞네. 당신 말은 늘 정확해서 가끔 무서워요.” 웃으면서 그가 노트북을 내 쪽으로 돌려 주었다.'],
+        no:['“오늘은 일 얘기 말고 쉬어요”라고 말한다', '하진은 잠시 눈썹을 올리더니 노트북을 덮었다. “직설적이네. 알겠어요, 십 분만 쉬죠.” 교탁에 걸터앉은 그가 처음으로 일 얘기가 아닌 이야기를 꺼냈다. 십 분은 이십 분이 되었다.']},
+    },
+    garden:{
+      pre:{title:'뒤뜰의 통화',
+        text:'학교 뒤뜰 벤치에서 하진이 휴대폰을 귀에 대고 날카롭게 말하고 있다. “아니요, 그 조건은 안 됩니다. 다시 말씀드릴게요.” 통화가 끝나자 그가 한숨을 쉬며 나를 발견한다. 어색할 법한데 표정은 담담하다. “봤죠? 이게 제 평소예요. 별로 멋없죠.”',
+        yes:['“멋있어요. 확실하게 말하는 거요”라고 한다', '하진이 웃음을 터뜨렸다. “그런 소리 처음 들어요. 다들 무섭다고 하는데.” 그는 벤치 한쪽을 비워 주며 앉으라고 했다. 샌드위치를 반으로 나눠 주는 손이 조금 서툴렀다.'],
+        no:['“힘든 협상이었나 봐요”라고 조심스레 말한다', '“힘들죠. 근데 이런 건 원래 힘든 거예요.” 하진은 무심하게 대답하고는 이내 어깨를 폈다. “걱정해 준 건 고마워요. 진짜로.” 짧은 말이지만 진심이 묻어 있었다.']},
+      love:{title:'벤치 위의 이십 분',
+        text:'뒤뜰 벤치에서 하진이 눈을 감고 앉아 있다. 노트북은 닫혀 있고 샌드위치는 반쯤 남았다. 나를 보더니 눈도 안 뜬 채 말한다. “이십 분만 쉬려고요. 대신 그 이십 분은 당신이 같이 있어야 효과가 있어요.” 직설적이지만 어딘가 쑥스러운 목소리다.',
+        yes:['옆에 앉아 어깨를 가볍게 기댄다', '하진이 눈을 뜨지 않은 채 웃었다. “이러면 시간이 진짜 빨리 가는데.” 바람이 나뭇가지를 흔드는 소리만 들렸다. 이십 분 뒤 그가 일어나며 말했다. “다음에도 이만큼 훔쳐 갈게요.”'],
+        no:['“타이머 맞춰 놓을게요. 시간 지키는 쪽으로”라고 한다', '“냉정한데. 좋아요.” 하진은 웃으며 타이머를 받아들였다. 알람이 울리자 그는 약속대로 벌떡 일어났다. 그리고 내 손에 남은 샌드위치 반쪽을 쥐여 주었다.']},
+    },
+  },
+  raon: {
+    library:{
+      pre:{title:'열람실 구석의 마스크',
+        text:'도서관 열람실 맨 구석, 모자와 마스크를 푹 눌러쓴 사람이 책 한 권을 방패처럼 세워 놓고 앉아 있다. 라일락빛 머리카락 한 가닥이 모자 밖으로 삐져나왔다. 눈이 마주치자 그가 입에 손가락을 대고 쪽지를 밀어낸다. “제발 아무한테도 말하지 마세요. 저 지금 과제하러 온 학생이에요.”',
+        yes:['“알겠어요. 조용히 있을게요”라고 쪽지에 답한다', '필담이 몇 번 오가고, 그는 마스크 위로 눈만 반달로 접으며 웃었다. “은인이 한 명 늘었네요.” 지나가던 학생이 힐끗 쳐다보자 그가 책 뒤로 숨었고, 나는 시치미를 떼며 같이 책을 폈다. 그 와중에도 우리는 몰래 웃었다.'],
+        no:['“저는 공부하러 온 거라서요”라고 가볍게 선을 긋는다', '그는 고개를 꾸벅 숙이고 책으로 얼굴을 가렸다. 한참 뒤 책상 끝에 자그마한 쪽지가 놓였다. “미안해요, 그리고 고마워요. 모른 척해 줘서.” 글씨가 둥글고 조심스러웠다.']},
+      love:{title:'비밀 서가',
+        text:'도서관 깊숙한 서가 사이, 모자와 마스크 차림의 라온이 나를 기다리고 있었다. 책을 찾는 척 고개를 숙인 채 속삭인다. “아무도 안 와요? 저 들키면 컴백 전에 큰일 나요.” 긴장한 목소리인데 눈은 장난기로 반짝인다.',
+        yes:['서가 틈으로 몰래 이어폰 한쪽을 받는다', '아직 발매 전인 노래가 귓가에 흘렀다. 선반 너머로 학생들의 발소리가 지나갈 때마다 우리는 숨을 멈췄다. 발소리가 멀어지자 라온이 소리 없이 웃었다. “이 노래, 처음 들려주는 사람이에요.” 손가락 끝이 책등 위에서 스쳤다.'],
+        no:['“오늘은 먼저 나가요. 들키면 안 되니까”라고 말한다', '“…그렇죠. 조심해야죠.” 라온은 아쉬운 눈으로 끄덕이고 먼저 자리를 떴다. 잠시 뒤 휴대폰에 메시지가 왔다. “현명한 사람이라 더 좋아요.” 나는 책 사이에서 혼자 웃었다.']},
+    },
+    garden:{
+      pre:{title:'뒤뜰의 도망자',
+        text:'뒤뜰 벤치 뒤 나무 그늘에서 마스크를 쓴 라온이 쭈그려 앉아 있다. 학교 방송 촬영 스태프가 멀리서 누군가를 찾는 소리가 들린다. 그가 나를 올려다보며 작게 부탁한다. “저 여기 없다고 해 주세요. 딱 십 분만요.” 숨바꼭질하는 아이 같은 표정이다.',
+        yes:['“저쪽으로 갔다고 말해 줄게요”라고 거든다', '스태프가 오자 나는 태연하게 반대 방향을 가리켰다. 발소리가 멀어지자 라온이 풀썩 주저앉아 웃음을 참았다. “완전 연기 잘하시네요. 배우 해도 되겠어요.” 마스크 너머로 눈이 반짝였다.'],
+        no:['“저는 모르는 척할게요. 숨는 건 알아서 해요”라고 한다', '라온은 눈을 동그랗게 뜨더니 장난스럽게 고개를 끄덕였다. “도와주진 않지만 고자질도 안 하는 사람. 의외로 믿음직하네요.” 스태프가 지나간 뒤 그는 손을 흔들며 뛰어갔다.']},
+      love:{title:'이어폰 한 쪽',
+        text:'뒤뜰 구석 벤치에서 모자를 눌러쓴 라온이 손짓한다. 주변을 두리번거리다가 목소리를 낮춘다. “지금 여기 아무도 없죠? 저 십 분 남았어요. 다음 스케줄 전에 얼굴 보고 싶어서요.” 마스크를 반쯤 내리며 쑥스럽게 웃는다.',
+        yes:['옆에 앉아 이어폰을 나눠 낀다', '잔잔한 멜로디가 흘렀다. 벤치 바깥으로 학생들의 웃음소리가 지나갈 때마다 라온이 마스크를 올리며 숨을 죽였다. 위기가 지나가면 둘이 몰래 웃었다. 그가 내 손등 곁에 손을 두었다가 조심스럽게 거두었다. “이 정도는 괜찮죠?”'],
+        no:['“오늘은 사람이 너무 많아. 다음에 더 안전할 때 보자”고 말한다', '라온은 입술을 삐죽이다가 이내 고개를 끄덕였다. “알겠어요, 어른스럽네. 그럼 저는 이어폰이라도 두고 갈게요.” 벤치 위에 이어폰 한 쪽이 남았다. 그가 멀어지는 동안 나는 그 뒷모습을 눈으로 오래 배웅했다.']},
+    },
+  },
+  taeoh: {
+    garden:{
+      pre:{title:'뒤뜰의 빛',
+        text:'뒤뜰 담벼락 앞에서 태오가 카메라를 든 채 가만히 서 있다. 한참 같은 자리에 서 있더니 나를 보고서야 천천히 손을 든다. “이 시간 빛이… 좋아서요. 사진 동아리 특강 전에 한 장만 찍어 두려고요. 서두르지 않아도… 늦지 않아요.” 느린 말투가 바람처럼 흩어진다.',
+        yes:['옆에서 같이 빛이 변하기를 기다린다', '태오는 아무 말 없이 나란히 서 주었다. 십 분쯤 지나자 담벼락이 금빛으로 번졌고, 셔터 소리가 낮게 울렸다. “기다려 줘서… 고마워요.” 그가 카메라를 내리며 처음으로 활짝 웃었다.'],
+        no:['“저는 이만 가 볼게요”라고 인사한다', '“아… 네, 조심히 가요.” 태오는 느리게 고개를 숙였다. 돌아서는 등 뒤에서 셔터 소리가 한 번 울렸다. 뒤돌아보니 그는 아무 일 없다는 듯 하늘만 올려다보고 있었다.']},
+      love:{title:'느린 오후의 사진',
+        text:'뒤뜰 벤치에서 태오가 필름 카메라를 닦고 있다. 나를 발견하자 천천히 눈을 맞추며 웃는다. “오늘은… 찍을 게 별로 없어서요. 그냥 앉아 있어도 돼요?” 말은 느린데, 마음은 이미 알고 있다는 듯 벤치 한쪽을 비워 두었다.',
+        yes:['옆에 앉아 어깨를 나란히 하고 앉는다', '바람이 나뭇잎 사이를 지나갔다. 태오가 말없이 카메라를 들더니 나 대신 나무를 찍었다. “지금 이 순간은… 나무가 아니라 둘이 앉은 자리를 찍은 거예요.” 그의 손끝이 벤치 위에서 내 손등 근처에 잠깐 머물렀다.'],
+        no:['“오늘은 내가 찍어 볼게요”라며 카메라를 빌린다', '태오는 놀란 듯하다가 조심스럽게 카메라를 건넸다. 서툴게 셔터를 누르는 내게 그가 낮게 알려 줬다. “숨을 한 번 쉬고… 누르면 돼요.” 현상된 사진은 흔들렸지만, 이상하게 가장 마음에 들었다.']},
+    },
+    club:{
+      pre:{title:'사진 동아리의 전시 준비',
+        text:'사진 동아리방, 태오가 벽에 사진 한 장을 대 보고 한참 서 있다. 바닥에는 인화된 사진이 가득하다. 내가 문을 열자 그가 천천히 돌아본다. “아, 마침… 한 장만 골라 줄래요? 저는 오래 보면 다 좋아 보여서요.” 느리지만 어딘가 간절한 부탁이다.',
+        yes:['사진을 천천히 훑어보고 한 장을 고른다', '마음이 가는 한 장을 가리키자 태오가 한참 그 사진을 바라봤다. “…이게 제일 숨을 쉬는 사진이네요.” 그는 사진을 벽 한가운데에 걸었다. 내가 고른 것이 전시의 중심이 되었다.'],
+        no:['“저는 전문가가 아니라서 못 고르겠어요”라고 한다', '태오는 “그럼 그냥 아무거나 좋아하는 걸 말해 줘요”라며 부드럽게 웃었다. 결국 나는 사진 하나를 가리켰고, 그는 “좋은 선택이에요”라고만 했다. 선택보다 대화가 소중했다.']},
+      love:{title:'암실의 붉은 불빛',
+        text:'동아리방 한쪽 암실에서 붉은 불빛이 새어 나온다. 문을 두드리자 태오의 느린 목소리가 대답한다. “들어와요. 지금… 막 상이 올라오는 중이에요.” 현상액 속에서 천천히 떠오르는 사진 속 얼굴이 낯익다. 내 얼굴이다.',
+        yes:['“나 이렇게 웃고 있었어요?”라고 묻는다', '“네. 제가 제일 좋아하는 얼굴로요.” 태오는 사진을 집게로 조심스럽게 집어 올리며 대답했다. 붉은 불빛 속에서 그의 귀가 붉게 물든 것이 보였다. 좁은 암실에서 손등이 스쳤다.'],
+        no:['“나중에 완성되면 보여 줘요”라고 웃는다', '“좋아요. 기다릴 줄 아는 사람은… 좋은 사진을 받아요.” 태오는 사진에서 눈을 떼지 않은 채 미소 지었다. 나는 암실 문을 조용히 닫고 나왔다. 복도 불빛이 평소보다 밝게 느껴졌다.']},
+    },
+  },
+};
+
+// 캠퍼스 산책: 교내 장소를 골라 시간을 보내면 친구나 남자 주인공을 우연히 만난다. ENGINE 구간(DOM 금지)
+// 장면 글은 campus_scenes.js (CP_FRIEND[장소] = 친구 장면들, CP_LOVER[인물][장소] = {pre, love})
+const CAMPUS_PLACES = {
+  class:  {name:'강의실',      icon:'🏫', sprite:'study',    cost:0, hp:-4, stress:3,  eff:{know:3.4, work:1.2},            desc:'빈 강의실에 먼저 와 앉는다. 아는 얼굴이 들어올지도 몰라요.'},
+  library:{name:'도서관',      icon:'📚', sprite:'study',    cost:0, hp:-3, stress:2,  eff:{know:3.8, skill:1.0, work:1.0}, desc:'조용한 열람실. 집중이 잘 되고, 의외의 사람을 만나기도 해요.'},
+  shop:   {name:'매점·학생식당', icon:'🍙', sprite:'friends',  cost:3, hp:2,  stress:-6, eff:{bond:1.6, charm:0.5},           desc:'삼각김밥과 수다. 친구들이 제일 많이 모이는 곳.'},
+  club:   {name:'동아리실',    icon:'🎸', sprite:'friends',  cost:0, hp:-1, stress:-3, eff:{charm:1.3, neg:0.8, bond:1.2},  desc:'소파와 기타와 라면 냄새. 선배들이 죽치고 있어요.'},
+  field:  {name:'운동장',      icon:'⚽', sprite:'exercise', cost:0, hp:4,  stress:-6, eff:{dare:0.8, charm:0.6, self:0.8}, desc:'트랙을 돌고 벤치에 앉는다. 땀과 바람이 개운해요.'},
+  garden: {name:'정원·벤치',   icon:'🌿', sprite:'journal',  cost:0, hp:2,  stress:-8, eff:{self:1.6, ins:0.7},             desc:'연못 옆 벤치. 생각을 정리하기 좋은 학교 뒤뜰.'},
+};
+const CAMPUS_END = 48; // 졸업(2020.3) 전까지만 교정을 돌아다닌다
+const CAMPUS_VISITS = 3; // 한 달에 교정을 돌아다닐 수 있는 횟수(스케줄 칸을 쓰지 않는다)
+const cpLeft = S => S.cpLeft == null ? CAMPUS_VISITS : S.cpLeft;
+// 팝업 연출용 활동 정보(스케줄 목록에는 나오지 않는다)
+for(const key in CAMPUS_PLACES){ const p = CAMPUS_PLACES[key], id = 'cp_' + key; ACTS[id] = {id, cp:key, slots:1, cat:'캠퍼스', icon:p.icon, name:p.name, desc:p.desc, cost:0, eff:{}}; }
+// 장소를 한 번 방문한다: 작은 효과 + 우연한 만남. 방문 횟수 1 소모
+function campusVisit(S, key){
+  const p = CAMPUS_PLACES[key], ch = [], out = {id:'cp_' + key, ch, note:'', place:key};
+  S.cpLeft = Math.max(0, cpLeft(S) - 1);
+  if(p.cost && S.cash >= p.cost) bump(S, 'cash', -p.cost, ch);
+  if(p.hp) bump(S, 'hp', Math.round(p.hp / 2), ch);
+  if(p.stress) bump(S, 'stress', Math.round(p.stress / 2), ch);
+  const e = {}; for(const k in p.eff) e[k] = p.eff[k] * 0.5; fx(S, e, ch);
+  out.enc = campusEncounter(S, key); out.note = out.enc ? '교정을 거닐다 누군가와 마주쳤다.' : p.desc;
+  return out;
+}
+function weightedPick(list){ const tot = list.reduce((a, c) => a + c.w, 0); let r = R() * tot; for(const c of list){ r -= c.w; if(r <= 0) return c; } return list[list.length - 1]; }
+function campusEncounter(S, place){
+  const LV = typeof CP_LOVER !== 'undefined' ? CP_LOVER : {}, FR = typeof CP_FRIEND !== 'undefined' ? CP_FRIEND : {};
+  if(R() < 0.15) return null; // 가끔은 아무도 마주치지 않는다
+  const cands = [];
+  for(const id of Object.keys(LV)){
+    const set = LV[id][place]; if(!set || !LOVERS[id]) continue; const v = S.love[id], lv = LOVERS[id];
+    if(v){ if(v.stage === -9 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
+    else if(!S.seen['meet_' + id] && !lv.career && S.m >= lv.meet - 8 && S.m < CAMPUS_END) cands.push({w:4.5, kind:'meet', id}); // 첫 만남이 이 장소에서 앞당겨진다
+  }
+  for(const sc of FR[place] || []) cands.push({w:2.2, kind:'friend', sc});
+  if(!cands.length) return null;
+  const c = weightedPick(cands);
+  if(c.kind === 'meet') return meetEvent(S, c.id);
+  const sc = c.sc, pl = CAMPUS_PLACES[place];
+  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:sc.title, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+    choices:[
+      {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = []; fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = []; fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
+    ]};
+  const id = c.id, lv = LOVERS[id];
+  return {id:`cp_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:sc.title, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+    choices:[
+      {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = []; S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = []; S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
     ]};
 }
 
@@ -3542,6 +3795,9 @@ const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>'
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
+// 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
+const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
+const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -3648,6 +3904,9 @@ const ICONS = {
 function paintIcons(){ document.querySelectorAll('[data-icon]').forEach(el => { if(!el.dataset.painted){ el.innerHTML = ICONS[el.dataset.icon] || ''; el.dataset.painted = '1'; } }); }
 function ring(v, color, label){ const r = 17, c = 2 * Math.PI * r, f = clamp(v, 0, 100) / 100; return `<svg viewBox="0 0 46 46" aria-label="${label} ${Math.round(v)}"><circle cx="23" cy="23" r="${r}" fill="none" stroke="#dde3f2" stroke-width="5"/><circle cx="23" cy="23" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(c * f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 23 23)"/><text x="23" y="27.5" text-anchor="middle" font-size="12.5" font-weight="800" fill="#14181B">${Math.round(v)}</text></svg>`; }
 // 하단 탭 → 활동 분류. 가운데 '홈'은 스케줄 시트를 연다
+// 스케줄 분류 이름(화면에 보이는 말). 안쪽 키(공부·일·돈…)는 그대로 두고 보이는 이름만 바꾼다.
+const CAT_LABEL = {'공부':'배움', '일':'커리어', '돈':'머니', '관계':'인연', '나':'셀프케어', '휴식':'휴식', '캠퍼스':'캠퍼스', '홈':'홈'};
+const catLabel = c => CAT_LABEL[c] || c;
 const TABS = [{cat:'공부', ic:'edu'}, {cat:'일', ic:'work'}, {cat:'돈', ic:'money'}, {cat:'홈', ic:'home', home:true}, {cat:'휴식', ic:'rest'}, {cat:'나', ic:'self'}, {cat:'관계', ic:'heart'}];
 let pickCat = null, activeSlot = 0;
 function firstEmpty(){ const i = S.plan.findIndex(x => !x); return i < 0 ? 0 : i; }
@@ -3663,9 +3922,9 @@ function adviceText(){
 function showDialog(){ const a = adviceText(); $('dlg-head').textContent = '일흔의 나'; $('dlg-body').textContent = a.t; $('dialog').hidden = false; if(S.m === 0) S.seen.advice0 = true; }
 function render(){
   if(!S) return;
-  const left = TOTAL_MONTHS - S.m, img = `art/${heroKey(S)}.webp`;
+  const left = TOTAL_MONTHS - S.m, img = heroImg(S);
   $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
-  $('hud-avatar').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
+  $('hud-avatar').style.backgroundImage = `url(${img})`;
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
   $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
@@ -3675,6 +3934,8 @@ function render(){
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
+  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도감
+  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'dex'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : '도감'; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'dex'] || ''; ic.dataset.painted = '1'; }
   const full = !S.plan.some(x => !x);
   $('slots3').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
@@ -3685,7 +3946,7 @@ function render(){
   }).join('');
   document.querySelectorAll('.slot3[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   const go = $('btn-go'); go.textContent = full ? '이번 달 시작' : '스케줄 정하기'; go.classList.toggle('ready', full);
-  $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${t.cat}</span></button>`).join('');
+  $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${catLabel(t.cat)}</span></button>`).join('');
   document.querySelectorAll('.tb').forEach(b => b.onclick = () => openPicker(firstEmpty(), b.dataset.cat === '홈' ? null : b.dataset.cat));
   paintIcons();
   if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; $('dialog').hidden = true; }
@@ -3706,18 +3967,40 @@ function chooseDate(slot, ts, done, back){
   $('x').onclick = () => { back(); };
   document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done(b.dataset.id));
 }
+// 캠퍼스 지도: 장소 핀 위치(가로·세로 %)는 art/cp_map.webp 의 구역 배치에 맞춘다
+const CP_PIN = {class:[25, 17], library:[76, 17], shop:[30, 46], club:[78, 44], field:[27, 76], garden:[78, 79]};
+const cpMapHTML = () => `<div class="cpmap" style="background-image:url(art/cp_map.webp)">${Object.keys(CAMPUS_PLACES).map(k => { const p = CAMPUS_PLACES[k], pos = CP_PIN[k]; return `<button class="cpin" data-pin="${k}" style="left:${pos[0]}%;top:${pos[1]}%"><i>${p.icon}</i><b>${p.name}</b></button>`; }).join('')}</div>`;
+// 스케줄을 정하기 전에 교정을 돌아다닌다: 한 달에 3번(스케줄 칸을 쓰지 않는다)
+function showCampus(){
+  const left = cpLeft(S), dots = Array.from({length:CAMPUS_VISITS}, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
+  openSheet(sheetHead('캠퍼스 산책', '스케줄을 하기 전에 장소를 돌아다니며 친구나 마음 가는 사람을 만나요.') + `<div class="cpleft"><span>이번 달 남은 방문</span><span class="dots">${dots}</span><b>${left}/${CAMPUS_VISITS}</b></div>` + cpMapHTML() + `<div class="cphint">${left ? '가고 싶은 장소를 눌러 보세요.' : '이번 달 방문을 모두 썼어요. 다음 달에 다시 돌아다닐 수 있어요.'}</div>`);
+  $('x').onclick = () => { closeSheet(); render(); };
+  document.querySelectorAll('.cpin').forEach(b => b.onclick = () => visitCampus(b.dataset.pin));
+}
+let visiting = false;
+async function visitCampus(key){
+  if(visiting) return; if(cpLeft(S) <= 0){ toast('이번 달 방문을 다 썼어요 (3/3)'); return; }
+  visiting = true; closeSheet();
+  try{
+    const out = campusVisit(S, key); await showAct('방문', 'cp_' + key, out, 0, {noDate:true});
+    if(out.enc && !S.ending){ await playEvent(out.enc); }
+    save(); render();
+  } finally { visiting = false; }
+  showCampus();
+}
 function openPicker(i, cat){
   activeSlot = i;
   if(S.plan[i] === '>') i = activeSlot = i - 1;
   if(cat) pickCat = cat; else if(!pickCat || !cat){ const lowK = weakest(); pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK]; }
   const cats = ACTS_ORDER_CATS.filter(c => Object.values(ACTS).some(a => a.cat === c));
+  if(!cats.includes(pickCat)) pickCat = cats[0];
   const draw = () => {
     const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === pickCat).map(id => {
       const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - activeSlot) why = '이 칸에서는 못 해요 (2칸 필요)';
       return {id, a, why};
     }).sort((x, y) => (x.why ? 1 : 0) - (y.why ? 1 : 0));
     const spend = S.plan.reduce((t, id) => t + (id && id !== '>' && ACTS[id].cost || 0), 0);
-    openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${pickCat}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${c}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
+    openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
       return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
@@ -3726,6 +4009,7 @@ function openPicker(i, cat){
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
     $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
+    { const tb = document.querySelector('.tabs'), on = tb && tb.querySelector('.tab.on'); if(on) tb.scrollLeft = on.offsetLeft - (tb.clientWidth - on.offsetWidth) / 2; }
     const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
       const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
@@ -3785,7 +4069,7 @@ function showLove(){
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫 비밀' : '') + (S.partner === id && v.stage >= 1 ? ' ❤ 공식' : '');
     const dt = dateTargets(S).includes(id);
     return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
-  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
+  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(인연 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
     const dtb = e.target.closest && e.target.closest('[data-dt]'); if(dtb){ e.stopPropagation(); return planDateWith(dtb.dataset.dt); }
@@ -3864,12 +4148,13 @@ function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m 
 // 계절(3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울)과 2.5등신 캐릭터 스프라이트(두 장이 번갈아 움직인다)
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
 const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
+for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
 const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'family', 'friends', 'travel']);
 const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
-function showAct(slotName, id, out, first = 0){
+function showAct(slotName, id, out, first = 0, opts = {}){
   // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
@@ -3880,7 +4165,7 @@ function showAct(slotName, id, out, first = 0){
     let inner, cls = 'apf', frameBg = '';
     if(sp){
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
-      const bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room');
+      const sbg = seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
     } else {
@@ -3889,11 +4174,11 @@ function showAct(slotName, id, out, first = 0){
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
-    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
+    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${opts.noDate ? '교정 산책' : `${mo}월 ${d0}일`}</b><span>탭하면 건너뛰기</span></div></div></div>`;
     el.classList.add('on');
     const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
     let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;
-    const tick = setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
+    const tick = opts.noDate ? 0 : setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
     const result = () => {
       if(done) return; done = true; clearInterval(tick); clearTimeout(auto);
       $('apx').innerHTML = `<div class="txt">${esc(out.note || a.desc)}</div><div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx">다음</button>`;
@@ -3920,6 +4205,7 @@ async function runMonth(){
     if(!S.ending){ const ev = fx_.length >= 2 ? null : (R() < 0.7 ? pickEvent(S) : null); if(ev) await playEvent(ev); }
   }
   if(!S.ending) S.m++;
+  S.cpLeft = CAMPUS_VISITS; // 새 달: 교정 방문 3번 충전
   S.plan = [null, null, null];
   if(S.m >= TOTAL_MONTHS || S.ending){ S.ending = S.ending || computeEnding(S); save(); return showEnding(); }
   save(); render();
@@ -3947,10 +4233,11 @@ function initGame(){
   $('b-call').onclick = openPhone;
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
-  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #55 · 2026.10.11<br><span id="diag"></span></div>`);
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #56 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
+    $('m-dex').onclick = () => { closeSheet(); showDex(); };
     $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };
@@ -3992,7 +4279,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#55 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#56 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

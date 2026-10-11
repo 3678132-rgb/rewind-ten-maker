@@ -6,6 +6,9 @@ const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>'
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
+// 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
+const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
+const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -112,6 +115,9 @@ const ICONS = {
 function paintIcons(){ document.querySelectorAll('[data-icon]').forEach(el => { if(!el.dataset.painted){ el.innerHTML = ICONS[el.dataset.icon] || ''; el.dataset.painted = '1'; } }); }
 function ring(v, color, label){ const r = 17, c = 2 * Math.PI * r, f = clamp(v, 0, 100) / 100; return `<svg viewBox="0 0 46 46" aria-label="${label} ${Math.round(v)}"><circle cx="23" cy="23" r="${r}" fill="none" stroke="#dde3f2" stroke-width="5"/><circle cx="23" cy="23" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(c * f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 23 23)"/><text x="23" y="27.5" text-anchor="middle" font-size="12.5" font-weight="800" fill="#14181B">${Math.round(v)}</text></svg>`; }
 // 하단 탭 → 활동 분류. 가운데 '홈'은 스케줄 시트를 연다
+// 스케줄 분류 이름(화면에 보이는 말). 안쪽 키(공부·일·돈…)는 그대로 두고 보이는 이름만 바꾼다.
+const CAT_LABEL = {'공부':'배움', '일':'커리어', '돈':'머니', '관계':'인연', '나':'셀프케어', '휴식':'휴식', '캠퍼스':'캠퍼스', '홈':'홈'};
+const catLabel = c => CAT_LABEL[c] || c;
 const TABS = [{cat:'공부', ic:'edu'}, {cat:'일', ic:'work'}, {cat:'돈', ic:'money'}, {cat:'홈', ic:'home', home:true}, {cat:'휴식', ic:'rest'}, {cat:'나', ic:'self'}, {cat:'관계', ic:'heart'}];
 let pickCat = null, activeSlot = 0;
 function firstEmpty(){ const i = S.plan.findIndex(x => !x); return i < 0 ? 0 : i; }
@@ -127,9 +133,9 @@ function adviceText(){
 function showDialog(){ const a = adviceText(); $('dlg-head').textContent = '일흔의 나'; $('dlg-body').textContent = a.t; $('dialog').hidden = false; if(S.m === 0) S.seen.advice0 = true; }
 function render(){
   if(!S) return;
-  const left = TOTAL_MONTHS - S.m, img = `art/${heroKey(S)}.webp`;
+  const left = TOTAL_MONTHS - S.m, img = heroImg(S);
   $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
-  $('hud-avatar').style.backgroundImage = `url(art/${heroKey(S)}.webp)`;
+  $('hud-avatar').style.backgroundImage = `url(${img})`;
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
   $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
@@ -139,6 +145,8 @@ function render(){
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
+  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도감
+  if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'dex'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : '도감'; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'dex'] || ''; ic.dataset.painted = '1'; }
   const full = !S.plan.some(x => !x);
   $('slots3').innerHTML = [0, 1, 2].map(i => {
     const id = S.plan[i];
@@ -149,7 +157,7 @@ function render(){
   }).join('');
   document.querySelectorAll('.slot3[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
   const go = $('btn-go'); go.textContent = full ? '이번 달 시작' : '스케줄 정하기'; go.classList.toggle('ready', full);
-  $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${t.cat}</span></button>`).join('');
+  $('tabbar').innerHTML = TABS.map(t => `<button class="tb ${t.home ? 'home' : ''}" data-cat="${t.cat}"><span class="ic" data-icon="${t.ic}"></span><span>${catLabel(t.cat)}</span></button>`).join('');
   document.querySelectorAll('.tb').forEach(b => b.onclick = () => openPicker(firstEmpty(), b.dataset.cat === '홈' ? null : b.dataset.cat));
   paintIcons();
   if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; $('dialog').hidden = true; }
@@ -170,18 +178,40 @@ function chooseDate(slot, ts, done, back){
   $('x').onclick = () => { back(); };
   document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done(b.dataset.id));
 }
+// 캠퍼스 지도: 장소 핀 위치(가로·세로 %)는 art/cp_map.webp 의 구역 배치에 맞춘다
+const CP_PIN = {class:[25, 17], library:[76, 17], shop:[30, 46], club:[78, 44], field:[27, 76], garden:[78, 79]};
+const cpMapHTML = () => `<div class="cpmap" style="background-image:url(art/cp_map.webp)">${Object.keys(CAMPUS_PLACES).map(k => { const p = CAMPUS_PLACES[k], pos = CP_PIN[k]; return `<button class="cpin" data-pin="${k}" style="left:${pos[0]}%;top:${pos[1]}%"><i>${p.icon}</i><b>${p.name}</b></button>`; }).join('')}</div>`;
+// 스케줄을 정하기 전에 교정을 돌아다닌다: 한 달에 3번(스케줄 칸을 쓰지 않는다)
+function showCampus(){
+  const left = cpLeft(S), dots = Array.from({length:CAMPUS_VISITS}, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
+  openSheet(sheetHead('캠퍼스 산책', '스케줄을 하기 전에 장소를 돌아다니며 친구나 마음 가는 사람을 만나요.') + `<div class="cpleft"><span>이번 달 남은 방문</span><span class="dots">${dots}</span><b>${left}/${CAMPUS_VISITS}</b></div>` + cpMapHTML() + `<div class="cphint">${left ? '가고 싶은 장소를 눌러 보세요.' : '이번 달 방문을 모두 썼어요. 다음 달에 다시 돌아다닐 수 있어요.'}</div>`);
+  $('x').onclick = () => { closeSheet(); render(); };
+  document.querySelectorAll('.cpin').forEach(b => b.onclick = () => visitCampus(b.dataset.pin));
+}
+let visiting = false;
+async function visitCampus(key){
+  if(visiting) return; if(cpLeft(S) <= 0){ toast('이번 달 방문을 다 썼어요 (3/3)'); return; }
+  visiting = true; closeSheet();
+  try{
+    const out = campusVisit(S, key); await showAct('방문', 'cp_' + key, out, 0, {noDate:true});
+    if(out.enc && !S.ending){ await playEvent(out.enc); }
+    save(); render();
+  } finally { visiting = false; }
+  showCampus();
+}
 function openPicker(i, cat){
   activeSlot = i;
   if(S.plan[i] === '>') i = activeSlot = i - 1;
   if(cat) pickCat = cat; else if(!pickCat || !cat){ const lowK = weakest(); pickCat = {work:S.m < 48 ? '공부' : '일', bond:'관계', self:'나'}[lowK]; }
   const cats = ACTS_ORDER_CATS.filter(c => Object.values(ACTS).some(a => a.cat === c));
+  if(!cats.includes(pickCat)) pickCat = cats[0];
   const draw = () => {
     const ids = Object.keys(ACTS).filter(id => ACTS[id].cat === pickCat).map(id => {
       const a = ACTS[id]; let why = a.req ? a.req(S) : null; if(!why && a.cost && a.cost > S.cash) why = '자금이 모자라요'; if(!why && (a.slots || 1) > 3 - activeSlot) why = '이 칸에서는 못 해요 (2칸 필요)';
       return {id, a, why};
     }).sort((x, y) => (x.why ? 1 : 0) - (y.why ? 1 : 0));
     const spend = S.plan.reduce((t, id) => t + (id && id !== '>' && ACTS[id].cost || 0), 0);
-    openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${pickCat}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${c}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
+    openSheet(sheetHead(`${yearOf(S)}년 ${monthOf(S)}월 ${SLOT_NAMES[activeSlot]} · ${catLabel(pickCat)}`) + `<div class="tabs">${cats.map(c => `<button class="tab ${c === pickCat ? 'on' : ''}" data-c="${c}">${catLabel(c)}</button>`).join('')}</div><div class="planbar"><button class="btn ghost sm" id="b-auto">✨ 추천 계획</button><button class="btn ghost sm" id="b-prev" ${S.lastPlan ? '' : 'disabled'}>↻ 지난달처럼</button></div><div class="acts">` + ids.map(({id, a, why}) => {
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
       return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
@@ -190,6 +220,7 @@ function openPicker(i, cat){
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
     $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
+    { const tb = document.querySelector('.tabs'), on = tb && tb.querySelector('.tab.on'); if(on) tb.scrollLeft = on.offsetLeft - (tb.clientWidth - on.offsetWidth) / 2; }
     const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
       const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
@@ -249,7 +280,7 @@ function showLove(){
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫 비밀' : '') + (S.partner === id && v.stage >= 1 ? ' ❤ 공식' : '');
     const dt = dateTargets(S).includes(id);
     return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
-  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
+  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(인연 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
     const dtb = e.target.closest && e.target.closest('[data-dt]'); if(dtb){ e.stopPropagation(); return planDateWith(dtb.dataset.dt); }
@@ -328,12 +359,13 @@ function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m 
 // 계절(3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울)과 2.5등신 캐릭터 스프라이트(두 장이 번갈아 움직인다)
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
 const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
+for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
 const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'family', 'friends', 'travel']);
 const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
-function showAct(slotName, id, out, first = 0){
+function showAct(slotName, id, out, first = 0, opts = {}){
   // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
@@ -344,7 +376,7 @@ function showAct(slotName, id, out, first = 0){
     let inner, cls = 'apf', frameBg = '';
     if(sp){
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
-      const bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room');
+      const sbg = seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
     } else {
@@ -353,11 +385,11 @@ function showAct(slotName, id, out, first = 0){
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
-    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${mo}월 ${d0}일</b><span>탭하면 건너뛰기</span></div></div></div>`;
+    el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${opts.noDate ? '교정 산책' : `${mo}월 ${d0}일`}</b><span>탭하면 건너뛰기</span></div></div></div>`;
     el.classList.add('on');
     const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
     let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;
-    const tick = setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
+    const tick = opts.noDate ? 0 : setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
     const result = () => {
       if(done) return; done = true; clearInterval(tick); clearTimeout(auto);
       $('apx').innerHTML = `<div class="txt">${esc(out.note || a.desc)}</div><div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx">다음</button>`;
@@ -384,6 +416,7 @@ async function runMonth(){
     if(!S.ending){ const ev = fx_.length >= 2 ? null : (R() < 0.7 ? pickEvent(S) : null); if(ev) await playEvent(ev); }
   }
   if(!S.ending) S.m++;
+  S.cpLeft = CAMPUS_VISITS; // 새 달: 교정 방문 3번 충전
   S.plan = [null, null, null];
   if(S.m >= TOTAL_MONTHS || S.ending){ S.ending = S.ending || computeEnding(S); save(); return showEnding(); }
   save(); render();
@@ -411,10 +444,11 @@ function initGame(){
   $('b-call').onclick = openPhone;
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
-  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
+  document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
+    $('m-dex').onclick = () => { closeSheet(); showDex(); };
     $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };

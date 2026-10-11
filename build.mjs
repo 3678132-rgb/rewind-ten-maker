@@ -3,9 +3,9 @@ import fs from 'fs'; import crypto from 'crypto'; import { execSync } from 'chil
 // 빌드 번호: 커밋 횟수 + 1 (이 빌드가 올라가는 다음 커밋 번호). 오늘 날짜도 같이 표시한다.
 let commits = 0; try{ commits = parseInt(execSync('git rev-list --count HEAD', {stdio:['ignore', 'pipe', 'ignore']}).toString().trim(), 10) || 0; }catch(e){}
 const d = new Date(Date.now() + 9 * 3600 * 1000), BUILD = `#${commits + 1} · ${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')}`;
-const r = f => fs.readFileSync(f, 'utf8');
-const js = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy.js', 'src/data/career2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/story_core.js', 'src/data/story_a.js', 'src/data/story_b.js', 'src/data/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/data/endings.js', 'src/ui.js'].map(r).join('\n');
-const html = r('src/shell.html').replace('/*CSS*/', () => r('src/style.css')).replace('/*JS*/', () => js).replace(/__BUILD__/g, BUILD);
+const r = f => fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
+const js = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy.js', 'src/data/campus_scenes.js', 'src/data/campus.js', 'src/data/career2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/story_core.js', 'src/data/story_a.js', 'src/data/story_b.js', 'src/data/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/data/endings.js', 'src/ui.js'].map(r).join('\n');
+const html = r('src/shell.html').replace('/*CSS*/', () => r('src/style.css')).replace('/*JS*/', () => js).replace(/__BUILD__/g, BUILD).replace('__HERO_SEASONAL__', () => JSON.stringify(fs.readdirSync('art').filter(f => /^age\d+_(summer|autumn|winter)\.webp$/.test(f)).map(f => f.replace('.webp', ''))));
 fs.writeFileSync('index.html', html);
 const art = fs.readdirSync('art').filter(f => /\.(webp|png|jpg)$/.test(f)).sort();
 // 처음 설치할 때 미리 받아 둘 것: 화면 틀 + 타이틀·주인공·기본 활동 그림. 나머지 그림은 쓰이는 순간 캐시된다.

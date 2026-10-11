@@ -1,6 +1,6 @@
 // 자동 플레이 테스트: node sim.mjs  → errors {} 이어야 한다
 import fs from 'fs'; import vm from 'vm';
-const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy.js', 'src/data/career2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/story_core.js', 'src/data/story_a.js', 'src/data/story_b.js', 'src/data/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/data/endings.js'];
+const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy.js', 'src/data/campus_scenes.js', 'src/data/campus.js', 'src/data/career2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/story_core.js', 'src/data/story_a.js', 'src/data/story_b.js', 'src/data/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/data/endings.js'];
 const src = files.map(f => fs.readFileSync(f, 'utf8')).join('\n');
 const ctx = {console, Math}; vm.createContext(ctx);
 vm.runInContext(src + '\n;globalThis.E={newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,MAJORS,CAREERS,inLawSchool,LOVERS,contactsOf,callEvent,tryCall,callsLeft,EVENTS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);

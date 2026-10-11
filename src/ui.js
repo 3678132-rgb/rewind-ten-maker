@@ -8,6 +8,7 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
+const DATE_ART = new Set(__DATE_ART__); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
@@ -335,8 +336,38 @@ function showShop(){
 }
 function showDex(){
   const seen = store(ENDINGS_KEY) || [];
-  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? '' : 'lock'}"><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span></div>`; }).join('') + `<h3>이번 생의 기록</h3><div class="txt" style="font-size:13px">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div>`);
+  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
   $('x').onclick = closeSheet;
+  document.querySelectorAll('.dexrow[data-e]').forEach(r => r.onclick = () => showEndingCard(r.dataset.e));
+}
+// 엔딩 크게 보기 + 공유(이미지로 저장하거나 SNS로 보내기)
+function showEndingCard(id){
+  const e = ENDINGS[id], who = S ? S.name : '나', letter = e.letter.replace(/\{name\}/g, who);
+  let el = document.getElementById('ecard'); if(!el){ el = document.createElement('div'); el.id = 'ecard'; $('app').appendChild(el); }
+  const art = `art/${e.free ? 'age30' : 'cover'}.webp`;
+  el.innerHTML = `<div class="ecbg" style="background-image:url(${art})"></div><div class="ecshade"></div><div class="ecbody"><button class="ecx" id="ec-x" aria-label="닫기">✕</button><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${esc(e.sub)}</span><h1>${esc(e.title)}</h1><div class="letter">${esc(letter)}\n\n— 일흔 살의 나로부터</div><div class="ecbtns"><button class="btn" id="ec-share">공유하기</button><button class="btn ghost" id="ec-save">이미지 저장</button></div></div>`;
+  el.classList.add('on');
+  $('ec-x').onclick = () => el.classList.remove('on');
+  const make = () => new Promise(res => { const img = new Image(); img.onload = () => {
+    const W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    const r = Math.max(W / img.width, H / img.height); g.drawImage(img, (W - img.width * r) / 2, 0, img.width * r, img.height * r);
+    const gr = g.createLinearGradient(0, H * 0.25, 0, H); gr.addColorStop(0, 'rgba(8,10,32,0)'); gr.addColorStop(0.55, 'rgba(8,10,32,.78)'); gr.addColorStop(1, 'rgba(8,10,32,.96)'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#ffd98a'; g.textAlign = 'center'; g.font = '700 40px system-ui, sans-serif'; g.fillText('다시, 스무 살 · ' + e.sub, W / 2, 1000);
+    g.fillStyle = '#fff'; g.font = '800 92px system-ui, sans-serif'; g.fillText(e.title, W / 2, 1120);
+    g.font = '500 38px system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,.92)'; let y = 1220;
+    for(const para of letter.split('\n')){ let line = ''; for(const ch of para){ if(g.measureText(line + ch).width > W - 220){ g.fillText(line, W / 2, y); y += 58; line = ch; if(y > H - 150) break; } else line += ch; } if(line && y <= H - 150){ g.fillText(line, W / 2, y); } y += 58; if(y > H - 150) break; }
+    g.fillStyle = 'rgba(255,255,255,.6)'; g.font = '600 30px system-ui, sans-serif'; g.fillText('3678132-rgb.github.io/rewind-ten-maker', W / 2, H - 70);
+    c.toBlob(b => res(b), 'image/png'); }; img.onerror = () => res(null); img.src = art; });
+  $('ec-share').onclick = async () => {
+    const blob = await make(), text = `「다시, 스무 살」 엔딩 — ${e.title}\n${location.href.split('?')[0]}`;
+    try{
+      if(blob && navigator.canShare && navigator.canShare({files:[new File([blob], 'ending.png', {type:'image/png'})]})){ await navigator.share({files:[new File([blob], 'ending.png', {type:'image/png'})], text}); return; }
+      if(navigator.share){ await navigator.share({title:e.title, text, url:location.href.split('?')[0]}); return; }
+      if(navigator.clipboard){ await navigator.clipboard.writeText(text); toast('링크를 복사했어요'); return; }
+    }catch(err){}
+    toast('공유를 지원하지 않는 환경이에요. 이미지 저장을 눌러 보세요');
+  };
+  $('ec-save').onclick = async () => { const blob = await make(); if(!blob){ toast('이미지를 만들지 못했어요'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ending_${id}.png`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
 }
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
@@ -350,7 +381,8 @@ function evOpen(ev, inner){
   if(imgKey && el.dataset.img && el.dataset.img !== imgKey){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
   el.dataset.img = imgKey || '';
   el.style.backgroundImage = img ? (Array.isArray(img) ? img : [img]).map(u => `url(${u})`).join(', ') : 'none';
-  const cut = ev.cut ? `<img class="evcut" src="art/cut/${ev.cut}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : ''; // 대화 상대: 배경 일러스트 위에 누끼로 선다
+  const cutId = id => id === 'harin' && S && S.m >= 48 ? 'harin_w' : id; // 서하린은 직장인 시기에 모습이 바뀐다
+  const cut = (ev.cut ? `<img class="evcut ${ev.cut2 ? 'l' : ''}" src="art/cut/${cutId(ev.cut)}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : '') + (ev.cut2 ? `<img class="evcut r" src="art/cut/${cutId(ev.cut2)}_${ev.cut2Var || 'a'}.webp" alt="" onerror="this.remove()">` : ''); // 대화 상대: 배경 일러스트 위에 누끼로 선다
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}${cut}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }
@@ -395,23 +427,31 @@ const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
 const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'family', 'friends', 'travel']);
 const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
+// 이미지가 없으면 data-fb 의 다음 후보로 바꾼다(a|b|c)
+function cfb(img){ const l = (img.dataset.fb || '').split('|').filter(Boolean); const nx = l.shift(); img.dataset.fb = l.join('|'); if(nx) img.src = nx; else img.onerror = null; }
 function showAct(slotName, id, out, first = 0, opts = {}){
   // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
-    const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
-    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
     const sp = SPRITE[id];
     let inner, cls = 'apf', frameBg = '';
-    if(sp){
-      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
-      const sbg = seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+    // 데이트: 연인별 일러스트(음식 장면만 나오지 않게 여러 장 중 하나), 없으면 2.5등신 데이트 세트
+    const dtN = sp === 'date' && out.lover ? [1, 2, 3, 4].filter(n => DATE_ART.has(`dt_${out.lover}_${n}`)) : [];
+    if(dtN.length){
+      const n = dtN[Math.floor(R() * dtN.length)]; cls += ' art';
+      inner = `<div class="fart dt" style="background-image:url(art/dt_${out.lover}_${n}.webp)"></div>`;
+    } else if(sp){
+      // 직업 일: 큰 일러스트 대신 직업별 2.5등신 캐릭터(두 장이 번갈아 움직인다). 직업 세트가 없으면 직장인 → 기본 순서로 대체
+      const jobSet = sp === 'job' ? (id === 'intern' ? 'job_intern' : S.hired && CAREERS[S.track] ? `job_${S.track}` : 'job_i') : null;
+      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : jobSet || sp + outfitSuffix(S, id);
+      const sbg = sp === 'job' ? 'art/bg_office.webp' : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+      const fb = jobSet ? ['job_w', 'job'] : [];
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
-      inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
+      const fbA = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_a.webp`).join('|'), fbB = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_b.webp`).join('|');
+      inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" data-fb="${fbA}" onerror="cfb(this)"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" data-fb="${fbB}" onerror="cfb(this)"></div>`;
     } else {
       cls += ' art';
-      const bg = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      const bg = ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);

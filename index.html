@@ -416,6 +416,23 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 @keyframes cutin{from{opacity:0;transform:translateX(-50%) translateY(14px)}to{opacity:1;transform:translateX(-50%)}}
 .lcard .lk{color:#8a6bd6;font-weight:600}
 .lcard .mini.bk{font-size:11px;padding:4px 9px;border-radius:99px;background:#eef0f6;color:#6b7390;border:0;font-weight:700;white-space:nowrap}
+.evcut.l{left:30%;height:80%}.evcut.r{left:70%;height:80%}
+.apop .fart.dt{background-position:center 18%}
+/* ───── 엔딩 크게 보기 ───── */
+.dexrow.ok{cursor:pointer}.dexrow .dx{margin-left:auto;color:var(--indigo);font-weight:800}
+#ecard{position:absolute;inset:0;z-index:60;display:none;background:#080a20;overflow:hidden}
+#ecard.on{display:block;animation:chfade .35s ease-out}
+#ecard .ecbg{position:absolute;inset:0;background:center top/cover no-repeat}
+#ecard .ecshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,32,.25),rgba(8,10,32,0) 30%,rgba(8,10,32,.82) 62%,#080a20 100%)}
+#ecard .ecbody{position:absolute;left:0;right:0;bottom:0;max-height:78%;overflow-y:auto;padding:0 24px calc(26px + var(--sb));color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+#ecard .ecx{position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-size:18px;border:1px solid rgba(255,255,255,.4)}
+#ecard .big{font-size:40px}#ecard h1{font-size:30px;font-weight:800;letter-spacing:-.03em;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+#ecard .tag{background:rgba(255,217,138,.9);color:#4a3200;font-weight:800;border-radius:99px;padding:3px 12px;font-size:12px}
+#ecard .tag.ret{background:rgba(255,160,160,.9);color:#5a1010}
+#ecard .letter{font-size:14.5px;line-height:1.75;white-space:pre-wrap;color:rgba(255,255,255,.93);text-align:left;margin:6px 0 10px}
+#ecard .ecbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
+#ecard .ecbtns .btn{min-height:48px}#ecard .ecbtns .ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.5)}
+#ecard .letter{background:none;border:0;padding:0;box-shadow:none}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -426,7 +443,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #69 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #70 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -464,7 +481,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #69 · 2026.10.11</div>
+ <div id="buildtag">빌드 #70 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -765,7 +782,8 @@ LOVERS.ujin = {id:'ujin', career:'designer', name:'신우진', age:'31', job:'�
       {label:'함께 입장문을 낸다', sub:'호감 +6 · 관계 +2', run(S, v, ch){ addAff(S, 'ujin', 6, ch); fx(S, {bond:2, stress:4}, ch); return '둘의 이름이 나란히 적힌 입장문이 나갔다. 비난 속에서도 그의 손이 내 손을 놓지 않았다.'; }},
       {label:'내가 책임지고 도안을 내린다', sub:'일 -3 · 호감 +4', run(S, v, ch){ addAff(S, 'ujin', 4, ch); fx(S, {work:-3, self:2}, ch); return '“내가 할게.” 도안은 내려갔고 평판은 조금 흔들렸다. 우진은 말없이 내 어깨를 오래 안았다.'; }},
     ]}};
-LOVERS.raon = {id:'raon', name:'강라온', age:'24', job:'인기 아이돌 · 5인조 그룹 센터', like:'charm', meet:40,
+LOVERS.raon = {id:'raon', name:'강라온', age:'24', job:'인기 아이돌 · 5인조 그룹 센터', like:'charm', meet:99999, // 스타일리스트가 되면 혐관 이벤트(special_b.js)로 만난다
+  
   intro:'음악방송 대기실 복도에서 마스크를 쓴 청년과 부딪혔다. 모자 아래로 보이는 라일락빛 머리카락. TV 속에서만 보던 아이돌 라온이었다. “죄송해요… 혹시 지금 본 거, 비밀로 해 주실래요?”',
   dateLines:['마스크와 모자로 꽁꽁 싸맨 그가 포장마차 구석에 앉아 어묵을 호호 불었다. “이렇게 평범하게 먹는 거 오랜만이에요.”', '심야 편의점 앞 벤치. 그가 이어폰 한쪽을 내 귀에 꽂아 주었다. 아직 발매 전인 노래가 흘러나왔다.', '무대 뒤편에서 몰래 만났다. 화려한 조명 아래의 그가 아니라, 땀에 젖은 머리를 쓸어 올리는 평범한 스물넷의 얼굴이었다.'],
   trial:{title:'열애 의혹', text:'새벽, 소속사 실장이 급하게 전화를 걸었다. 우리가 함께 있는 사진이 커뮤니티에 올라왔다. 라온의 컴백을 앞둔 시기다. 팬들의 댓글이 불길처럼 번지고 있다.',
@@ -1741,7 +1759,7 @@ function milestoneEvent(S){
   for(const id of Object.keys(S.love)){ const key = mileDue(S, id); if(!key) continue; const sc = S.love[id].aff + (S.partner === id ? 6 : 0); if(!best || sc > best.sc) best = {id, key, sc}; }
   if(!best) return null;
   const {id, key} = best, lv = LOVERS[id], sc = MILE[id][key];
-  return {id:`mile_${id}_${key}`, lover:id, speaker:lv.name, title:`${MILE_NAME[key]} · ${sc.title}`, place:MILE_PLACE[key], img:`art/ms_${id}_${key}.webp`,
+  const ev = {id:`mile_${id}_${key}`, lover:id, speaker:lv.name, title:`${MILE_NAME[key]} · ${sc.title}`, place:MILE_PLACE[key], img:`art/ms_${id}_${key}.webp`,
     text:S => sc.text,
     choices:[
       {label:sc.yes[0], sub:MILE_SUB[key], run(S){
@@ -1749,7 +1767,7 @@ function milestoneEvent(S){
         if(key === 'hand'){ addAff(S, id, 8, ch); fx(S, {bond:1.5, stress:-2}, ch); }
         else if(key === 'kiss'){ addAff(S, id, 10, ch); fx(S, {bond:2, stress:-3, self:1}, ch); }
         else if(key === 'trip'){ v.tripAt = S.m; addAff(S, id, 12, ch); fx(S, {cash:-30, bond:3, stress:-10, hp:5}, ch); if(S.secret && S.secret[id]) S.susp = Math.min(100, (S.susp || 0) + 8); }
-        else if(key === 'night'){ v.intimate = true; addAff(S, id, 10, ch); fx(S, {bond:4, stress:-6, self:1}, ch); }
+        else if(key === 'night'){ v.intimate = true; v.intimateAt = S.m; addAff(S, id, 10, ch); fx(S, {bond:4, stress:-6, self:1}, ch); }
         else if(key === 'live'){ v.cohab = true; addAff(S, id, 8, ch); fx(S, {bond:4, stress:-5, self:1}, ch); }
         else { addAff(S, id, 6, ch); fx(S, {bond:3, stress:-6}, ch); }
         return {text:sc.yes[1], chips:ch, mood:'tender'}; }},
@@ -1757,7 +1775,25 @@ function milestoneEvent(S){
         const v = S.love[id], ch = []; v.lastMile = S.m; v.mileWait = S.m + 3; addAff(S, id, 3, ch); fx(S, {self:1.5}, ch);
         return {text:sc.wait[1], chips:ch, mood:'shy'}; }},
     ]};
+  // 키스는 바로 하지 않는다: 먼저 눈이 마주치는 장면(눈맞춤 그림·한 줄)에서 한 번 눌러야 키스 그림이 나온다
+  if(key === 'kiss'){ ev.beats = [(GAZE_LINES[id] || GAZE_LINES._)(lv.name)]; ev.beatImgs = [[`art/ms_${id}_gaze.webp`, `art/ms_${id}_kiss.webp`], `art/ms_${id}_kiss.webp`]; }
+  return ev;
 }
+const GAZE_LINES = {
+  _:n => `${n}와 눈이 마주쳤다. 말이 끊기고, 시간이 느려진다. 그의 시선이 내 눈에서 입술로 천천히 내려갔다가 다시 올라온다. 숨소리만 들리는 거리.`,
+  jaewoo:n => `재우가 말을 멈췄다. 평소처럼 쏟아내던 계획 이야기가 한순간에 사라졌다. 눈이 사라지도록 웃던 얼굴이 처음으로 진지해진다. “…지금, 가만히 있어 줘.”`,
+  minjun:n => `민준이 고개를 숙이고 신발 끝만 보다가, 천천히 눈을 든다. 귀 끝이 새빨갛다. 떨리는 숨. 그가 나를 보고, 나는 눈을 피하지 못한다.`,
+  hajin:n => `하진이 노트북을 덮었다. 늘 일 얘기를 하던 입이 닫히고, 직설적이던 눈빛이 조용히 나를 붙잡는다. “…지금 이 순간은 일정에 없는데.” 그가 낮게 웃는다.`,
+  taeoh:n => `태오가 카메라를 내려놓았다. 렌즈 대신 나를 보는 눈. 느린 호흡 사이로 시간이 멈춘 것처럼 조용하다. “…지금 이 표정, 사진으로 못 남기겠다.”`,
+  raon:n => `라온이 모자를 벗고 마스크를 내렸다. 무대 위가 아닌, 아무도 모르는 얼굴로 나를 본다. 장난기가 사라진 눈이 떨린다. “…지금은 아이돌 아니니까.”`,
+  jihu:n => `지후가 서류에서 눈을 뗀다. 건조하던 얼굴이 조금씩 풀리고, 시선이 오래 머문다. “…집중이 안 되네요.” 그의 목소리가 평소보다 낮다.`,
+  dohyun:n => `도현이 컷 사인을 보내듯 손을 멈췄다. 거칠던 눈이 가라앉아 나를 오래 본다. “…이 장면은 NG 안 내고 싶다.”`,
+  sian:n => `시안이 펜을 내려놓았다. 문장으로 말하던 사람이 말을 잃고 눈만으로 말한다. 한 줄도 쓰지 않은 정적이 가장 긴 대사 같다.`,
+  seunghyun:n => `승현이 마스크를 천천히 내렸다. 카메라 앞에서 완벽하던 얼굴이 처음으로 서툴게 떨린다. “…연기 아니에요. 이건.”`,
+  geonwoo:n => `건우가 말을 멈추고 넥타이를 만지작거린다. 딱딱하던 눈매가 흔들리다가 나를 똑바로 본다. “…허락을 구해도 되겠습니까.”`,
+  yuchan:n => `유찬이 헤드폰을 내렸다. 코드 얘기를 하던 입이 멈추고, 화면 불빛 대신 내 얼굴이 그의 눈에 비친다. “…예외 처리가 안 되네요, 이거.”`,
+  ujin:n => `우진이 손에 든 원단을 내려놓았다. 색을 고르던 눈이 나만 비춘다. 가까워진 거리에서 숨이 섞인다. “…이 색이 제일 어울려요. 지금.”`,
+};
 
 // 연애 보강: 고백을 거절한 상대 · 이별한 상대의 미련 연락, 직접 이별하기, 남주별 취향 능력치. ENGINE 구간(DOM 금지)
 LOVE_STAGE['-2'] = '거절';
@@ -1816,6 +1852,11 @@ const monthsSince = (S, id, key) => (S.love[id] && S.love[id].f && S.love[id].f[
 const seen = (S, id) => !!S.seen[id];
 const afterEv = (S, id, gap = 2) => seen(S, id) && S.m - (S.cd[id] == null ? -99 : S.cd[id]) >= gap; // 앞 이벤트를 본 지 gap 개월 뒤
 const inCareer = (S, ...ids) => S.hired && ids.includes(S.track);
+// 특정 인물의 지금 나올 수 있는 이야기 이벤트 (장소에서 마주쳤을 때 이어 붙인다)
+function loverStoryFor(S, id){
+  for(const e of LSTORY){ if(e.lover !== id || S.seen[e.id]) continue; let ok = false; try{ ok = !e.cond || e.cond(S); }catch(err){ ok = false; } if(ok) return e; }
+  return null;
+}
 // 한 달에 하나, 인물 이야기 이벤트를 고른다 (호감이 높고 순서가 빠른 것부터)
 function loverStoryEvent(S){
   if(S.m - (S.lsAt == null ? -9 : S.lsAt) < 2) return null;
@@ -1830,6 +1871,14 @@ function loverStoryEvent(S){
 function specialDue(S){
   for(const e of SPECIAL){ if(S.seen[e.id]) continue; let ok = false; try{ ok = !e.cond || e.cond(S); }catch(err){ ok = false; } if(ok) return e; }
   return null;
+}
+// 서하린 삼각관계의 상대(한 명): 공식 연인이 있으면 그 사람, 없으면 호감이 가장 높은 캠퍼스 시기 인물. 한 번 정하면 유지한다.
+function triMan(S){
+  const f = SS(S).f; if(f.triMan && S.love[f.triMan] && S.love[f.triMan].stage !== -9) return f.triMan;
+  const off = typeof officialOf === 'function' ? officialOf(S) : null;
+  let pick = (off && ['jaewoo', 'minjun', 'hajin', 'taeoh', 'jihu', 'dohyun', 'sian', 'geonwoo', 'yuchan', 'ujin'].includes(off)) ? off : null;
+  if(!pick){ const c = ['jaewoo', 'minjun', 'hajin', 'taeoh'].filter(i => isMet(S, i) && affOf(S, i) >= 25).sort((a, b) => affOf(S, b) - affOf(S, a)); pick = c[0] || null; }
+  if(pick) f.triMan = pick; return pick;
 }
 
 // 캠퍼스 산책: 교내 장소별 우연한 만남 장면 (ENGINE 구간 안, DOM 금지)
@@ -2066,6 +2115,7 @@ function campusEncounter(S, place, visitCh){
   if(!cands.length) return null;
   const c = weightedPick(cands);
   if(c.kind === 'meet') return meetEvent(S, c.id);
+  if(c.kind === 'lover' && typeof loverStoryFor === 'function' && R() < 0.65 && S.m - (S.lsAt == null ? -9 : S.lsAt) >= 1){ const st = loverStoryFor(S, c.id); if(st){ S.lsAt = S.m; S.love[c.id].cpAt = S.m; return st; } } // 관계가 깊어지면 그 장소에서 이야기 이벤트가 이어진다
   const sc = c.sc, pl = CAMPUS_PLACES[place];
   if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, cut:CP_CUT[sc.who] || null, text:S => sc.text,
     choices:[
@@ -4157,6 +4207,7 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
+const DATE_ART = new Set([]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
@@ -4484,8 +4535,38 @@ function showShop(){
 }
 function showDex(){
   const seen = store(ENDINGS_KEY) || [];
-  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? '' : 'lock'}"><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span></div>`; }).join('') + `<h3>이번 생의 기록</h3><div class="txt" style="font-size:13px">${S.album.length ? S.album.map(esc).join('\n') : '아직 기록이 없어요.'}</div>`);
+  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = ENDINGS[id], ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g">${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
   $('x').onclick = closeSheet;
+  document.querySelectorAll('.dexrow[data-e]').forEach(r => r.onclick = () => showEndingCard(r.dataset.e));
+}
+// 엔딩 크게 보기 + 공유(이미지로 저장하거나 SNS로 보내기)
+function showEndingCard(id){
+  const e = ENDINGS[id], who = S ? S.name : '나', letter = e.letter.replace(/\{name\}/g, who);
+  let el = document.getElementById('ecard'); if(!el){ el = document.createElement('div'); el.id = 'ecard'; $('app').appendChild(el); }
+  const art = `art/${e.free ? 'age30' : 'cover'}.webp`;
+  el.innerHTML = `<div class="ecbg" style="background-image:url(${art})"></div><div class="ecshade"></div><div class="ecbody"><button class="ecx" id="ec-x" aria-label="닫기">✕</button><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${esc(e.sub)}</span><h1>${esc(e.title)}</h1><div class="letter">${esc(letter)}\n\n— 일흔 살의 나로부터</div><div class="ecbtns"><button class="btn" id="ec-share">공유하기</button><button class="btn ghost" id="ec-save">이미지 저장</button></div></div>`;
+  el.classList.add('on');
+  $('ec-x').onclick = () => el.classList.remove('on');
+  const make = () => new Promise(res => { const img = new Image(); img.onload = () => {
+    const W = 1080, H = 1920, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    const r = Math.max(W / img.width, H / img.height); g.drawImage(img, (W - img.width * r) / 2, 0, img.width * r, img.height * r);
+    const gr = g.createLinearGradient(0, H * 0.25, 0, H); gr.addColorStop(0, 'rgba(8,10,32,0)'); gr.addColorStop(0.55, 'rgba(8,10,32,.78)'); gr.addColorStop(1, 'rgba(8,10,32,.96)'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.fillStyle = '#ffd98a'; g.textAlign = 'center'; g.font = '700 40px system-ui, sans-serif'; g.fillText('다시, 스무 살 · ' + e.sub, W / 2, 1000);
+    g.fillStyle = '#fff'; g.font = '800 92px system-ui, sans-serif'; g.fillText(e.title, W / 2, 1120);
+    g.font = '500 38px system-ui, sans-serif'; g.fillStyle = 'rgba(255,255,255,.92)'; let y = 1220;
+    for(const para of letter.split('\n')){ let line = ''; for(const ch of para){ if(g.measureText(line + ch).width > W - 220){ g.fillText(line, W / 2, y); y += 58; line = ch; if(y > H - 150) break; } else line += ch; } if(line && y <= H - 150){ g.fillText(line, W / 2, y); } y += 58; if(y > H - 150) break; }
+    g.fillStyle = 'rgba(255,255,255,.6)'; g.font = '600 30px system-ui, sans-serif'; g.fillText('3678132-rgb.github.io/rewind-ten-maker', W / 2, H - 70);
+    c.toBlob(b => res(b), 'image/png'); }; img.onerror = () => res(null); img.src = art; });
+  $('ec-share').onclick = async () => {
+    const blob = await make(), text = `「다시, 스무 살」 엔딩 — ${e.title}\n${location.href.split('?')[0]}`;
+    try{
+      if(blob && navigator.canShare && navigator.canShare({files:[new File([blob], 'ending.png', {type:'image/png'})]})){ await navigator.share({files:[new File([blob], 'ending.png', {type:'image/png'})], text}); return; }
+      if(navigator.share){ await navigator.share({title:e.title, text, url:location.href.split('?')[0]}); return; }
+      if(navigator.clipboard){ await navigator.clipboard.writeText(text); toast('링크를 복사했어요'); return; }
+    }catch(err){}
+    toast('공유를 지원하지 않는 환경이에요. 이미지 저장을 눌러 보세요');
+  };
+  $('ec-save').onclick = async () => { const blob = await make(); if(!blob){ toast('이미지를 만들지 못했어요'); return; } const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ending_${id}.png`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
 }
 
 // ── 이벤트 재생 ───────────────────────────────────────────────
@@ -4499,7 +4580,8 @@ function evOpen(ev, inner){
   if(imgKey && el.dataset.img && el.dataset.img !== imgKey){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
   el.dataset.img = imgKey || '';
   el.style.backgroundImage = img ? (Array.isArray(img) ? img : [img]).map(u => `url(${u})`).join(', ') : 'none';
-  const cut = ev.cut ? `<img class="evcut" src="art/cut/${ev.cut}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : ''; // 대화 상대: 배경 일러스트 위에 누끼로 선다
+  const cutId = id => id === 'harin' && S && S.m >= 48 ? 'harin_w' : id; // 서하린은 직장인 시기에 모습이 바뀐다
+  const cut = (ev.cut ? `<img class="evcut ${ev.cut2 ? 'l' : ''}" src="art/cut/${cutId(ev.cut)}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : '') + (ev.cut2 ? `<img class="evcut r" src="art/cut/${cutId(ev.cut2)}_${ev.cut2Var || 'a'}.webp" alt="" onerror="this.remove()">` : ''); // 대화 상대: 배경 일러스트 위에 누끼로 선다
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}${cut}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }
@@ -4544,23 +4626,31 @@ const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
 const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'family', 'friends', 'travel']);
 const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
+// 이미지가 없으면 data-fb 의 다음 후보로 바꾼다(a|b|c)
+function cfb(img){ const l = (img.dataset.fb || '').split('|').filter(Boolean); const nx = l.shift(); img.dataset.fb = l.join('|'); if(nx) img.src = nx; else img.onerror = null; }
 function showAct(slotName, id, out, first = 0, opts = {}){
   // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
     const a = ACTS[id], el = $('act');
-    const jobArt = id === 'job' ? (inLawSchool(S) ? 'art/job_lawschool.webp' : (CAREERS[S.track] ? jobArtFor(S.track) : null)) : null;
-    const internArt = id === 'intern' && CAREERS[S.interest] ? jobArtFor(S.interest, true) : null;
-    const duoArt = id === 'job' && out.duo ? `art/duo_${out.duo}.webp` : null;
     const sp = SPRITE[id];
     let inner, cls = 'apf', frameBg = '';
-    if(sp){
-      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : sp + outfitSuffix(S, id);
-      const sbg = seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = sp === 'job' && (jobArt || internArt) ? (jobArt || internArt) : ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+    // 데이트: 연인별 일러스트(음식 장면만 나오지 않게 여러 장 중 하나), 없으면 2.5등신 데이트 세트
+    const dtN = sp === 'date' && out.lover ? [1, 2, 3, 4].filter(n => DATE_ART.has(`dt_${out.lover}_${n}`)) : [];
+    if(dtN.length){
+      const n = dtN[Math.floor(R() * dtN.length)]; cls += ' art';
+      inner = `<div class="fart dt" style="background-image:url(art/dt_${out.lover}_${n}.webp)"></div>`;
+    } else if(sp){
+      // 직업 일: 큰 일러스트 대신 직업별 2.5등신 캐릭터(두 장이 번갈아 움직인다). 직업 세트가 없으면 직장인 → 기본 순서로 대체
+      const jobSet = sp === 'job' ? (id === 'intern' ? 'job_intern' : S.hired && CAREERS[S.track] ? `job_${S.track}` : 'job_i') : null;
+      const spf = sp === 'date' && out.lover ? `date_${out.lover}` : jobSet || sp + outfitSuffix(S, id);
+      const sbg = sp === 'job' ? 'art/bg_office.webp' : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+      const fb = jobSet ? ['job_w', 'job'] : [];
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
-      inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" onerror="this.src='art/chibi/${sp}_a.webp'"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" onerror="this.src='art/chibi/${sp}_b.webp'"></div>`;
+      const fbA = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_a.webp`).join('|'), fbB = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_b.webp`).join('|');
+      inner = `<div class="fsp ${sp === 'friends' || sp === 'date' ? 'wide' : ''}"><img class="fa" src="art/chibi/${spf}_a.webp" alt="" data-fb="${fbA}" onerror="cfb(this)"><img class="fb" src="art/chibi/${spf}_b.webp" alt="" data-fb="${fbB}" onerror="cfb(this)"></div>`;
     } else {
       cls += ' art';
-      const bg = duoArt ? `url(${duoArt}), url(${jobArt || 'art/act_job.webp'}), url(art/act_job.webp)` : jobArt ? `url(${jobArt}), url(art/act_job.webp)` : internArt ? `url(${internArt}), url(art/act_intern.webp)` : ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
+      const bg = ACT_ART.has(id) ? `url(art/act_${id}.webp)` : 'none';
       inner = `<div class="fart" style="background-image:${bg}"></div>`;
     }
     const mo = monthOf(S), d0 = first * 10 + 1, d1 = Math.min(30, (first + a.slots) * 10);
@@ -4624,7 +4714,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #69 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #70 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4669,7 +4759,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#69 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#70 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -45,6 +45,7 @@ function campusEncounter(S, place, visitCh){
   if(!cands.length) return null;
   const c = weightedPick(cands);
   if(c.kind === 'meet') return meetEvent(S, c.id);
+  if(c.kind === 'lover' && typeof loverStoryFor === 'function' && R() < 0.65 && S.m - (S.lsAt == null ? -9 : S.lsAt) >= 1){ const st = loverStoryFor(S, c.id); if(st){ S.lsAt = S.m; S.love[c.id].cpAt = S.m; return st; } } // 관계가 깊어지면 그 장소에서 이야기 이벤트가 이어진다
   const sc = c.sc, pl = CAMPUS_PLACES[place];
   if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, cut:CP_CUT[sc.who] || null, text:S => sc.text,
     choices:[

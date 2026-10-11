@@ -412,7 +412,7 @@ function fitFull(){
     if(ios && Math.min(screen.width, screen.height) < 600 && gap > 4 && gap < 140 && window.innerHeight > window.innerWidth){
       app.style.bottom = 'auto'; app.style.height = Math.round(big) + 'px'; root.style.setProperty('--sb', gap + 'px');
     } else { app.style.bottom = ''; app.style.height = ''; root.style.removeProperty('--sb'); }
-    const d = document.getElementById('fitdiag'); if(d) d.textContent = `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}`;
+    const d = document.getElementById('fitdiag'); if(d) d.textContent = /[?&](probe|diag)\b/.test(location.search) ? `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}` : '';
     if(/[?&]probe\b/.test(location.search)) probeFit(big);
   }catch(e){}
 }

@@ -350,17 +350,31 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .apop .txt{font-size:14.5px;line-height:1.6;color:#4a3a22;margin:12px 4px 6px}
 .apop .chips{margin:6px 2px 0}
 .apop .btn{margin-top:12px;width:100%}
+
+/* ───── 타이틀 재배치: 얼굴은 비우고, 제목은 오른쪽 아래(가게 쪽 빈 공간)에 ───── */
+#title::before{height:0;background:none}
+.ctop{top:auto;bottom:calc(var(--sb) + 262px);left:auto;right:0;width:62%;padding:0 22px 0 0;text-align:right}
+.ctop .eyebrow{font-size:10px;letter-spacing:.22em;text-shadow:0 1px 6px rgba(20,24,70,.8)}
+.ctop .wordmark{font-size:clamp(38px,11.5vw,52px);text-shadow:0 2px 16px rgba(20,24,70,.8),0 0 3px rgba(20,24,70,.55)}
+.ctop .wordmark small{letter-spacing:.42em;padding-left:0;margin-right:-.42em}
+.ctop .csub{margin-top:10px;font-size:11px;letter-spacing:.08em;background:rgba(20,24,70,.35)}
+#title .coverart::after{content:"";position:absolute;inset:auto 0 0 0;height:62%;background:linear-gradient(270deg,rgba(18,22,60,.5),rgba(18,22,60,0) 70%)}
+.cbot{gap:10px}
+.cbot .note{line-height:1.5}
+#title .coverart::after{height:70%;background:radial-gradient(90% 70% at 100% 70%,rgba(18,22,60,.55),rgba(18,22,60,0) 70%)}
+.ccard{font-size:12.5px;padding:11px 12px;line-height:1.55;letter-spacing:-.02em}
+#app:has(#title.on) #buildtag{display:none}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
   <div class="coverart"></div>
   <div class="ctop"><div class="eyebrow">REWIND TEN · 2016 → 2026</div><h1 class="wordmark">다시,<br>스무 살<small>REWIND TEN</small></h1><div class="csub">십 년의 시간 · 자유 시계를 향해</div></div>
   <div class="cbot">
-   <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 만들지 못하면, 그 골목으로 돌아간다.</div>
+   <div class="ccard">마흔의 기억을 안고 스무 살로.<br>십 년 안에 새 인생을 못 만들면, 다시 그 골목으로.</div>
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #45 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #46 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -398,7 +412,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #45 · 2026.10.11</div>
+ <div id="buildtag">빌드 #46 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -3513,7 +3527,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #45 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #46 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-update').onclick = () => checkUpdate(true);
@@ -3540,7 +3554,7 @@ function fitFull(){
     if(ios && Math.min(screen.width, screen.height) < 600 && gap > 4 && gap < 140 && window.innerHeight > window.innerWidth){
       app.style.bottom = 'auto'; app.style.height = Math.round(big) + 'px'; root.style.setProperty('--sb', gap + 'px');
     } else { app.style.bottom = ''; app.style.height = ''; root.style.removeProperty('--sb'); }
-    const d = document.getElementById('fitdiag'); if(d) d.textContent = `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}`;
+    const d = document.getElementById('fitdiag'); if(d) d.textContent = /[?&](probe|diag)\b/.test(location.search) ? `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}` : '';
     if(/[?&]probe\b/.test(location.search)) probeFit(big);
   }catch(e){}
 }
@@ -3557,7 +3571,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#45 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#46 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

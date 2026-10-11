@@ -8,6 +8,17 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
+const CUT_OUTFIT = new Set(__CUT_OUTFIT__); // art/cut/<인물>_<work|home>_<a|b>.webp: 상황별 옷차림 누끼
+// 상황에 맞는 옷: 집이면 홈웨어(home), 졸업 뒤 사무실·카페 같은 일터 장면이면 직업 차림(work), 그 밖엔 평상복
+function cutOutfit(ev, id){
+  if(!LOVERS[id]) return '';
+  if(ev.outfit !== undefined) return ev.outfit;
+  const im0 = Array.isArray(ev.img) ? ev.img[0] : ev.img, im = String(im0 || '');
+  if(ev.place === 'room' || /bg_room/.test(im)) return 'home';
+  if(S && S.m >= 48 && (/office/.test(im) || (ev.place === 'cafe' && !/\/(lv_|cover)/.test(im)))) return 'work';
+  return '';
+}
+const cutSrc = (ev, id, v) => { const o = cutOutfit(ev, id); return o && CUT_OUTFIT.has(`${id}_${o}_${v}`) ? `art/cut/${id}_${o}_${v}.webp` : `art/cut/${id}_${v}.webp`; };
 const END_ART = new Set(__END_ART__); // art/end_<엔딩id>.webp: 엔딩별 일러스트
 const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : END_ART.has('end_job_' + ({free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id])) ? `art/end_job_${{free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id]}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
 const ENDVAR_KEY = 'rewind-ten-endvar-v1'; // 직업군 엔딩에서 마지막으로 본 직업(도감 표시용)
@@ -423,7 +434,7 @@ function evOpen(ev, inner){
   el.dataset.img = imgKey || '';
   el.style.backgroundImage = img ? (Array.isArray(img) ? img : [img]).map(u => `url(${u})`).join(', ') : 'none';
   const cutId = id => id === 'harin' && S && S.m >= 48 ? 'harin_w' : id; // 서하린은 직장인 시기에 모습이 바뀐다
-  const cut = (ev.cut ? `<img class="evcut ${ev.cut2 ? 'l' : ''}" src="art/cut/${cutId(ev.cut)}_${ev.cutVar || 'a'}.webp" alt="" onerror="this.remove()">` : '') + (ev.cut2 ? `<img class="evcut r" src="art/cut/${cutId(ev.cut2)}_${ev.cut2Var || 'a'}.webp" alt="" onerror="this.remove()">` : ''); // 대화 상대: 배경 일러스트 위에 누끼로 선다
+  const cut = (ev.cut ? `<img class="evcut ${ev.cut2 ? 'l' : ''}" src="${cutSrc(ev, cutId(ev.cut), ev.cutVar || 'a')}" alt="" onerror="this.remove()">` : '') + (ev.cut2 ? `<img class="evcut r" src="${cutSrc(ev, cutId(ev.cut2), ev.cut2Var || 'a')}" alt="" onerror="this.remove()">` : ''); // 대화 상대: 배경 일러스트 위에 누끼로 선다
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}${cut}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }

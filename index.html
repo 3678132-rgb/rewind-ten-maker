@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #117 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #118 · 2026.10.12<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #117 · 2026.10.11</div>
+ <div id="buildtag">빌드 #118 · 2026.10.12</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -4023,14 +4023,15 @@ function checkEvent(S, c){
 
 const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.webp',
   beats:[
-    '2026년 2월. 십 년의 마지막 날, 나는 다시 그 골목에 서 있었다.',
-    '약방의 문은 처음처럼 열려 있었다. 카운터의 할머니는 모래시계를 쓰다듬고 있었다.',
-    '“마지막 모래가 떨어졌어요.” 할머니가 천천히 안경을 벗었다. 눈가의 주름 사이로 내 눈이 보였다.',
-    '“…나는 일흔 살의 당신이에요. 먼저 십 년을 살아 봤고, 한 가지를 놓쳤어요. 그래서 이 가게를 열었죠. 같은 후회를 가진 사람에게 기회를 건네려고.”',
-    '“이제 보여 줘요. 당신이 만든 서른 살을.”',
+    '2026년 2월. 십 년의 마지막 날, 나는 처음 이 시간으로 돌아왔던 그 골목의 약방 앞에 서 있었다.',
+    '카운터의 할머니가 모래시계를 쓰다듬는다. 마지막 모래알이 떨어졌다.',
+    '“이제 다 말할게요. 나는 일흔 살의 서윤이에요. 나도 마흔에 모든 걸 잃었고, 이 약으로 스무 살로 돌아갔어요.”',
+    '“그때 나는 미래를 아는 힘으로 일도 돈도 전부 이겼어요. 그런데 사람과 나 자신을 놓쳤고, 서른에 혼자가 됐죠. 같은 약을 다시 구하려다 남은 시간도 다 써 버렸어요.”',
+    '“그래서 이 약방을 열었어요. 같은 후회를 가진 사람에게 시계를 건네고, 십 년 뒤 어떻게 살았는지 지켜보려고요.”',
+    '“오늘이 그 결과예요. 일과 사람과 나, 세 가지가 모두 단단하고 미래를 빌려 쓴 몫이 적을수록 자유가 돼요. 이제 당신의 서른 살을 보여 줘요.”',
   ],
   text:S => '모래시계가 마지막으로 뒤집혔다. 결과가 정해질 시간이다.',
-  choices:[{label:'결과를 맞이한다', sub:'엔딩', run:S => ({text:'', chips:[]})}]};
+  choices:[{label:'내 서른 살의 결과를 본다', sub:'엔딩', run:S => ({text:'', chips:[]})}]};
 
 // ── 시대 이벤트 (실제 연·월 기준) ───────────────────────────────
 const ERA = [
@@ -6466,9 +6467,9 @@ const STORY_C = (() => {
   {id:'st_9_4', m:106, exp:1, speaker:GRANDMA, img:'art/grandma.webp', place:'shop', title:'할머니의 진짜 이야기',
    beats:[
     '약방의 모래시계는 거의 바닥을 보이고 있었다. 할머니는 오늘따라 차를 따르지 않았다.',
-    '“오늘은 옛날이야기를 하나 할게요. 어떤 여자가 있었어요. 마흔에 모든 걸 잃었고, 스무 살로 돌아가는 약을 얻었죠.”',
-    '“그 여자는 십 년 동안 완벽하게 이겼어요. 일도, 돈도, 이름도. 그런데 서른이 되던 날 문득 알았어요. 그 십 년 동안 한 번도 제대로 웃은 적이 없다는 걸.”',
-    '“그 여자는 소중한 사람을 잃었고, 약을 다시 구하려다 시간을 다 써 버렸어요. 그리고 일흔이 되어서야 이 약방에 앉아 같은 후회를 가진 누군가를 기다리게 됐죠.”',
+    '“오늘은 옛날이야기를 하나 할게요. 어떤 여자가 있었어요. 마흔에 모든 걸 잃었고, 스무 살로 돌아가는 약을 얻었죠. 지금의 당신처럼요.”',
+    '“그 여자는 미래를 아는 힘으로 십 년 동안 일도, 돈도, 이름도 다 이겼어요. 그런데 서른이 되던 날 알았죠. 같이 웃어 줄 사람이 곁에 아무도 없다는 걸.”',
+    '“그 여자는 약을 다시 구하려다 남은 시간을 다 써 버렸어요. 그리고 일흔이 되어서야 이 약방에 앉아, 같은 후회를 가진 누군가를 기다리게 됐죠.”',
     '할머니의 손등에서 오래된 흉터가 희미하게 빛났다. 나는 그 흉터를 알고 있었다. 내 손등에도 있는 것이다.',
    ],
    text:S => '이야기를 끝낸 할머니는 모래시계를 한 번 뒤집었다. 질문은 이미 정해져 있었다. 나는 무엇이라고 말할까?',
@@ -6531,8 +6532,8 @@ const STORY_C = (() => {
    choices:[
     {label:'조용히 듣는다. 할머니가 말하는 만큼만', sub:'진실 · 시계 조각', run:S => {
       const ch = []; const p = SS(S).pieces; givePiece(S, ch);
-      if(p >= 8){ SF(S).grannyTruth = true; SS(S).truth = 10; fx(S, {self:4, stress:-6, ins:2}, ch); return {text:'“나는 일흔의 서윤이에요. 당신이 지금 걷는 이 길을 한 번 걸었고, 실패했어요. 이 시계는 내 마지막 시계고, 당신은 내 마지막 기회예요.” 할머니의 목소리는 내 목소리와 똑같았다. 나는 울지 않으려 했지만, 그건 불가능했다.', chips:ch}; }
-      if(p >= 5){ SS(S).truth = Math.max(SS(S).truth, 6); fx(S, {self:2, stress:-3, ins:1.5}, ch); return {text:'“나도 한때 실패했어요. 이 시계는 그 실패 끝에서 모은 것이에요.” 할머니는 거기까지만 말했다. 나머지는 내일의 내가 스스로 알아낼 것이라는 듯이. 그것으로 충분하다고 생각했다.', chips:ch}; }
+      if(p >= 8){ SF(S).grannyTruth = true; SS(S).truth = 10; fx(S, {self:4, stress:-6, ins:2}, ch); return {text:'“나는 일흔의 서윤이에요. 당신이 지금 걷는 이 길을 한 번 걸었고, 실패했어요. 그래서 당신이 나와 다른 길을 걷는 걸 보는 게, 내 마지막 바람이에요.” 할머니의 목소리는 내 목소리와 똑같았다. 나는 울지 않으려 했지만, 그건 불가능했다.', chips:ch}; }
+      if(p >= 5){ SS(S).truth = Math.max(SS(S).truth, 6); fx(S, {self:2, stress:-3, ins:1.5}, ch); return {text:'“나도 한때 이 길을 걸었다가 실패했어요. 이 시계는 그 실패 끝에서 모은 거예요.” 할머니는 거기까지만 말했다. 나머지는 내일의 내가 스스로 알아낼 것이라는 듯이. 그것으로 충분하다고 생각했다.', chips:ch}; }
       fx(S, {self:1, stress:-2}, ch); return {text:'“이 모래가 흐르는 동안 당신이 보낸 시간은 모두 소중했어요.” 할머니는 더 말하지 않았다. 아직 다 듣지 못한 이야기가 남았다는 감각만이 오래 남았다.', chips:ch}; }},
     {label:'“할머니가 누구인지, 이제 알 것 같아요.”', sub:'통찰 · 시계 조각 · 나 +3', run:S => {
       const ch = []; const p = SS(S).pieces; givePiece(S, ch);
@@ -7458,7 +7459,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #117 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #118 · 2026.10.12<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7520,7 +7521,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#117 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#118 · 2026.10.12'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

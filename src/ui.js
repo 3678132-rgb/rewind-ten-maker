@@ -9,7 +9,7 @@ const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
 const END_ART = new Set(__END_ART__); // art/end_<엔딩id>.webp: 엔딩별 일러스트
-const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
+const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : END_ART.has('end_job_' + ({free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id])) ? `art/end_job_${{free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id]}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
 const ENDVAR_KEY = 'rewind-ten-endvar-v1'; // 직업군 엔딩에서 마지막으로 본 직업(도감 표시용)
 const endVarOf = id => { const m = store(ENDVAR_KEY) || {}; const t = m[id]; return t && CAREER_VAR[t] && CAREER_END[t] === id ? Object.assign({}, ENDINGS[id], CAREER_VAR[t], {track:t}) : ENDINGS[id]; };
 const HERO_JOB = new Set(__HERO_JOB__); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공

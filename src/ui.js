@@ -21,6 +21,7 @@ function cutOutfit(ev, id){
 const cutSrc = (ev, id, v) => { const o = cutOutfit(ev, id); return o && CUT_OUTFIT.has(`${id}_${o}_${v}`) ? `art/cut/${id}_${o}_${v}.webp` : `art/cut/${id}_${v}.webp`; };
 const END_ART = new Set(__END_ART__); // art/end_<엔딩id>.webp: 엔딩별 일러스트
 const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : END_ART.has('end_job_' + ({free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id])) ? `art/end_job_${{free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id]}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
+const LEGACY_KEY = 'rewind-ten-legacy-v1'; // 마지막 달에 시계를 곁에 둔 기록 → 다음 새 게임 보너스
 const ENDVAR_KEY = 'rewind-ten-endvar-v1'; // 직업군 엔딩에서 마지막으로 본 직업(도감 표시용)
 const endVarOf = id => { const m = store(ENDVAR_KEY) || {}; const t = m[id]; return t && CAREER_VAR[t] && CAREER_END[t] === id ? Object.assign({}, ENDINGS[id], CAREER_VAR[t], {track:t}) : ENDINGS[id]; };
 const HERO_JOB = new Set(__HERO_JOB__); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
@@ -63,7 +64,9 @@ function initTitle(){
   $('w-next').onclick = () => {
     if(wizStep === 0){ const v = $('in-name') && $('in-name').value.trim(); if(v) wizName = v; }
     if(wizStep < WIZ.length - 1){ wizStep++; renderWiz(); return; }
-    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow();
+    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major);
+    { const lg = store(LEGACY_KEY) || {}; if(lg.keep){ SS(S).pieces = 2; S.st.ins = Math.min(100, S.st.ins + 5); S.legacyClock = true; store(LEGACY_KEY, {keep:false}); } } // 지난 회차에 간직한 시계의 보너스(한 번 쓰면 사라진다)
+    save(); show('game'); render(); startFlow(); if(S.legacyClock) setTimeout(() => toast('지난 회차에 간직한 시계 — 시계 조각 2개와 통찰 +5로 시작해요'), 800);
   };
 }
 function renderWiz(){
@@ -571,12 +574,13 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 // ── 엔딩 ──────────────────────────────────────────────────────
 function showEnding(){
   const id = S.ending || computeEnding(S), e = endingView(S, id); const P = finalPillars(S);
+  if(S.story && S.story.f && S.story.f.clockKeep) store(LEGACY_KEY, {keep:true});
   if(e.track){ const m = store(ENDVAR_KEY) || {}; m[id] = e.track; store(ENDVAR_KEY, m); }
   const seen = seenEndings(); if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    ${borrowPenalty(S) >= 1 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 써서 ‘일’ 기둥에서 ${Math.round(borrowPenalty(S))}점이 빠졌어요 (원래 ${Math.round(S.work)} → ${Math.round(P.work)}).${id === 'ret_borrowed' ? ' 빌리지 않았다면 자유 시계였을 거예요.' : ''}</p>` : ''}
-   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 되감기는 거기서 끝났고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 언젠가 다음 사람이 문을 열 때까지.' : ''}\n\n— 일흔 살의 나로부터</div>
+   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 빌려 쓴 미래의 몫이 절반으로 줄었고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 다음 회차를 시작하면 시계 조각 2개와 통찰 +5가 함께한다.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };

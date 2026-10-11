@@ -472,7 +472,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #118 · 2026.10.12<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #119 · 2026.10.12<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -511,7 +511,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #118 · 2026.10.12</div>
+ <div id="buildtag">빌드 #119 · 2026.10.12</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -6553,8 +6553,8 @@ const STORY_C = (() => {
    ],
    text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택이다. 되감기의 힘을 놓아줄까, 곁에 둘까?`; },
    choices:[
-    {label:'시계를 놓아준다 — 되감기를 끝낸다', sub:'빌린 인생 감점이 절반으로 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
-    {label:'시계를 곁에 둔다 — 힘을 간직한다', sub:'통찰 +3 · 스트레스 +2 · 엔딩에 시계가 남는다', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
+    {label:'시계를 놓아준다 — 이번 판을 확실하게 끝낸다', sub:'이번 엔딩: 빌린 인생 감점 절반 (자유 엔딩에 유리) · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
+    {label:'시계를 곁에 둔다 — 다음 회차를 위해 간직한다', sub:'이번 엔딩: 변화 없음 · 다음 새 게임 시작 때 시계 조각 2개 + 통찰 +5 · 통찰 +3', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
    ]},
   ];
 })();
@@ -6890,6 +6890,7 @@ function cutOutfit(ev, id){
 const cutSrc = (ev, id, v) => { const o = cutOutfit(ev, id); return o && CUT_OUTFIT.has(`${id}_${o}_${v}`) ? `art/cut/${id}_${o}_${v}.webp` : `art/cut/${id}_${v}.webp`; };
 const END_ART = new Set(["end_free_balance","end_free_divorced","end_free_exec","end_free_love_dohyun","end_free_love_geonwoo","end_free_love_hajin","end_free_love_jaewoo","end_free_love_jihu","end_free_love_minjun","end_free_love_raon","end_free_love_seunghyun","end_free_love_sian","end_free_love_taeoh","end_free_love_ujin","end_free_love_yuchan","end_free_rich","end_free_secret","end_free_wedding","end_job_actor","end_job_beauty","end_job_brandceo","end_job_designer","end_job_dev","end_job_director","end_job_lawyer","end_job_pd","end_job_startup","end_job_stylist","end_job_writer","end_ret_all","end_ret_bond","end_ret_borrowed","end_ret_debt","end_ret_rich","end_ret_self","end_ret_work"]); // art/end_<엔딩id>.webp: 엔딩별 일러스트
 const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : END_ART.has('end_job_' + ({free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id])) ? `art/end_job_${{free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id]}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
+const LEGACY_KEY = 'rewind-ten-legacy-v1'; // 마지막 달에 시계를 곁에 둔 기록 → 다음 새 게임 보너스
 const ENDVAR_KEY = 'rewind-ten-endvar-v1'; // 직업군 엔딩에서 마지막으로 본 직업(도감 표시용)
 const endVarOf = id => { const m = store(ENDVAR_KEY) || {}; const t = m[id]; return t && CAREER_VAR[t] && CAREER_END[t] === id ? Object.assign({}, ENDINGS[id], CAREER_VAR[t], {track:t}) : ENDINGS[id]; };
 const HERO_JOB = new Set(["age25_actor","age25_beauty","age25_brandceo","age25_designer","age25_dev","age25_director","age25_pd","age25_startup","age25_stylist","age25_writer","age27_actor","age27_beauty","age27_brandceo","age27_designer","age27_dev","age27_director","age27_pd","age27_startup","age27_stylist","age27_writer","age30_actor","age30_beauty","age30_brandceo","age30_designer","age30_dev","age30_director","age30_pd","age30_startup","age30_stylist","age30_writer"]); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
@@ -6932,7 +6933,9 @@ function initTitle(){
   $('w-next').onclick = () => {
     if(wizStep === 0){ const v = $('in-name') && $('in-name').value.trim(); if(v) wizName = v; }
     if(wizStep < WIZ.length - 1){ wizStep++; renderWiz(); return; }
-    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major); save(); show('game'); render(); startFlow();
+    S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major);
+    { const lg = store(LEGACY_KEY) || {}; if(lg.keep){ SS(S).pieces = 2; S.st.ins = Math.min(100, S.st.ins + 5); S.legacyClock = true; store(LEGACY_KEY, {keep:false}); } } // 지난 회차에 간직한 시계의 보너스(한 번 쓰면 사라진다)
+    save(); show('game'); render(); startFlow(); if(S.legacyClock) setTimeout(() => toast('지난 회차에 간직한 시계 — 시계 조각 2개와 통찰 +5로 시작해요'), 800);
   };
 }
 function renderWiz(){
@@ -7440,12 +7443,13 @@ async function startFlow(){ // 새 게임: 프롤로그 먼저
 // ── 엔딩 ──────────────────────────────────────────────────────
 function showEnding(){
   const id = S.ending || computeEnding(S), e = endingView(S, id); const P = finalPillars(S);
+  if(S.story && S.story.f && S.story.f.clockKeep) store(LEGACY_KEY, {keep:true});
   if(e.track){ const m = store(ENDVAR_KEY) || {}; m[id] = e.track; store(ENDVAR_KEY, m); }
   const seen = seenEndings(); if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    ${borrowPenalty(S) >= 1 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 써서 ‘일’ 기둥에서 ${Math.round(borrowPenalty(S))}점이 빠졌어요 (원래 ${Math.round(S.work)} → ${Math.round(P.work)}).${id === 'ret_borrowed' ? ' 빌리지 않았다면 자유 시계였을 거예요.' : ''}</p>` : ''}
-   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 되감기는 거기서 끝났고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 언젠가 다음 사람이 문을 열 때까지.' : ''}\n\n— 일흔 살의 나로부터</div>
+   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 빌려 쓴 미래의 몫이 절반으로 줄었고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 다음 회차를 시작하면 시계 조각 2개와 통찰 +5가 함께한다.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
    <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };
@@ -7459,7 +7463,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #118 · 2026.10.12<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #119 · 2026.10.12<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7521,7 +7525,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#118 · 2026.10.12'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#119 · 2026.10.12'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

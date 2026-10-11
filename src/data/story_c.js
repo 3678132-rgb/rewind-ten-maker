@@ -193,8 +193,8 @@ const STORY_C = (() => {
    ],
    text:S => { const p = SS(S).pieces; return `시계 조각 ${p}개가 손에서 반짝인다. 마지막 선택이다. 되감기의 힘을 놓아줄까, 곁에 둘까?`; },
    choices:[
-    {label:'시계를 놓아준다 — 되감기를 끝낸다', sub:'빌린 인생 감점이 절반으로 · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
-    {label:'시계를 곁에 둔다 — 힘을 간직한다', sub:'통찰 +3 · 스트레스 +2 · 엔딩에 시계가 남는다', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
+    {label:'시계를 놓아준다 — 이번 판을 확실하게 끝낸다', sub:'이번 엔딩: 빌린 인생 감점 절반 (자유 엔딩에 유리) · 스트레스 -8 · 나 +4', run:S => { SF(S).clockFree = true; delete SF(S).clockKeep; const ch = []; fx(S, {self:4, stress:-8, bond:2, hp:3}, ch); return {text:'모래시계를 창가에 놓았다. 모래가 조용히 사라지는 동안 나는 눈을 감지 않았다. 앞으로의 시간이 길게도, 짧게도 느껴졌다. 어느 쪽이든 이제 내 것이었다.', chips:ch}; }},
+    {label:'시계를 곁에 둔다 — 다음 회차를 위해 간직한다', sub:'이번 엔딩: 변화 없음 · 다음 새 게임 시작 때 시계 조각 2개 + 통찰 +5 · 통찰 +3', run:S => { SF(S).clockKeep = true; delete SF(S).clockFree; const ch = []; fx(S, {ins:3, self:2, stress:2, bond:1}, ch); return {text:'시계는 따뜻하고 조금 무거웠다. 누군가에게 이 시계가 필요한 날이 올 것이다. 어쩌면 그것이 할머니가 나에게 기다림으로 보여 준 마음이었을 것이다.', chips:ch}; }},
    ]},
   ];
 })();

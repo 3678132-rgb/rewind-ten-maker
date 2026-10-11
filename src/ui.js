@@ -464,6 +464,10 @@ const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'famil
 const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
 // 이미지가 없으면 data-fb 의 다음 후보로 바꾼다(a|b|c)
 function cfb(img){ const l = (img.dataset.fb || '').split('|').filter(Boolean); const nx = l.shift(); img.dataset.fb = l.join('|'); if(nx) img.src = nx; else img.onerror = null; }
+// 스케줄 연출 속도: normal(기본) / fast(짧게, 결과도 자동 진행) / skip(팝업 없이 정산에서 한꺼번에)
+const SPEED_KEY = 'rt_speed', SPEED_LB = {normal:'보통', fast:'빠르게', skip:'건너뛰기(정산에서 한 번에)'};
+const getSpeed = () => { try{ const v = localStorage.getItem(SPEED_KEY); return SPEED_LB[v] ? v : 'normal'; }catch(e){ return 'normal'; } };
+const setSpeed = v => { try{ localStorage.setItem(SPEED_KEY, v); }catch(e){} };
 function showAct(slotName, id, out, first = 0, opts = {}){
   // 스테이지 제로 메이커처럼: 홈 화면(상태창·탭)은 그대로 두고, 가운데 팝업 카드에서 2.5등신 장면이 진행된다
   return new Promise(res => {
@@ -493,29 +497,37 @@ function showAct(slotName, id, out, first = 0, opts = {}){
     el.innerHTML = `<div class="apop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slotName}</span></div><div class="${cls}" ${frameBg}>${inner}</div><div id="apx"><div class="apbar"><i></i></div><div class="apfoot"><b id="adate">${opts.noDate ? '교정 산책' : `${mo}월 ${d0}일`}</b><span>탭하면 건너뛰기</span></div></div></div>`;
     el.classList.add('on');
     const bar = el.querySelector('.apbar i'); requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
-    let done = false, auto = 0; const t0 = Date.now(), DUR = 2600;
+    let done = false, auto = 0, auto2 = 0; const t0 = Date.now(), fastMode = getSpeed() === 'fast', DUR = fastMode ? 700 : 2600;
     const tick = opts.noDate ? 0 : setInterval(() => { const day = Math.min(d1, d0 + Math.floor((Date.now() - t0) / DUR * (d1 - d0 + 1))); const dd = $('adate'); if(dd) dd.textContent = `${mo}월 ${day}일`; }, 120);
     const result = () => {
       if(done) return; done = true; clearInterval(tick); clearTimeout(auto);
       $('apx').innerHTML = `<div class="txt">${esc(out.note || a.desc)}</div><div class="chips">${chipHTML(out.ch)}</div><button class="btn" id="anx">다음</button>`;
       el.querySelector('.apop').onclick = null;
-      $('anx').onclick = () => { el.classList.remove('on'); res(); };
+      $('anx').onclick = () => { clearTimeout(auto2); el.classList.remove('on'); res(); };
+      if(fastMode) auto2 = setTimeout(() => { if(el.classList.contains('on') && $('anx')) $('anx').click(); }, 1000); // 빠르게: 결과도 잠깐 보여 주고 넘어간다
     };
     auto = setTimeout(result, DUR + 200);
     el.querySelector('.apop').onclick = result;
   });
 }
 async function runMonth(){
-  seedMonth(S); S.lastPlan = S.plan.slice();
+  seedMonth(S); S.lastPlan = S.plan.slice(); const skipLog = [];
   for(let i = 0; i < 3; i++){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
     S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
-    await showAct(SLOT_NAMES[first], id, out, first);
+    if(getSpeed() === 'skip' && !['jobhunt', 'date'].includes(id) && !out.burnout){ skipLog.push({a, out}); }
+    else await showAct(SLOT_NAMES[first], id, out, first);
     if(out.burnout) break;
   }
   const sch = settle(S);
-  await alertSheet(`${yearOf(S)}년 ${monthOf(S)}월 정산`, '생활비·균형을 정산했어요.', sch, '계속');
+  let body = '생활비·균형을 정산했어요.';
+  if(skipLog.length){ // 건너뛰기: 팝업 없이 한 달 치 결과를 정산에서 모아 보여 준다
+    const merged = {}; skipLog.forEach(s => (s.out.ch || []).forEach(c => { const m = merged[c.label] || (merged[c.label] = {label:c.label, d:0, money:c.money}); m.d += c.d; }));
+    sch.unshift(...Object.values(merged));
+    body = skipLog.map(s => `${s.a.icon} ${esc(actName(S, s.a.id))}${s.out.note ? ' — ' + esc(s.out.note) : ''}`).join('<br>') + '<br><br>생활비·균형도 정산했어요.';
+  }
+  await alertSheet(`${yearOf(S)}년 ${monthOf(S)}월 정산`, body, sch, '계속');
   if(!S.ending){
     const fx_ = fixedEvents(S); for(const f of fx_){ await playEvent(f); if(S.ending) break; }
     if(!S.ending){ const ev = fx_.length >= 2 ? null : (R() < 0.7 ? pickEvent(S) : null); if(ev) await playEvent(ev); }
@@ -550,10 +562,11 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
+    $('m-speed').onclick = () => { const order = ['normal', 'fast', 'skip'], nx = order[(order.indexOf(getSpeed()) + 1) % 3]; setSpeed(nx); $('m-speed').textContent = '⏩ 스케줄 연출: ' + SPEED_LB[nx]; toast('스케줄 연출: ' + SPEED_LB[nx]); };
     $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
     $('m-title').onclick = () => { save(); closeSheet(); initTitle(); show('title'); }; };

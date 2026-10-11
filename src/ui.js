@@ -346,7 +346,9 @@ function playEvent(ev){
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
-    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = ''; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
+    if(mc){ const n = +mc[1], el = $('ev'), pc = SS(S).pieces; el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = '';
+      const dots = Array.from({length:10}, (_, i) => `<i class="${i < pc ? 'on' : ''}"></i>`).join('');
+      el.innerHTML = `<div class="chapcard" style="background-image:url(art/ch_${n}.webp),radial-gradient(circle at 50% 28%,#2b3a8c,#0c1030 70%)"><div class="chshade"></div><div class="chtxt"><small class="chyear">${yearOf(S)}년 ${monthOf(S)}월</small><div class="chnum">CHAPTER ${String(n).padStart(2, '0')}</div><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><div class="chline"></div><div class="chpieces" aria-label="시계 조각 ${pc} / 10">${dots}</div><button class="btn" id="chgo">시작</button></div></div>`; $('chgo').onclick = nextBeat; }
     else nextBeat();
   });
 }

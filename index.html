@@ -393,6 +393,22 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .cpleft .dots{display:flex;gap:5px}.cpleft .dots i{width:14px;height:14px;border-radius:50%;background:#dfe3ee;box-shadow:inset 0 0 0 2px #fff}.cpleft .dots i.on{background:#4f63f0}
 .cpleft b{margin-left:auto;color:#4f63f0}
 .cpleft .dots{flex:none}.cpleft .dots i{flex:none;display:block}
+
+/* ───── 장 타이틀 카드(영화 타이틀 느낌: 일러스트 + 아래쪽 제목) ───── */
+.evcard.chapter{background:#0c1030}
+.chapcard{position:absolute;inset:0;display:block;padding:0;background:#0c1030 radial-gradient(circle at 50% 28%,#2b3a8c,#0c1030 70%) center/cover no-repeat;animation:chfade .6s ease-out}
+.chapcard .chshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,32,.35) 0,rgba(8,10,32,0) 28%,rgba(8,10,32,.2) 48%,rgba(8,10,32,.9) 78%,#080a20 100%)}
+.chapcard .chtxt{position:absolute;left:0;right:0;bottom:calc(46px + var(--sb));display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 28px;color:#fff;animation:chup .8s .15s ease-out both}
+.chapcard .chyear{font-size:12px;font-weight:700;letter-spacing:.32em;color:rgba(255,255,255,.78);margin-bottom:14px}
+.chapcard .chnum{font-size:15px;font-weight:800;letter-spacing:.5em;padding-left:.5em;color:#ffd98a;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.chapcard h1{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1.15;text-shadow:0 3px 18px rgba(0,0,0,.65)}
+.chapcard .chline{width:44px;height:2px;margin:18px 0 14px;background:linear-gradient(90deg,transparent,#ffd98a,transparent)}
+.chapcard .chpieces{display:flex;gap:7px;margin-bottom:26px}
+.chapcard .chpieces i{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid rgba(255,217,138,.55);border-radius:2px}
+.chapcard .chpieces i.on{background:#ffd98a;border-color:#ffd98a;box-shadow:0 0 8px rgba(255,217,138,.8)}
+.chapcard .btn{width:200px;min-height:50px;background:rgba(255,255,255,.92);color:#1c2250;border:0;box-shadow:0 6px 22px rgba(0,0,0,.4);font-size:16px;font-weight:800;letter-spacing:.1em}
+@keyframes chfade{from{opacity:0}to{opacity:1}}
+@keyframes chup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -403,7 +419,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #58 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #59 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -441,7 +457,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #58 · 2026.10.11</div>
+ <div id="buildtag">빌드 #59 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -4144,7 +4160,9 @@ function playEvent(ev){
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };
-    if(mc){ const n = +mc[1]; const el = $('ev'); el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = ''; el.innerHTML = `<div class="chapcard"><small>${yearOf(S)}년 · ${n} / 10</small><b>제 ${n} 장</b><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><p>시계 조각 ${SS(S).pieces} / 10</p><button class="btn" id="chgo">시작</button></div>`; $('chgo').onclick = nextBeat; }
+    if(mc){ const n = +mc[1], el = $('ev'), pc = SS(S).pieces; el.className = 'evcard on chapter'; el.style.backgroundImage = ''; el.dataset.img = '';
+      const dots = Array.from({length:10}, (_, i) => `<i class="${i < pc ? 'on' : ''}"></i>`).join('');
+      el.innerHTML = `<div class="chapcard" style="background-image:url(art/ch_${n}.webp),radial-gradient(circle at 50% 28%,#2b3a8c,#0c1030 70%)"><div class="chshade"></div><div class="chtxt"><small class="chyear">${yearOf(S)}년 ${monthOf(S)}월</small><div class="chnum">CHAPTER ${String(n).padStart(2, '0')}</div><h1>${esc(CHAPTER_TITLES[n - 1] || '')}</h1><div class="chline"></div><div class="chpieces" aria-label="시계 조각 ${pc} / 10">${dots}</div><button class="btn" id="chgo">시작</button></div></div>`; $('chgo').onclick = nextBeat; }
     else nextBeat();
   });
 }
@@ -4243,7 +4261,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #58 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #59 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4288,7 +4306,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#58 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#59 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

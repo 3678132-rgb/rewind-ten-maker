@@ -388,3 +388,19 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .cpleft .dots{display:flex;gap:5px}.cpleft .dots i{width:14px;height:14px;border-radius:50%;background:#dfe3ee;box-shadow:inset 0 0 0 2px #fff}.cpleft .dots i.on{background:#4f63f0}
 .cpleft b{margin-left:auto;color:#4f63f0}
 .cpleft .dots{flex:none}.cpleft .dots i{flex:none;display:block}
+
+/* ───── 장 타이틀 카드(영화 타이틀 느낌: 일러스트 + 아래쪽 제목) ───── */
+.evcard.chapter{background:#0c1030}
+.chapcard{position:absolute;inset:0;display:block;padding:0;background:#0c1030 radial-gradient(circle at 50% 28%,#2b3a8c,#0c1030 70%) center/cover no-repeat;animation:chfade .6s ease-out}
+.chapcard .chshade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,10,32,.35) 0,rgba(8,10,32,0) 28%,rgba(8,10,32,.2) 48%,rgba(8,10,32,.9) 78%,#080a20 100%)}
+.chapcard .chtxt{position:absolute;left:0;right:0;bottom:calc(46px + var(--sb));display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 28px;color:#fff;animation:chup .8s .15s ease-out both}
+.chapcard .chyear{font-size:12px;font-weight:700;letter-spacing:.32em;color:rgba(255,255,255,.78);margin-bottom:14px}
+.chapcard .chnum{font-size:15px;font-weight:800;letter-spacing:.5em;padding-left:.5em;color:#ffd98a;margin-bottom:10px;text-shadow:0 1px 8px rgba(0,0,0,.5)}
+.chapcard h1{font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1.15;text-shadow:0 3px 18px rgba(0,0,0,.65)}
+.chapcard .chline{width:44px;height:2px;margin:18px 0 14px;background:linear-gradient(90deg,transparent,#ffd98a,transparent)}
+.chapcard .chpieces{display:flex;gap:7px;margin-bottom:26px}
+.chapcard .chpieces i{width:9px;height:9px;transform:rotate(45deg);border:1.5px solid rgba(255,217,138,.55);border-radius:2px}
+.chapcard .chpieces i.on{background:#ffd98a;border-color:#ffd98a;box-shadow:0 0 8px rgba(255,217,138,.8)}
+.chapcard .btn{width:200px;min-height:50px;background:rgba(255,255,255,.92);color:#1c2250;border:0;box-shadow:0 6px 22px rgba(0,0,0,.4);font-size:16px;font-weight:800;letter-spacing:.1em}
+@keyframes chfade{from{opacity:0}to{opacity:1}}
+@keyframes chup{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}

@@ -403,7 +403,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #57 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #58 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -441,7 +441,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #57 · 2026.10.11</div>
+ <div id="buildtag">빌드 #58 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -1047,6 +1047,15 @@ function rom2Event(S){
 // 여러 명과의 연애: 몰래 데이트(비밀 연애) · 들통 · 상대의 바람 · 결혼 · 결혼 생활 · 이혼. ENGINE 구간(DOM 금지)
 // 상태: S.partner(공식 연인) · S.secret{id:true}(공식 몰래 만나는 사람) · S.susp(의심 0~100) · S.married(결혼한 상대) · v.stage 3 = 결혼
 LOVE_STAGE['3'] = '결혼';
+// 화면에 보이는 관계 상태: 썸 · 연애 · 연애(비밀) · 결혼 약속 · 결혼 · 이혼 · 이별
+function loveStatus(S, id){
+  const v = S.love[id]; if(!v) return '';
+  if(v.stage === 3) return '결혼';
+  if(v.stage === -9) return v.marriedAt != null ? '이혼' : '이별';
+  if(v.stage === 2) return '결혼 약속';
+  if(v.stage === 1) return S.secret && S.secret[id] ? '연애 · 비밀' : '연애';
+  return '썸';
+}
 const V3 = {warm:'“네가 있어서 힘이 나.”', sorry:'“…미안해.”'};
 const voiceOf = id => (typeof LOVE_VOICE !== 'undefined' && LOVE_VOICE[id]) || V3;
 const officialOf = S => S.partner && S.love[S.partner] && S.love[S.partner].stage >= 1 ? S.partner : null;
@@ -3567,7 +3576,7 @@ function contactsOf(S){
   ];
   for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9) continue;
     const partner = v.stage >= 1;
-    out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${partner ? LOVE_STAGE[v.stage] : '썸'} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
+    out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
   return out;
 }
 const hashM = (S, id) => { let h = S.m * 7; for(const c of id) h += c.charCodeAt(0); return h; };
@@ -3962,7 +3971,7 @@ const sheetHead = (t, sub) => `<div class="sh-head"><b>${t}</b><button class="sh
 function chooseDate(slot, ts, done, back){
   const off = officialOf(S);
   const rows = ts.sort((a, b) => S.love[b].aff - S.love[a].aff).map(id => { const lv = LOVERS[id], v = S.love[id], secret = off && off !== id;
-    return `<button class="lcard" data-id="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '썸'}${secret ? ' 🤫' : ''}</b><small>${secret ? `${esc(LOVERS[off].name)} 몰래 만나요 · 들킬 위험이 쌓여요` : esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">💞</span></button>`; }).join('');
+    return `<button class="lcard" data-id="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${secret ? ' 🤫' : ''} · 호감 ${Math.round(v.aff)}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">💞</span></button>`; }).join('');
   openSheet(sheetHead('누구와 데이트할까요?', `${SLOT_NAMES[slot]} 칸 · 여러 명을 동시에 만날 수도 있어요`) + rows);
   $('x').onclick = () => { back(); };
   document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done(b.dataset.id));
@@ -4066,9 +4075,9 @@ function showLove(){
   const row = id => { const lv = LOVERS[id], v = S.love[id];
     if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
-    const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫 비밀' : '') + (S.partner === id && v.stage >= 1 ? ' ❤ 공식' : '');
+    const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫' : '') + (S.partner === id && v.stage >= 1 && v.stage < 3 ? ' ❤' : '');
     const dt = dateTargets(S).includes(id);
-    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
+    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)}</b><small>${loveStatus(S, id)}${tag} · 호감 ${Math.round(v.aff)}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
   openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(인연 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
   document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
@@ -4234,7 +4243,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #57 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #58 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -4279,7 +4288,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#57 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#58 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

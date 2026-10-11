@@ -1,6 +1,15 @@
 // 여러 명과의 연애: 몰래 데이트(비밀 연애) · 들통 · 상대의 바람 · 결혼 · 결혼 생활 · 이혼. ENGINE 구간(DOM 금지)
 // 상태: S.partner(공식 연인) · S.secret{id:true}(공식 몰래 만나는 사람) · S.susp(의심 0~100) · S.married(결혼한 상대) · v.stage 3 = 결혼
 LOVE_STAGE['3'] = '결혼';
+// 화면에 보이는 관계 상태: 썸 · 연애 · 연애(비밀) · 결혼 약속 · 결혼 · 이혼 · 이별
+function loveStatus(S, id){
+  const v = S.love[id]; if(!v) return '';
+  if(v.stage === 3) return '결혼';
+  if(v.stage === -9) return v.marriedAt != null ? '이혼' : '이별';
+  if(v.stage === 2) return '결혼 약속';
+  if(v.stage === 1) return S.secret && S.secret[id] ? '연애 · 비밀' : '연애';
+  return '썸';
+}
 const V3 = {warm:'“네가 있어서 힘이 나.”', sorry:'“…미안해.”'};
 const voiceOf = id => (typeof LOVE_VOICE !== 'undefined' && LOVE_VOICE[id]) || V3;
 const officialOf = S => S.partner && S.love[S.partner] && S.love[S.partner].stage >= 1 ? S.partner : null;

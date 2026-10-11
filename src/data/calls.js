@@ -11,7 +11,7 @@ function contactsOf(S){
   ];
   for(const id of LOVER_IDS){ const v = S.love[id], lv = LOVERS[id]; if(!v || v.stage === -9) continue;
     const partner = v.stage >= 1;
-    out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${partner ? LOVE_STAGE[v.stage] : '썸'} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
+    out.push({id, kind:partner ? 'partner' : 'crush', name:lv.name, sub:`${loveStatus(S, id)} · 호감 ${Math.round(v.aff)}`, img:`art/face_${id}_happy.webp`}); }
   return out;
 }
 const hashM = (S, id) => { let h = S.m * 7; for(const c of id) h += c.charCodeAt(0); return h; };

@@ -454,7 +454,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #73 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #74 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -492,7 +492,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #73 · 2026.10.11</div>
+ <div id="buildtag">빌드 #74 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -5758,7 +5758,7 @@ Object.assign({}, _saHarin, {id:'st_3_3', m:30, exp:5, place:'night', title:'바
 
 // ════════ 라이벌 랜덤 이벤트 ════════
 const RIVAL_EVENTS = [
-Object.assign({}, _saHarin, {id:'rv_class_rank', w:4, cd:12, cond:S => S.m >= 6 && S.m <= 100, place:'campus', title:'성적 발표',
+Object.assign({}, _saHarin, {id:'rv_class_rank', w:4, cd:12, cond:S => S.m >= 6 && S.m <= 47, place:'campus', title:'성적 발표',
   text:S => { const st = rivalState(S); return st === 'ally' ? '게시판 앞, 하린이 먼저 와 서 있었다. “2등이네요. 다음엔 제가 노트를 빌려줄 수도 있어요.” 농담인지 진담인지 모를 말이었다.' : st === 'enemy' ? '“2등이네요. 아쉽게.” 하린이 지나가며 말했다. 위로가 아니라 기록처럼 들렸다.' : '학과 성적 게시판 앞. 1등 이름 옆에 서하린, 바로 아래 내 이름. 하린이 고개를 돌려 나를 봤다.'; },
   choices:[
     {label:'“다음 학기엔 내가 1등이야.” 선전포고한다', sub:'학식 +2 · 스트레스 +3 · 하린 관계 -1', run:S => _sa(S, {know:2, stress:3}, -1, '“근거는요?” “지금부터 만들죠.” 하린이 눈썹을 올렸다. 자존심으로 한 말이었지만 그날 밤 책상에 앉은 시간은 평소의 두 배였다.', 'serious')},
@@ -5766,7 +5766,7 @@ Object.assign({}, _saHarin, {id:'rv_class_rank', w:4, cd:12, cond:S => S.m >= 6 
     {label:'노트 교환을 제안한다', sub:'학식 +1 · 하린 관계는 상황에 따라', run(S){ return rivalState(S) === 'enemy' ? _sa(S, {stress:2}, 0, '“저는 제 노트를 파는 사람이 아니에요.” 단호한 거절이었다. 그래도 그녀의 시선이 내 노트 모서리에 잠깐 머물렀다.', 'serious') : _sa(S, {know:1.5, bond:1}, 2, '하린이 내 노트를 한 장 넘기다 말했다. “정리하는 방식이 나랑 비슷하네요.” 노트를 돌려줄 때 그녀의 글씨가 한 줄 달려 있었다. 「3장 개념 보강.」', 'surprised'); }},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_scholarship', once:true, w:4, cd:30, cond:S => S.m >= 14 && S.m <= 70, place:'campus', title:'단 한 명의 장학금',
+Object.assign({}, _saHarin, {id:'rv_scholarship', once:true, w:4, cd:30, cond:S => S.m >= 14 && S.m <= 47, place:'campus', title:'단 한 명의 장학금',
   beats:[
     '성적우수 장학금, 이번 학기 단 한 명. 제출 서류 목록의 맨 아래에 같은 이름 두 개가 있다.',
     '하린의 가정 형편은 학과에서 아는 사람만 안다. 이 장학금이 없으면 휴학을 고민해야 할지도 모른다는 소문이 있었다.',
@@ -5778,7 +5778,7 @@ Object.assign({}, _saHarin, {id:'rv_scholarship', once:true, w:4, cd:30, cond:S 
     {label:'하린에게 서류 검토를 부탁한다', sub:'하린 관계 +1 · 상황에 따라 승산 변동', run(S){ const help = rivalState(S) !== 'enemy'; const win = _saScore(S) + (help ? 11 : 5) + rand(-10, 10) > 38; if(win) return _sa(S, {cash:120, know:1.5}, help ? 1 : 0, help ? '하린이 붉은 펜으로 오탈자까지 잡아 줬다. 결과는 내 승리. 통지서를 받자 그녀가 말했다. “내가 잡아 준 건 맞춤법뿐이에요. 내용은 당신 거고요.” 그 말이 위로처럼 들렸다.' : '검토를 맡기는 건 도박이었다. 하린은 날카롭게 약점만 짚었다. 그 약점을 고친 서류로 장학금을 받았다. 고마운 건지 분한 건지 알 수 없었다.', 'serious'); return _sa(S, {know:1.5}, help ? 2 : 0, '결과는 하린이었다. “미안하다고 하면 모욕이겠죠.” 그녀는 서류에 남긴 붉은 펜 자국을 보며 말했다. “다음엔 같이 이길 방법을 찾아요.”', 'tender'); }},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_library_night', w:4, cd:10, cond:S => S.m >= 8 && S.m <= 110, place:'night', title:'새벽 두 시의 열람실',
+Object.assign({}, _saHarin, {id:'rv_library_night', w:4, cd:10, cond:S => S.m >= 8 && S.m <= 47, place:'night', title:'새벽 두 시의 열람실',
   beats:[
     '새벽 두 시, 도서관 4층. 불 꺼진 열람실 끝에 스탠드 하나가 켜져 있었다.',
     '서하린이 책 위에 엎드려 잠들어 있었다. 책상 위에는 작은 모래 타이머가 서 있다. 이미 다 흘러내린 채로.',
@@ -5790,7 +5790,7 @@ Object.assign({}, _saHarin, {id:'rv_library_night', w:4, cd:10, cond:S => S.m >=
     {label:'깨워서 집에 가라고 한다', sub:'스트레스 +1', run:S => _sa(S, {stress:1, hp:1}, 0, '“깨우지 마요. 자는 시간이 아까워서 앉아 있는 거예요.” 잠에서 덜 깬 목소리가 날카로웠다. 그래도 십 분 뒤 우리는 같이 정문을 나왔다. 서로 말은 없었다.', 'serious')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_help_sab', w:5, cd:10, cond:S => S.m >= 12 && S.m <= 105, place:'campus', title:'마감 한 시간 전',
+Object.assign({}, _saHarin, {id:'rv_help_sab', w:5, cd:10, cond:S => S.m >= 12 && S.m <= 47, place:'campus', title:'마감 한 시간 전',
   text:S => { const r = SS(S).rival; return r >= 2 ? '과제 마감 한 시간 전, 사물함에 포스트잇이 붙어 있었다. 「3번 식은 분모가 틀렸어요. —H」 틀림없이 하린의 필체였다.' : r <= -2 ? '조별 과제 제출 직전, 공유 폴더의 내 파일이 한 시간 전 버전으로 되돌려져 있었다. 마지막 수정자는 비어 있었다. 그런 일을 할 사람은 한 명밖에 떠오르지 않았다.' : '과제 옆자리에서 하린이 아무 말 없이 지우개 가루를 털었다. 내 답안 한 문제를 가리켰다. “이건 틀렸어요. 이유는 안 알려 줄 거예요.”'; },
   choices:[
     {label:'하린에게 직접 찾아간다', sub:'하린 관계는 상황에 따라', run(S){ const r = SS(S).rival; return r >= 2 ? _sa(S, {bond:1}, 2, '“고마워요.” “제 이름은 쓰지 마요. 알려 준 적 없는 거예요.” 그렇게 말하며 그녀는 귀 끝이 붉어졌다. 좋은 사람은 서투르게 좋아야 한다는 걸 처음 알았다.', 'shy') : r <= -2 ? _sa(S, {stress:3}, -1, '“증명해 보세요.” 하린은 부정하지 않았다. 그 침묵이 더 불길했다. 하지만 그녀의 시선은 끝내 내 눈을 피했다.', 'serious') : _sa(S, {ins:1}, 1, '“왜 알려 줘요?” “알려 줄 이유는 없어요. 틀린 걸 두고 보는 게 불편했을 뿐이에요.” 이유가 없다면서 이유를 말하는 사람이었다.', 'surprised'); }},
@@ -5798,7 +5798,7 @@ Object.assign({}, _saHarin, {id:'rv_help_sab', w:5, cd:10, cond:S => S.m >= 12 &
     {label:'작은 것으로 응수한다 (커피 한 잔)', sub:'자금 -4 · 하린 관계 +1', run:S => _sa(S, {cash:-4}, 1, '뚜껑에 「독 없음」이라고 적은 커피를 책상에 놓았다. 하린은 한참 뚜껑을 보다가 한 모금 마셨다. “…설탕 너무 많이 넣었어요.” 하지만 컵은 끝까지 비웠다.', 'tender')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_job_market', once:true, w:5, cd:30, cond:S => S.m >= 38 && S.m <= 75, place:'campus', title:'채용 박람회',
+Object.assign({}, _saHarin, {id:'rv_job_market', once:true, w:5, cd:30, cond:S => S.m >= 38 && S.m <= 47, place:'campus', title:'채용 박람회',
   beats:[
     '채용 박람회의 인파 속, 한결상사 부스 앞 긴 줄. 맨 앞에서 누군가 돌아봤다. 서하린이었다.',
     '이력서를 꺼내던 그녀가 낮게 말했다. “거긴 줄 서지 마요. 사 년 뒤에 구조조정이 있어요. 제가 그렇게 들었어요.”',
@@ -5810,7 +5810,7 @@ Object.assign({}, _saHarin, {id:'rv_job_market', once:true, w:5, cd:30, cond:S =
     {label:'다른 회사 부스를 같이 돈다', sub:'하린 관계 +2 · 일 +1', run:S => _sa(S, {work:1, know:1, ins:1}, 2, '하린은 부스마다 한 번씩 서서 정확한 직무 이름을 불렀다. 지나치게 정확해서 소름이 돋았다. 마지막 부스에서 그녀가 말했다. “여기는 괜찮아요. 3년 뒤에 사람이 필요하거든요.”', 'surprised')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_rumor', once:true, w:4, cd:30, cond:S => S.m >= 20 && S.m <= 95, place:'campus', title:'단톡방의 소문',
+Object.assign({}, _saHarin, {id:'rv_rumor', once:true, w:4, cd:30, cond:S => S.m >= 20 && S.m <= 47, place:'campus', title:'단톡방의 소문',
   text:S => { const st = rivalState(S); return st === 'enemy' ? '학과 단톡에 이상한 말이 돈다. 「서윤이 교수님 연구실에 자주 가는 이유가 따로 있대.」 출처를 쫓아가 보니 마지막에 하린의 후배가 있다.' : st === 'ally' ? '비슷한 소문이 돌았지만 하루 만에 사라졌다. 진원지 후배가 하린 앞에서 사과하는 걸 우연히 봤다. “정확하지 않은 건 말하지 않게 하고 싶었을 뿐이에요.”' : '내게 관한 소문이 돌았지만, 가장 먼저 부정한 사람이 서하린이었다는 말이 들렸다. 이상한 일이다.'; },
   choices:[
     {label:'직접 해명하고 정면 돌파한다', sub:'나 +2 · 스트레스 +3', run:S => _sa(S, {self:2, stress:3, charm:1}, 0, '질문하는 사람 앞에서 사실만 말했다. 소문은 설명하는 순간 힘을 잃었다. 떨리는 손을 숨기는 일이 그날의 가장 어려운 일이었다.', 'serious')},
@@ -5818,7 +5818,7 @@ Object.assign({}, _saHarin, {id:'rv_rumor', once:true, w:4, cd:30, cond:S => S.m
     {label:'하린에게 직접 확인한다', sub:'하린 관계 상황에 따라 · 통찰 +1', run(S){ const st = rivalState(S); return st === 'enemy' ? _sa(S, {ins:2}, 0, '“내가 했다면 이렇게 서툴지 않았을 거예요.” 이상하게 설득력 있는 대답이었다. 나는 그녀를 의심하면서도 믿었다.', 'serious') : st === 'ally' ? _sa(S, {ins:1}, 2, '“갚은 거예요. 장학금 때.” 하린이 시선을 돌렸다. “소문은 비효율적이에요. 사람을 소모하니까.” 그녀의 정의가 나를 살렸다.', 'shy') : _sa(S, {ins:1}, 1, '“저는 소문을 만들 시간 없어요.” 하린이 단호하게 말했다. 변명 같지 않았다. 그 말이 이상하게 안심이 됐다.', 'serious'); }},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_coffee', w:3, cd:14, cond:S => S.m >= 18 && S.m <= 110 && SS(S).rival >= 0, place:'cafe', title:'식은 커피',
+Object.assign({}, _saHarin, {id:'rv_coffee', w:3, cd:14, cond:S => S.m >= 18 && S.m <= 47 && SS(S).rival >= 0, place:'cafe', title:'식은 커피',
   beats:[
     '시험이 끝난 날, 하린이 먼저 커피를 샀다. 말없이 한 모금을 마시다 가방을 내려놓았다.',
     '“우리 집은요, 장마철마다 천장이 샜어요. 아버지는 아침마다 양동이를 비웠고요. 그래서 비가 싫어요.”',
@@ -5830,7 +5830,7 @@ Object.assign({}, _saHarin, {id:'rv_coffee', w:3, cd:14, cond:S => S.m >= 18 && 
     {label:'농담으로 분위기를 풀어 준다', sub:'매력 +1 · 하린 관계 +1', run:S => _sa(S, {charm:1, stress:-1}, 1, '“천장이 샌다니, 양동이 소리로 음악 만들 수 있었겠네.” 하린이 웃음을 삼키다 사레가 들렸다. 곧 표정을 정리했지만 눈은 아직 웃고 있었다.', 'happy')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_bet', once:true, w:4, cd:30, cond:S => S.m >= 16 && S.m <= 80, place:'cafe', title:'소원 내기',
+Object.assign({}, _saHarin, {id:'rv_bet', once:true, w:4, cd:30, cond:S => S.m >= 16 && S.m <= 47, place:'cafe', title:'소원 내기',
   beats:[
     '“내기 하나 해요.” 하린이 시간표를 접어 건넸다.',
     '“이번 학기 전공 평균이 높은 쪽이 소원 하나. 뭐든, 한 번.”',
@@ -5842,7 +5842,7 @@ Object.assign({}, _saHarin, {id:'rv_bet', once:true, w:4, cd:30, cond:S => S.m >
     {label:'조건을 바꾼다. 진 쪽이 이긴 쪽 노트를 정리해 주기', sub:'학식 +1 · 하린 관계 +1', run:S => _sa(S, {know:1.5, stress:1}, 1, '“노트 정리라니, 소원치고는 시시하네요.” “시시한 게 좋은 소원이에요.” 하린이 한참 나를 보다 악수를 청했다. 그날의 악수는 조금 길었다.', 'surprised')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_rain_alley', w:3, cd:18, cond:S => S.m >= 30 && S.m <= 112, place:'rain', title:'같은 우산',
+Object.assign({}, _saHarin, {id:'rv_rain_alley', w:3, cd:18, cond:S => S.m >= 30 && S.m <= 47, place:'rain', title:'같은 우산',
   text:S => '갑자기 쏟아진 비. 정문 처마 밑에서 하린이 우산 없이 서 있었다. 비를 보는 눈이 이상했다. “비 오는 날 내린 결정은 대체로 나빴어요. 그래서 오늘은 아무것도 결정하고 싶지 않아요.”',
   choices:[
     {label:'우산을 같이 쓴다', sub:'하린 관계 +2', run:S => _sa(S, {stress:-1}, 2, '좁은 우산 아래 하린은 한 마디도 하지 않았다. 골목에 들어서자 그녀가 속삭이듯 말했다. “이 골목, 좋아해요. 비가 그치기 직전에 제일 조용하거든요.”', 'shy')},
@@ -5850,7 +5850,7 @@ Object.assign({}, _saHarin, {id:'rv_rain_alley', w:3, cd:18, cond:S => S.m >= 30
     {label:'비가 그칠 때까지 옆에서 기다린다', sub:'스트레스 -2 · 하린 관계 +2', run:S => _sa(S, {stress:-2}, 2, '십 분. 말없이 빗소리만 들었다. 비가 그치자 하린이 말했다. “당신은 비가 언제 그치는지 아는 사람 같네요.” 나는 웃지 못하고, 하늘만 올려다봤다.', 'surprised')},
   ]}),
 
-Object.assign({}, _saHarin, {id:'rv_case_comp', once:true, w:4, cd:30, cond:S => S.m >= 40 && S.m <= 100, place:'campus', title:'전국 공모전',
+Object.assign({}, _saHarin, {id:'rv_case_comp', once:true, w:4, cd:30, cond:S => S.m >= 40 && S.m <= 47, place:'campus', title:'전국 공모전',
   beats:[
     '전국 대학생 경영 공모전. 마감 3주 전, 접수 명단에 서하린 팀과 우리 팀이 나란히 있었다.',
     '상금은 200만 원, 수상 이력은 이력서에서 한 줄 이상의 값을 한다.',
@@ -6664,10 +6664,11 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
+const HERO_JOB = new Set([]); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
 const HERO_RIPE = new Set(["age22","age25","age27","age30"]); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(["dt_dohyun_1","dt_dohyun_2","dt_dohyun_3","dt_geonwoo_1","dt_geonwoo_2","dt_geonwoo_3","dt_hajin_1","dt_hajin_2","dt_hajin_3","dt_jaewoo_1","dt_jaewoo_2","dt_jaewoo_3","dt_jihu_1","dt_jihu_2","dt_jihu_3","dt_minjun_1","dt_minjun_2","dt_minjun_3","dt_raon_1","dt_raon_2","dt_raon_3","dt_seunghyun_1","dt_seunghyun_2","dt_seunghyun_3","dt_sian_1","dt_sian_2","dt_sian_3","dt_taeoh_1","dt_taeoh_2","dt_taeoh_3","dt_ujin_1","dt_ujin_2","dt_ujin_3","dt_yuchan_1","dt_yuchan_2","dt_yuchan_3"]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const ripeNow = S => !!S && Object.values(S.love || {}).some(v => v && v.intimate);
-const heroImg = S => { const k = heroKey(S); if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
+const heroImg = S => { const k = heroKey(S); if(S.hired && S.track && !inLawSchool(S) && HERO_JOB.has(`${k}_${S.track}`)) return `art/${k}_${S.track}.webp`; if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -7205,7 +7206,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #73 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #74 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7250,7 +7251,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#73 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#74 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -399,7 +399,18 @@ function fitFull(){
       app.style.bottom = 'auto'; app.style.height = Math.round(big) + 'px'; root.style.setProperty('--sb', gap + 'px');
     } else { app.style.bottom = ''; app.style.height = ''; root.style.removeProperty('--sb'); }
     const d = document.getElementById('fitdiag'); if(d) d.textContent = `화면 ${innerWidth}×${innerHeight} · 최대 ${Math.round(big)} · 기기 ${screen.height} · 여백 ${gap}`;
+    if(/[?&]probe\b/.test(location.search)) probeFit(big);
   }catch(e){}
+}
+// ?probe 로 열면: 배경을 새빨갛게, 화면 맨 아래(852 기준)에 파란 띠를 깔고 측정값을 크게 보여 준다 — 아래 여백이 '페이지가 못 그리는 곳'인지 가리는 용도
+function probeFit(big){
+  let b = document.getElementById('probe'); if(!b){ b = document.createElement('div'); b.id = 'probe'; document.body.appendChild(b); document.documentElement.style.background = document.body.style.background = '#ff2a2a'; }
+  const mk = (css) => { const e = document.createElement('div'); e.style.cssText = 'position:fixed;left:0;right:0;visibility:hidden;' + css; document.body.appendChild(e); const h = e.getBoundingClientRect().height; e.remove(); return h; };
+  const st = (navigator.standalone === true || matchMedia('(display-mode: standalone)').matches) ? '홈화면앱' : '사파리탭';
+  const vv = window.visualViewport ? `${Math.round(visualViewport.height)}@${Math.round(visualViewport.offsetTop)}` : '-';
+  const top = mk('padding-top:env(safe-area-inset-top,0px)'), bot = mk('padding-top:env(safe-area-inset-bottom,0px)');
+  b.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:99999;pointer-events:none;font:700 15px/1.5 system-ui;color:#fff';
+  b.innerHTML = `<div style="position:absolute;top:0;left:0;right:0;background:#000c;padding:70px 12px 8px">${st} · inner ${innerWidth}×${innerHeight} · vv ${vv}<br>screen ${screen.width}×${screen.height} · 최대 ${Math.round(big)} · 안전 위${top} 아래${bot}<br>빌드 #${BUILD_NO} — 맨 아래 파란 띠가 보이면 페이지가 그릴 수 있는 영역</div><div style="position:absolute;top:${Math.round(big) - 59}px;height:59px;left:0;right:0;background:#1f4bff;text-align:center;padding-top:16px">▼ 파란 띠 (852 기준 아래 59px)</div>`;
 }
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 

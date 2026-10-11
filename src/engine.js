@@ -126,10 +126,7 @@ const ACTS = {
   intern:  {cat:'일',   icon:'🧑‍💼', name:'인턴·현장 경험', desc:'이력서에 쓸 경험. 2학년부터 지원할 수 있다. 진로를 정했다면 그 회사에서.', cost:0, hp:-8, stress:7, pay:55, eff:{skill:3, neg:2, work:2.0}, req:S => S.m < 12 ? '2학년부터 가능' : (S.m >= 48 || S.hired ? '이미 졸업·취업했어요' : null), run(S, ch, out){ const c = CAREERS[S.interest]; if(c){ fx(S, c.eff, ch); S.internDone = (S.internDone || 0) + 1; out.note = `${c.company}에서 인턴으로 일했다. ${c.name}의 하루를 미리 살아 본다.`; } }},
   project: {cat:'일',   icon:'🛠️', name:'사이드 프로젝트', desc:'블로그·창작·서비스 만들기. 대박은 드물고 경험은 확실하다.', cost:10, hp:-6, stress:5, eff:{skill:3, sense:2, dare:2.2, work:2.4}, run(S, ch, out){ S.projects = (S.projects || 0) + 1; if(R() < 0.07 + S.st.dare / 900){ const g = Math.round(rand(80, 220)); bump(S, 'cash', g, ch); out.note = '올려둔 작업물이 입소문을 탔다.'; gauge(S, 'work', 2, ch); } }},
   jobhunt: {cat:'일',   icon:'📮', name:'구직 활동', desc:'자소서, 포트폴리오, 면접. 졸업 후에도 일이 없다면 이것부터.', cost:10, hp:-5, stress:8, eff:{neg:1.5, work:0.8}, req:S => S.hired ? (inLawSchool(S) ? '로스쿨 재학 중에는 못 해요' : S.m < (S.hiredAt || 0) + 3 ? '입사한 지 얼마 안 됐어요' : null) : (S.m < 36 ? '구직 대상이 아니에요' : null), run(S, ch, out){
-    if(S.hired){ // 이직: 지금 직장에 다니면서 다른 회사에 도전한다
-      const alt = CAREER_IDS.filter(i => i !== S.track && i !== 'lawyer').sort((a, b) => fitP(S, b) - fitP(S, a))[0], c2 = CAREERS[alt]; S.tries = (S.tries || 0) + 1;
-      if(R() < fitP(S, alt) * 0.85){ S.track = alt; S.hiredAt = S.m; S.rank = 0; S.promoAt = null; S.switched = (S.switched || 0) + 1; out.note = `${c2.company} 이직 성공! 새 회사로 출근하게 됐다.`; gauge(S, 'work', 2, ch); bump(S, 'stress', 4, ch); } else out.note = `${c2.company} 면접에서 아쉽게 떨어졌다. 현재 직장은 그대로 다니기로 했다.`;
-      return; }
+    if(S.hired){ jobSwitch(S, ch, out); return; } // 이직: 지금 직장에 다니면서 고른 회사에 도전한다 (jobs2.js)
     if(!S.track) S.track = CAREER_IDS.slice().sort((a, b) => fitP(S, b) - fitP(S, a))[0];
     const c = CAREERS[S.track]; S.tries = (S.tries || 0) + 1;
     if(R() < fitP(S, S.track)){ S.hired = true; S.rank = 0; S.promoAt = null; S.hiredAt = S.track === 'lawyer' ? CAREERS.lawyer.school : S.m; out.note = `${c.company} 합격 통보! 출근할 곳이 생겼다.`; gauge(S, 'work', 4, ch); } else out.note = `${c.company}에서 불합격 메일이 왔다. 그래도 경험치는 쌓였다.`; }},

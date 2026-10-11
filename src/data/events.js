@@ -287,6 +287,7 @@ function fixedEvents(S){
   if(S.m === GRAD_M && !S.seen.graduation) out.push(graduationEvent(S));
   if(S.m === CAREERS.lawyer.school - 1 && !S.seen.bar_exam && BAR_EXAM.cond(S)) out.push(BAR_EXAM);
   const se = storyDue(S); if(se) out.push(se);
+  const ne = typeof negoEvent === 'function' ? negoEvent(S) : null; if(ne) out.push(ne); // 이직 합격 직후 연봉 협상
   const ce = careerEvent(S); if(ce) out.push(ce);
   const le = loveEvent(S); if(le) out.push(le);
   if(S.m === TOTAL_MONTHS - 1) out.push(FINALE);

@@ -229,5 +229,5 @@ function loveEvent(S){
     if(v.stage === 1 && !sec && S.m - v.since2 >= 9 && !S.seen['trial_' + id]) return trialEvent(S, id);
     if(v.stage === 1 && !sec && S.seen['trial_' + id] && S.m - v.since2 >= 24 && S.m >= 54 && v.aff >= 70 && !S.seen['propose_' + id]) return proposeEvent(S, id);
   }
-  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || romance3Event(S) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
+  return (typeof regretEvent !== 'undefined' && regretEvent(S)) || romance3Event(S) || (typeof specialDue !== 'undefined' && specialDue(S)) || (typeof loverStoryEvent !== 'undefined' && loverStoryEvent(S)) || (typeof milestoneEvent !== 'undefined' && milestoneEvent(S)) || romEvent(S) || rom2Event(S);
 }

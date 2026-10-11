@@ -139,7 +139,7 @@ function render(){
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
   $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
-  const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${CAREERS[S.track].company} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
+  const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${coName(S)} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
   const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
@@ -152,7 +152,7 @@ function render(){
     const id = S.plan[i];
     if(id === '>') return `<button class="slot3 cont" disabled><small>${SLOT_NAMES[i]}</small><b>↳ 이어서</b></button>`;
     if(!id) return `<button class="slot3 ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>＋ 비어 있음</b></button>`;
-    const who = id === 'date' && S.dateTo && S.dateTo[i] && LOVERS[S.dateTo[i]] ? ' · ' + LOVERS[S.dateTo[i]].name : '';
+    const who = id === 'date' && S.dateTo && S.dateTo[i] && LOVERS[S.dateTo[i]] ? ' · ' + LOVERS[S.dateTo[i]].name : (id === 'jobhunt' && S.hired && S.jobTo && S.jobTo[i] && CAREERS[S.jobTo[i].id] ? ' · ' + CAREERS[S.jobTo[i].id].name : '');
     return `<button class="slot3 filled ${i === activeSlot ? 'active' : ''}" data-i="${i}"><small>${SLOT_NAMES[i]}</small><b>${ACTS[id].icon} ${actName(S, id)}${who}</b></button>`;
   }).join('');
   document.querySelectorAll('.slot3[data-i]').forEach(b => b.onclick = () => openPicker(+b.dataset.i));
@@ -163,7 +163,7 @@ function render(){
   if($('dialog').dataset.m !== String(S.m)){ $('dialog').dataset.m = S.m; $('dialog').hidden = true; }
 }
 function setPlan(i, id){
-  const p = S.plan; if(S.dateTo) S.dateTo[i] = null;
+  const p = S.plan; if(S.dateTo) S.dateTo[i] = null; if(S.jobTo) S.jobTo[i] = null;
   const clear = j => { if(p[j] === '>'){ p[j] = null; if(p[j - 1] && ACTS[p[j - 1]] && ACTS[p[j - 1]].slots === 2) p[j - 1] = null; } else if(p[j] && ACTS[p[j]].slots === 2){ p[j] = null; p[j + 1] = null; } else p[j] = null; };
   clear(i); const a = ACTS[id];
   if(a.slots === 2){ clear(i + 1); p[i] = id; p[i + 1] = '>'; } else p[i] = id;
@@ -177,6 +177,23 @@ function chooseDate(slot, ts, done, back){
   openSheet(sheetHead('누구와 데이트할까요?', `${SLOT_NAMES[slot]} 칸 · 여러 명을 동시에 만날 수도 있어요`) + rows);
   $('x').onclick = () => { back(); };
   document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done(b.dataset.id));
+}
+// 이직: 어떤 직업, 어떤 회사에 도전할지 직접 고른다
+function chooseJob(slot, done, back){
+  const list = jobChoices(S);
+  const rows = list.map(id => { const c = CAREERS[id], p = fitJob(S, id, null);
+    return `<button class="lcard" data-id="${id}"><span class="av" style="display:grid;place-items:center;font-size:26px;background:var(--paper-2)">${c.icon}</span><span><b>${esc(c.name)}${c.adv ? ' ★' : ''}</b><small>${esc(c.desc)}</small><small class="lk">${fitLabel(p)} · 기본 월급 ${c.pay}만</small></span><span class="cb">›</span></button>`; }).join('');
+  openSheet(sheetHead('어디로 이직할까요?', `${SLOT_NAMES[slot]} 칸 · 지금: ${CAREERS[S.track].name} (${coName(S)})`) + rows + `<div class="foot">★ 전환 직업은 관련 경력이 있어야 해요. 회사는 다음 화면에서 골라요.</div>`);
+  $('x').onclick = () => back();
+  document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => chooseCompany(slot, b.dataset.id, done, () => chooseJob(slot, done, back)));
+}
+function chooseCompany(slot, id, done, back){
+  const c = CAREERS[id], cl = companyList(id);
+  const rows = cl.map(co => { const p = fitJob(S, id, co);
+    return `<button class="lcard" data-i="${co.idx}"><span class="av" style="display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--paper-2);color:var(--indigo)">${co.t}</span><span><b>${esc(co.name)}</b><small>예상 월급 약 ${Math.round(c.pay * co.pay)}만 · ${co.t === '스타트업' ? '승진이 빠르고 연봉은 낮은 편' : co.t === '대기업' ? '안정적이지만 경쟁이 치열' : '무난한 중간 규모'}</small><small class="lk">${fitLabel(p)}</small></span><span class="cb">›</span></button>`; }).join('');
+  openSheet(sheetHead(`${c.icon} ${c.name} · 어느 회사에 지원할까요?`, '합격하면 연봉 협상 자리가 열려요.') + rows);
+  $('x').onclick = () => back();
+  document.querySelectorAll('#sheet .lcard').forEach(b => b.onclick = () => done({id, idx:+b.dataset.i}));
 }
 // 캠퍼스 지도: 장소 핀 위치(가로·세로 %)는 art/cp_map.webp 의 구역 배치에 맞춘다
 const CP_PIN = {class:[25, 17], library:[76, 17], shop:[30, 46], club:[78, 44], field:[27, 76], garden:[78, 79]};
@@ -225,6 +242,7 @@ function openPicker(i, cat){
     document.querySelectorAll('.act').forEach(b => b.onclick = () => {
       const id = b.dataset.id, slot = activeSlot, ts = id === 'date' ? dateTargets(S) : [];
       if(ts.length > 1){ chooseDate(slot, ts, who => { setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = who; placed(); }, draw); return; }
+      if(id === 'jobhunt' && S.hired){ chooseJob(slot, pick => { setPlan(slot, 'jobhunt'); S.jobTo = S.jobTo || []; S.jobTo[slot] = pick; placed(); }, draw); return; }
       setPlan(slot, id); placed();
     });
   };
@@ -417,7 +435,7 @@ async function runMonth(){
   for(let i = 0; i < 3; i++){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
-    S.curDate = S.dateTo && S.dateTo[first] || null; const out = doAction(S, id); S.curDate = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     await showAct(SLOT_NAMES[first], id, out, first);
     if(out.burnout) break;
   }

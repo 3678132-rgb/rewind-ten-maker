@@ -1,6 +1,6 @@
 // 승진·연봉·보너스·장학금·상점. ENGINE 구간(DOM 금지)
 const RAISE = 0.28; // 승진 한 번당 월급 +28%
-const payOf = S => Math.round(jobOf(S).pay * (1 + RAISE * (S.rank || 0)));
+const payOf = S => Math.round(jobOf(S).pay * (typeof companyOf === 'function' && S.hired && CAREERS[S.track] ? companyOf(S).pay : 1) * (S.salaryMul || 1) * (1 + RAISE * (S.rank || 0)));
 const PROMO_NEED = [32, 52, 72], PROMO_GAP = 14;
 const canPromote = S => S.hired && CAREERS[S.track] && !inLawSchool(S) && (S.rank || 0) < 3;
 

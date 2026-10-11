@@ -8,8 +8,10 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(__HERO_SEASONAL__);
+const HERO_RIPE = new Set(__HERO_RIPE__); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(__DATE_ART__); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
-const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
+const ripeNow = S => !!S && Object.values(S.love || {}).some(v => v && v.intimate);
+const heroImg = S => { const k = heroKey(S); if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -320,7 +322,7 @@ function showCareer(){
   const m = majorOf(S);
   const list = CAREER_IDS.map(id => { const c = CAREERS[id], p = fitP(S, id), cur = S.track === id;
     return `<div class="kv"><span>${c.icon} ${c.name}${cur ? ' ✔' : ''}${m.fav.includes(id) ? ' ★' : ''}<br><small class="sub">${c.company}</small></span><b>${cur && S.hired ? rankName(S) : fitLabel(p)}</b></div>`; }).join('');
-  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
+  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진(${CAREERS[S.track].ranks[(S.rank || 0) + 1]}) 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상 · 직전 승진·입사 후 ${PROMO_GAP}개월` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
   $('x').onclick = closeSheet;
 }
 function showLove(){

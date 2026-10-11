@@ -454,7 +454,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #72 · 2026.10.11<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #73 · 2026.10.11<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -492,7 +492,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <section id="end" class="screen"></section>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #72 · 2026.10.11</div>
+ <div id="buildtag">빌드 #73 · 2026.10.11</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -3808,7 +3808,20 @@ function scholarshipEvent(S){
     text:S => `학기가 끝났다. 성적표가 나오는 날, 학과 게시판 앞에 사람들이 모여 있다. 이번 학기 공부한 횟수는 ${sem}번. ${tier === 2 ? '이름이 성적 우수 장학생 명단에 올라 있었다.' : tier === 1 ? '부분 장학생 명단 끝에 이름이 있었다.' : '장학생 명단에 내 이름은 없었다.'}`,
     choices:[{label:tier ? '장학금을 받는다' : '다음 학기를 다짐한다', sub:tier ? `자금 +${amt}만 · 학식 +${tier}` : '학기 공부 횟수가 쌓여야 해요', run(S){ const ch = []; if(tier){ bump(S, 'cash', amt, ch); fx(S, {know:tier}, ch); gauge(S, 'self', 1, ch); S.album.push(`${term}학기 ${tier === 2 ? '성적 우수' : '부분'} 장학금 ${amt}만`); } else bump(S, 'stress', 2, ch); S.semStudy = 0; return {text:tier === 2 ? '“진짜 받았다!” 엄마에게 가장 먼저 전화했다. 도서관에서 보낸 밤이 숫자가 되어 돌아왔다.' : tier === 1 ? '전액은 아니지만 이번 학기 생활비에 큰 보탬이 됐다. 다음엔 우수 장학생을 노려 보자.' : '아쉬웠다. 이번 학기엔 공부가 조금 모자랐다. 다음 학기엔 시간표를 다시 짜 보자.', chips:ch}; }}]};
 }
-function careerEvent(S){ return scholarshipEvent(S) || promotionEvent(S) || bonusEvent(S); }
+// ── 승진 축하(승진한 다음 달·그 다음 달): 회식·가족·연인 ──────────────────────
+function promoCelebEvent(S){
+  if(!S.hired || !CAREERS[S.track] || !(S.rank > 0) || S.promoAt == null) return null;
+  const d = S.m - S.promoAt; if(d < 1 || d > 2) return null; const key = 'promo_cel_' + S.promoAt; if(S.seen[key]) return null;
+  const c = CAREERS[S.track], rk = c.ranks[S.rank], who = typeof cityCompanion === 'function' ? cityCompanion(S) : null, wn = who && LOVERS[who] ? LOVERS[who].name : null;
+  const ch = [
+    {label:'팀원들과 축하 회식을 연다', sub:'관계 +2 · 자금 -6만', run(S){ const o = []; bump(S, 'cash', -6, o); gauge(S, 'bond', 2, o); bump(S, 'stress', -4, o); return {text:`고깃집 구석 자리, 건배사 대신 “고생 많으셨습니다”라는 말이 돌았다. ${rk} 명함을 받아 든 손이 아직 어색하다.`, chips:o}; }},
+    {label:'엄마에게 전화로 알린다', sub:'나 +1 · 스트레스 -5', run(S){ const o = []; gauge(S, 'self', 1, o); bump(S, 'stress', -5, o); return {text:'수화기 너머 엄마가 한참 말이 없다가 “우리 딸, 잘했다”고만 했다. 마흔의 나는 이 전화를 한 번도 걸지 못했다.', chips:o}; }},
+  ];
+  if(wn) ch.push({label:`${wn}에게 제일 먼저 알린다`, sub:'호감 ↑ · 자금 -8만', run(S){ const o = []; bump(S, 'cash', -8, o); addAff(S, who, 4, o); bump(S, 'stress', -3, o); return {text:`${wn}은(는) 내 얘기를 끝까지 듣고는 자기 일처럼 웃었다. “오늘은 내가 살게. 아니, 같이 내자.” 축하받는 기분이 이렇게 따뜻할 줄 몰랐다.`, chips:o, mood:'shy'}; }});
+  return {id:key, speaker:'', title:`${rk} 승진 축하`, place:'cafe', img:'art/ct_office.webp',
+    text:S => `새 명함에 ${rk}라는 글자가 찍혀 나왔다. 월급 명세서보다 먼저, 이 숫자가 실감이 났다. 이 순간을 누구와 나눌까.`, choices:ch};
+}
+function careerEvent(S){ return scholarshipEvent(S) || promotionEvent(S) || promoCelebEvent(S) || bonusEvent(S); }
 
 // 이직·연봉 협상·새 직업. ENGINE 구간(DOM 금지)
 // ── 전환 직업 4종: 처음 구직 때는 못 고르고, 이직으로만 간다 (adv) ──
@@ -6651,8 +6664,10 @@ const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
 // 계절마다 옷·머리·배경이 다른 주인공 그림 (봄은 기본 그림). 빌드 때 art/ 에 있는 계절 그림 목록이 들어온다.
 const HERO_SEASONAL = new Set(["age20_autumn","age20_summer","age20_winter","age22_autumn","age22_summer","age22_winter","age25_autumn","age25_summer","age25_winter","age27_autumn","age27_summer","age27_winter","age30_autumn","age30_summer","age30_winter"]);
+const HERO_RIPE = new Set(["age22","age25","age27","age30"]); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(["dt_dohyun_1","dt_dohyun_2","dt_dohyun_3","dt_geonwoo_1","dt_geonwoo_2","dt_geonwoo_3","dt_hajin_1","dt_hajin_2","dt_hajin_3","dt_jaewoo_1","dt_jaewoo_2","dt_jaewoo_3","dt_jihu_1","dt_jihu_2","dt_jihu_3","dt_minjun_1","dt_minjun_2","dt_minjun_3","dt_raon_1","dt_raon_2","dt_raon_3","dt_seunghyun_1","dt_seunghyun_2","dt_seunghyun_3","dt_sian_1","dt_sian_2","dt_sian_3","dt_taeoh_1","dt_taeoh_2","dt_taeoh_3","dt_ujin_1","dt_ujin_2","dt_ujin_3","dt_yuchan_1","dt_yuchan_2","dt_yuchan_3"]); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
-const heroImg = S => { const k = heroKey(S), se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
+const ripeNow = S => !!S && Object.values(S.love || {}).some(v => v && v.intimate);
+const heroImg = S => { const k = heroKey(S); if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -6963,7 +6978,7 @@ function showCareer(){
   const m = majorOf(S);
   const list = CAREER_IDS.map(id => { const c = CAREERS[id], p = fitP(S, id), cur = S.track === id;
     return `<div class="kv"><span>${c.icon} ${c.name}${cur ? ' ✔' : ''}${m.fav.includes(id) ? ' ★' : ''}<br><small class="sub">${c.company}</small></span><b>${cur && S.hired ? rankName(S) : fitLabel(p)}</b></div>`; }).join('');
-  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
+  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진(${CAREERS[S.track].ranks[(S.rank || 0) + 1]}) 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상 · 직전 승진·입사 후 ${PROMO_GAP}개월` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
   $('x').onclick = closeSheet;
 }
 function showLove(){
@@ -7190,7 +7205,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #72 · 2026.10.11<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #73 · 2026.10.11<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -7235,7 +7250,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#72 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#73 · 2026.10.11'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

@@ -83,4 +83,17 @@ function scholarshipEvent(S){
     text:S => `학기가 끝났다. 성적표가 나오는 날, 학과 게시판 앞에 사람들이 모여 있다. 이번 학기 공부한 횟수는 ${sem}번. ${tier === 2 ? '이름이 성적 우수 장학생 명단에 올라 있었다.' : tier === 1 ? '부분 장학생 명단 끝에 이름이 있었다.' : '장학생 명단에 내 이름은 없었다.'}`,
     choices:[{label:tier ? '장학금을 받는다' : '다음 학기를 다짐한다', sub:tier ? `자금 +${amt}만 · 학식 +${tier}` : '학기 공부 횟수가 쌓여야 해요', run(S){ const ch = []; if(tier){ bump(S, 'cash', amt, ch); fx(S, {know:tier}, ch); gauge(S, 'self', 1, ch); S.album.push(`${term}학기 ${tier === 2 ? '성적 우수' : '부분'} 장학금 ${amt}만`); } else bump(S, 'stress', 2, ch); S.semStudy = 0; return {text:tier === 2 ? '“진짜 받았다!” 엄마에게 가장 먼저 전화했다. 도서관에서 보낸 밤이 숫자가 되어 돌아왔다.' : tier === 1 ? '전액은 아니지만 이번 학기 생활비에 큰 보탬이 됐다. 다음엔 우수 장학생을 노려 보자.' : '아쉬웠다. 이번 학기엔 공부가 조금 모자랐다. 다음 학기엔 시간표를 다시 짜 보자.', chips:ch}; }}]};
 }
-function careerEvent(S){ return scholarshipEvent(S) || promotionEvent(S) || bonusEvent(S); }
+// ── 승진 축하(승진한 다음 달·그 다음 달): 회식·가족·연인 ──────────────────────
+function promoCelebEvent(S){
+  if(!S.hired || !CAREERS[S.track] || !(S.rank > 0) || S.promoAt == null) return null;
+  const d = S.m - S.promoAt; if(d < 1 || d > 2) return null; const key = 'promo_cel_' + S.promoAt; if(S.seen[key]) return null;
+  const c = CAREERS[S.track], rk = c.ranks[S.rank], who = typeof cityCompanion === 'function' ? cityCompanion(S) : null, wn = who && LOVERS[who] ? LOVERS[who].name : null;
+  const ch = [
+    {label:'팀원들과 축하 회식을 연다', sub:'관계 +2 · 자금 -6만', run(S){ const o = []; bump(S, 'cash', -6, o); gauge(S, 'bond', 2, o); bump(S, 'stress', -4, o); return {text:`고깃집 구석 자리, 건배사 대신 “고생 많으셨습니다”라는 말이 돌았다. ${rk} 명함을 받아 든 손이 아직 어색하다.`, chips:o}; }},
+    {label:'엄마에게 전화로 알린다', sub:'나 +1 · 스트레스 -5', run(S){ const o = []; gauge(S, 'self', 1, o); bump(S, 'stress', -5, o); return {text:'수화기 너머 엄마가 한참 말이 없다가 “우리 딸, 잘했다”고만 했다. 마흔의 나는 이 전화를 한 번도 걸지 못했다.', chips:o}; }},
+  ];
+  if(wn) ch.push({label:`${wn}에게 제일 먼저 알린다`, sub:'호감 ↑ · 자금 -8만', run(S){ const o = []; bump(S, 'cash', -8, o); addAff(S, who, 4, o); bump(S, 'stress', -3, o); return {text:`${wn}은(는) 내 얘기를 끝까지 듣고는 자기 일처럼 웃었다. “오늘은 내가 살게. 아니, 같이 내자.” 축하받는 기분이 이렇게 따뜻할 줄 몰랐다.`, chips:o, mood:'shy'}; }});
+  return {id:key, speaker:'', title:`${rk} 승진 축하`, place:'cafe', img:'art/ct_office.webp',
+    text:S => `새 명함에 ${rk}라는 글자가 찍혀 나왔다. 월급 명세서보다 먼저, 이 숫자가 실감이 났다. 이 순간을 누구와 나눌까.`, choices:ch};
+}
+function careerEvent(S){ return scholarshipEvent(S) || promotionEvent(S) || promoCelebEvent(S) || bonusEvent(S); }

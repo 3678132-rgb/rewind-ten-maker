@@ -21,11 +21,17 @@ function campusVisit(S, key){
   if(p.hp) bump(S, 'hp', Math.round(p.hp / 2), ch);
   if(p.stress) bump(S, 'stress', Math.round(p.stress / 2), ch);
   const e = {}; for(const k in p.eff) e[k] = p.eff[k] * 0.5; fx(S, e, ch);
-  out.enc = campusEncounter(S, key); out.note = out.enc ? '교정을 거닐다 누군가와 마주쳤다.' : p.desc;
+  out.enc = campusEncounter(S, key, ch) || campusQuiet(S, key, ch); out.note = p.desc;
   return out;
 }
 function weightedPick(list){ const tot = list.reduce((a, c) => a + c.w, 0); let r = R() * tot; for(const c of list){ r -= c.w; if(r <= 0) return c; } return list[list.length - 1]; }
-function campusEncounter(S, place){
+// 아무도 마주치지 않은 날: 효과만 보여 주는 짧은 장면
+function campusQuiet(S, place, visitCh){
+  const p = CAMPUS_PLACES[place], line = pick(['오늘은 아는 얼굴이 보이지 않았다. 그래도 바람이 좋았다.', '한참을 어슬렁거렸지만 마주친 사람은 없었다. 혼자만의 시간도 나쁘지 않다.', '아무도 마주치지 않은 평온한 한때. 머릿속이 조금 정리됐다.']);
+  return {id:`cp_q_${place}_${S.m}_${Math.floor(R() * 1e4)}`, speaker:'', title:p.name, place:'campus', img:`art/cp_${place}.webp`, text:S => `${p.desc}\n\n${line}`,
+    choices:[{label:'다음에 또 와야지', sub:'', run(S){ return {text:'교정을 한 바퀴 돌고 나니 기분이 한결 가벼워졌다.', chips:(visitCh || []).slice()}; }}]};
+}
+function campusEncounter(S, place, visitCh){
   const LV = typeof CP_LOVER !== 'undefined' ? CP_LOVER : {}, FR = typeof CP_FRIEND !== 'undefined' ? CP_FRIEND : {};
   if(R() < 0.15) return null; // 가끔은 아무도 마주치지 않는다
   const cands = [];
@@ -39,15 +45,15 @@ function campusEncounter(S, place){
   const c = weightedPick(cands);
   if(c.kind === 'meet') return meetEvent(S, c.id);
   const sc = c.sc, pl = CAMPUS_PLACES[place];
-  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:sc.title, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
     choices:[
-      {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = []; fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
-      {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = []; fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
+      {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
     ]};
   const id = c.id, lv = LOVERS[id];
-  return {id:`cp_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:sc.title, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+  return {id:`cp_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
     choices:[
-      {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = []; S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
-      {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = []; S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
+      {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
+      {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
     ]};
 }

@@ -193,7 +193,7 @@ async function visitCampus(key){
   if(visiting) return; if(cpLeft(S) <= 0){ toast('이번 달 방문을 다 썼어요 (3/3)'); return; }
   visiting = true; closeSheet();
   try{
-    const out = campusVisit(S, key); await showAct('방문', 'cp_' + key, out, 0, {noDate:true});
+    const out = campusVisit(S, key); // 팝업 없이 바로 그 장소에서 누굴 만났는지, 대화가 나온다
     if(out.enc && !S.ending){ await playEvent(out.enc); }
     save(); render();
   } finally { visiting = false; }

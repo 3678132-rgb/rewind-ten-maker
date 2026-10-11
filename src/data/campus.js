@@ -40,18 +40,18 @@ function campusEncounter(S, place, visitCh){
     if(v){ if(v.stage === -9 || v.stage > 2 || v.cpAt === S.m) continue; const sc = v.stage >= 1 ? set.love : set.pre; if(sc) cands.push({w:3 + v.aff / 22, kind:'lover', id, sc}); }
     else if(!S.seen['meet_' + id] && !lv.career && S.m >= lv.meet - 8 && S.m < CAMPUS_END) cands.push({w:4.5, kind:'meet', id}); // 첫 만남이 이 장소에서 앞당겨진다
   }
-  for(const sc of FR[place] || []) cands.push({w:2.2, kind:'friend', sc});
+  (FR[place] || []).forEach((sc, idx) => cands.push({w:2.2, kind:'friend', sc, idx}));
   if(!cands.length) return null;
   const c = weightedPick(cands);
   if(c.kind === 'meet') return meetEvent(S, c.id);
   const sc = c.sc, pl = CAMPUS_PLACES[place];
-  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+  if(c.kind === 'friend') return {id:`cp_f_${place}_${S.m}`, speaker:sc.who, title:`${pl.name} · ${sc.title}`, place:'campus', img:[`art/cpf_${place}_${c.idx}.webp`, `art/cp_${place}.webp`], // 대화하는 친구가 그 장소에 있는 모습 text:S => sc.text,
     choices:[
       {label:sc.yes[0], sub:'함께한다 · 관계↑ 스트레스↓', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:1.2, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
       {label:sc.no[0], sub:'거리를 둔다 · 나↑', run(S){ const ch = (visitCh || []).slice(); fx(S, {bond:0.5, self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},
     ]};
   const id = c.id, lv = LOVERS[id];
-  return {id:`cp_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:`${pl.name} · ${sc.title}`, place:'campus', img:`art/cp_${place}.webp`, text:S => sc.text,
+  return {id:`cp_${id}_${place}_${S.m}`, lover:id, speaker:lv.name, title:`${pl.name} · ${sc.title}`, place:'campus', img:[`art/cpl_${id}_${place}.webp`, `art/lv_${id}.webp`, `art/cp_${place}.webp`], text:S => sc.text,
     choices:[
       {label:sc.yes[0], sub:'다가간다 · 호감 크게 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 3.5 + (S.st[lv.like] || 0) / 40, ch); fx(S, {bond:0.6, stress:-2}, ch); return {text:sc.yes[1], chips:ch}; }},
       {label:sc.no[0], sub:'조심스럽게 · 호감 ↑', run(S){ const ch = (visitCh || []).slice(); S.love[id].cpAt = S.m; addAff(S, id, 1.6, ch); fx(S, {self:1.0}, ch); return {text:sc.no[1], chips:ch}; }},

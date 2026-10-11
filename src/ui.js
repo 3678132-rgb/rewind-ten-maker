@@ -320,9 +320,10 @@ const seasonPlace = ev => ev.place === 'campus' ? 'campus' : ev.place === 'room'
 function evOpen(ev, inner){
   const el = $('ev'), sp = seasonPlace(ev), img0 = ev.img === 'art/rival_harin.webp' && S ? (S.m >= 96 ? 'art/rival_harin_late.webp' : S.m >= 48 ? 'art/rival_harin_work.webp' : ev.img) : ev.img, img = img0 || (sp && S ? seasonBg(S, sp) : PLACE_FULL[ev.place]);
   el.className = 'evcard on p-' + (ev.place || 'room'); paintEdge('card');
-  if(img && el.dataset.img && el.dataset.img !== img){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
-  el.dataset.img = img || '';
-  el.style.backgroundImage = img ? `url(${img})` : 'none';
+  const imgKey = Array.isArray(img) ? img.join('|') : img; // 그림이 여러 장이면 앞의 것이 없을 때 뒤의 것이 깔린다
+  if(imgKey && el.dataset.img && el.dataset.img !== imgKey){ el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; } // 장면이 바뀌면 부드럽게 전환
+  el.dataset.img = imgKey || '';
+  el.style.backgroundImage = img ? (Array.isArray(img) ? img : [img]).map(u => `url(${u})`).join(', ') : 'none';
   el.innerHTML = `<div class="evshade"></div>${img ? '' : `<div class="evicon">${PLACE_ICON[ev.place] || '🏠'}</div>`}<div class="evpanel" id="evpanel">${inner}</div>`;
   $('evpanel').scrollTop = 0;
 }

@@ -48,7 +48,7 @@ function milestoneEvent(S){
   // 키스는 바로 하지 않는다: 먼저 눈이 마주치는 장면(눈맞춤 그림·한 줄)에서 한 번 눌러야 키스 그림이 나온다
   if(key === 'kiss'){ ev.beats = [(GAZE_LINES[id] || GAZE_LINES._)(lv.name)]; const g = [`art/ms_${id}_gaze.webp`, `art/ms_${id}_kiss.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_kiss.webp`, g]; } // 눈맞춤 그림에서 고르고, 받아들이면 키스 그림이 나온다
   // 첫날밤: 수줍은 순간(칭찬·입맞춤·닿는 손끝)을 한 번 거친 뒤 선택한다
-  if(key === 'night'){ ev.beats = [(NIGHT_LINES[id] || NIGHT_LINES._)(lv.name)]; const g = [`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_night.webp`, g]; }
+  if(key === 'night'){ ev.beats = [(NIGHT_LINES[id] || NIGHT_LINES._)(lv.name) + ' 흘러내린 가운 사이로 드러난 어깨에 그의 입술이 살짝 닿는다. 등 뒤를 감싸는 손이 따뜻하다. 이불을 끌어안은 내 얼굴이 더 붉어진다. “부끄러워하는 것도 예뻐.” 그가 귓가에 낮게 속삭인다.']; const g = [`art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`]; ev.beatImgs = [g, g]; ev.resultImgs = [`art/ms_${id}_night.webp`, g]; }
   return ev;
 }
 // 첫날밤 직전: 수줍은 순간. 칭찬과 입맞춤, 닿는 손끝까지만 — 불이 꺼지는 데서 끊는다

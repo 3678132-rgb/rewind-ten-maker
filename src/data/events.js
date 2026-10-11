@@ -41,6 +41,14 @@ function checkEvent(S, c){
     ]};
 }
 
+const ROUND2 = {id:'round2', once:true, speaker:GRANDMA, title:'시계를 곁에 둔 사람', place:'shop', img:'art/grandma.webp',
+  beats:[
+    '또다시 2016년 3월. 비 오는 골목 끝, 약방의 문이 열려 있다.',
+    '“돌아왔군요. 시계를 곁에 두기로 했으니까요.” 할머니가 모래시계를 책상에 올려놓았다. 모래가 처음처럼 가득 차 있다.',
+    '“지난 십 년에서 배운 것 중 절반은 몸에 남아 있어요. 시계 조각도 두 개 가져왔고요. 이번엔 더 잘할 수 있을 거예요.”',
+  ],
+  text:S => `${S.round}회차가 시작된다. 지난 회차의 능력치 절반과 시계 조각 2개를 가지고, 처음부터 다시 걷는다.`,
+  choices:[{label:'다시 시작한다', sub:'2회차', run:S => ({text:'모래시계가 천천히 뒤집혔다. 이번에는 같은 후회를 덜 하고 싶다.', chips:[]})}]};
 const FINALE = {id:'finale', once:true, speaker:GRANDMA, title:'서른 살, 약방', place:'shop', img:'art/grandma.webp',
   beats:[
     '2026년 2월. 십 년의 마지막 날, 나는 처음 이 시간으로 돌아왔던 그 골목의 약방 앞에 서 있었다.',
@@ -292,6 +300,7 @@ function fixedEvents(S){
   const out = [];
   if(S.collapse){ out.push(collapseEvent(S)); }
   if(S.m === 0 && !S.seen.prologue) out.push(PROLOGUE);
+  if(S.m === 0 && S.round > 1 && !S.seen.round2) out.push(ROUND2);
   for(const c of CHECKS) if(S.m === c.m && !S.seen[c.id]) out.push(checkEvent(S, c));
   for(const e of ERA) if(S.m === e.m && !S.seen[e.id]) out.push(Object.assign({once:true, speaker:''}, e));
   if(S.m === INTEREST_M && !S.seen.interest) out.push(interestEvent(S));

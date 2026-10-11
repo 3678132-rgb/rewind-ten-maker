@@ -21,7 +21,7 @@ function cutOutfit(ev, id){
 const cutSrc = (ev, id, v) => { const o = cutOutfit(ev, id); return o && CUT_OUTFIT.has(`${id}_${o}_${v}`) ? `art/cut/${id}_${o}_${v}.webp` : `art/cut/${id}_${v}.webp`; };
 const END_ART = new Set(__END_ART__); // art/end_<엔딩id>.webp: 엔딩별 일러스트
 const endArt = (id, e) => e && e.track && END_ART.has('end_job_' + e.track) ? `art/end_job_${e.track}.webp` : END_ART.has('end_' + id) ? `art/end_${id}.webp` : END_ART.has('end_job_' + ({free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id])) ? `art/end_job_${{free_creator:'pd', free_style:'stylist', free_tech:'dev', free_actor:'actor', free_lawyer:'lawyer'}[id]}.webp` : `art/${e.free ? 'age30' : 'cover'}.webp`;
-const LEGACY_KEY = 'rewind-ten-legacy-v1'; // 마지막 달에 시계를 곁에 둔 기록 → 다음 새 게임 보너스
+const DONE_KEY = 'rewind-ten-complete-v1'; // 시계를 놓아주고 끝낸 엔딩(완결 표시)
 const ENDVAR_KEY = 'rewind-ten-endvar-v1'; // 직업군 엔딩에서 마지막으로 본 직업(도감 표시용)
 const endVarOf = id => { const m = store(ENDVAR_KEY) || {}; const t = m[id]; return t && CAREER_VAR[t] && CAREER_END[t] === id ? Object.assign({}, ENDINGS[id], CAREER_VAR[t], {track:t}) : ENDINGS[id]; };
 const HERO_JOB = new Set(__HERO_JOB__); // art/age<나이>_<직업>.webp: 직업별 차림의 주인공
@@ -65,8 +65,7 @@ function initTitle(){
     if(wizStep === 0){ const v = $('in-name') && $('in-name').value.trim(); if(v) wizName = v; }
     if(wizStep < WIZ.length - 1){ wizStep++; renderWiz(); return; }
     S = newGame(wizName || '서윤', setupSel.origin, setupSel.regret, setupSel.major);
-    { const lg = store(LEGACY_KEY) || {}; if(lg.keep){ SS(S).pieces = 2; S.st.ins = Math.min(100, S.st.ins + 5); S.legacyClock = true; store(LEGACY_KEY, {keep:false}); } } // 지난 회차에 간직한 시계의 보너스(한 번 쓰면 사라진다)
-    save(); show('game'); render(); startFlow(); if(S.legacyClock) setTimeout(() => toast('지난 회차에 간직한 시계 — 시계 조각 2개와 통찰 +5로 시작해요'), 800);
+    save(); show('game'); render(); startFlow();
   };
 }
 function renderWiz(){
@@ -159,7 +158,7 @@ function render(){
   $('scene').style.setProperty('--scene-bg', `url(${img})`); $('g-img').src = img;
   $('hud-avatar').style.backgroundImage = `url(${img})`;
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
-  $('hud-age').innerHTML = `${ageOf(S)}세<br>${left}개월 남음`;
+  $('hud-age').innerHTML = `${ageOf(S)}세${S.round > 1 ? ` · ${S.round}회차` : ''}<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
   const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${coName(S)} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
@@ -391,7 +390,7 @@ function showShop(){
 function seenEndings(){ const raw = store(ENDINGS_KEY) || []; const out = []; raw.forEach(id => { const n = endingNorm(id); if(ENDINGS[n] && !out.includes(n)) out.push(n); }); return out; }
 function showDex(){
   const seen = seenEndings();
-  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = endVarOf(id), ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g ${ok && endArt(id, e).includes('end_') ? 'th' : ''}" ${ok && endArt(id, e).includes('end_') ? `style="background-image:url(${endArt(id, e)})"` : ''}>${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
+  openSheet(sheetHead('엔딩 도감', `${seen.length}/${ENDING_IDS.length} 수집 · 본 엔딩을 누르면 크게 보고 공유할 수 있어요`) + ENDING_IDS.map(id => { const e = endVarOf(id), ok = seen.includes(id); return `<div class="dexrow ${ok ? 'ok' : 'lock'}" ${ok ? `data-e="${id}"` : ''}><span class="g ${ok && endArt(id, e).includes('end_') ? 'th' : ''}" ${ok && endArt(id, e).includes('end_') ? `style="background-image:url(${endArt(id, e)})"` : ''}>${ok ? e.icon : '❔'}</span><span><b>${ok ? e.title : '???'}</b><small>${ok ? e.sub + ((store(DONE_KEY) || []).includes(id) ? ' · 🏁 완결' : '') : '아직 보지 못한 엔딩'}</small></span>${ok ? '<span class="dx">⤢</span>' : ''}</div>`; }).join(''));
   $('x').onclick = closeSheet;
   document.querySelectorAll('.dexrow[data-e]').forEach(r => r.onclick = () => showEndingCard(r.dataset.e));
 }
@@ -568,22 +567,23 @@ async function runMonth(){
   save(); render();
 }
 async function startFlow(){ // 새 게임: 프롤로그 먼저
-  seedMonth(S); await playEvent(PROLOGUE); save(); render();
+  seedMonth(S); await playEvent(S.round > 1 ? ROUND2 : PROLOGUE); save(); render();
 }
 
 // ── 엔딩 ──────────────────────────────────────────────────────
 function showEnding(){
   const id = S.ending || computeEnding(S), e = endingView(S, id); const P = finalPillars(S);
-  if(S.story && S.story.f && S.story.f.clockKeep) store(LEGACY_KEY, {keep:true});
+  if(S.story && S.story.f && S.story.f.clockFree){ const d = store(DONE_KEY) || []; if(!d.includes(id)){ d.push(id); store(DONE_KEY, d); } } // 시계를 놓아주고 끝낸 엔딩은 도감에 ‘완결’로 남는다
   if(e.track){ const m = store(ENDVAR_KEY) || {}; m[id] = e.track; store(ENDVAR_KEY, m); }
   const seen = seenEndings(); if(!seen.includes(id)){ seen.push(id); store(ENDINGS_KEY, seen); }
   $('end').innerHTML = `<div class="endbg" style="background-image:url(${endArt(id, e)})"></div><div class="endscroll"><div class="endspacer"></div><div class="endcard ending"><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${e.sub}</span><h1>${e.title}</h1>
    <div class="pillars">${Object.keys(PILLAR).map(k => `<div class="pcard ${k}"><div class="pt"><span>${PILLAR[k]}</span><b>${Math.round(P[k])}</b></div><div class="t"><i style="width:${P[k]}%"></i><u></u></div></div>`).join('')}</div>
    ${borrowPenalty(S) >= 1 ? `<p class="sub" style="color:#b3541e">⏳ 미래 지식을 ${S.borrowed}번 써서 ‘일’ 기둥에서 ${Math.round(borrowPenalty(S))}점이 빠졌어요 (원래 ${Math.round(S.work)} → ${Math.round(P.work)}).${id === 'ret_borrowed' ? ' 빌리지 않았다면 자유 시계였을 거예요.' : ''}</p>` : ''}
-   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 빌려 쓴 미래의 몫이 절반으로 줄었고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 다음 회차를 시작하면 시계 조각 2개와 통찰 +5가 함께한다.' : ''}\n\n— 일흔 살의 나로부터</div>
+   <div class="letter">${esc(e.letter.replace(/\{name\}/g, S.name))}${S.story && S.story.f && S.story.f.clockFree ? '\n\n마지막 달, 모래시계를 놓아주었다. 빌려 쓴 미래의 몫이 절반으로 줄었고, 이 시간은 온전히 내 것이 되었다.' : S.story && S.story.f && S.story.f.clockKeep ? '\n\n모래시계는 약방 선반 위에 남아 있다. 엔딩 뒤 ‘2회차’ 버튼으로 이어서 걸을 수 있다.' : ''}\n\n— 일흔 살의 나로부터</div>
    <p class="sub">엔딩 ${seen.length}/${ENDING_IDS.length} 수집 · 빌린 인생 ${S.borrowed} · 기억 선명도 ${Math.round(S.clarity)}</p>
-   <button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
+   ${S.story && S.story.f && S.story.f.clockKeep ? `<button class="btn" id="b-round2" style="margin-bottom:8px">⏳ ${(S.round || 1) + 1}회차 시작 — 시계를 곁에 둔 채 이어서</button><p class="sub">지난 능력치의 절반과 시계 조각 2개를 가지고 2016년부터 다시 걷는다.</p>` : ''}<button class="btn" id="b-again">${e.free ? '다시 도전하기' : '한 번 더 되감기'}</button></div></div>`;
   $('b-again').onclick = () => { store(SAVE_KEY, null); S = null; initTitle(); show('title'); };
+  if($('b-round2')) $('b-round2').onclick = () => { const prev = S; S = nextRound(prev); save(); show('game'); render(); startFlow(); };
   show('end');
 }
 

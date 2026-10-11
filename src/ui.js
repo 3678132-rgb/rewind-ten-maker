@@ -344,7 +344,7 @@ function playEvent(ev){
       document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
         const out = cs[+b.dataset.k].run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(out.mood === 'shy' && ev.cut ? Object.assign({}, ev, {cutVar:'b'}) : ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(out.mood === 'shy' && ev.cut ? Object.assign({}, ev, {cutVar:'b'}) : ev, head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : ev.cut ? '' : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };

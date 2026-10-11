@@ -129,10 +129,12 @@ const NIGHT_STEPS = [
 ];
 function marriedNightSteps(S, id){
   const lv = LOVERS[id], v = S.love[id], j = (a, b) => (/[가-힣]$/.test(lv.name) && ((lv.name.charCodeAt(lv.name.length - 1) - 0xAC00) % 28 === 0) ? b : a);
-  const img = n => [`art/ms_${id}_${n}.webp`, `art/ms_${id}_night2.webp`, `art/ms_${id}_night.webp`];
+  // 부부의 밤 전용 그림 mn_<id>_1~4 (없으면 첫날밤 그림으로 대신)
+  const OLD = {1:'n1', 2:'kiss', 3:'n3', 4:'n4'};
+  const img = k => [`art/mn_${id}_${k}.webp`, `art/ms_${id}_${OLD[k]}.webp`, `art/ms_${id}_night2.webp`];
   return NIGHT_STEPS.map((st, i) => {
     const last = i === NIGHT_STEPS.length - 1;
-    return {id:`mnight_${id}_${S.m}_${i}`, lover:id, speaker:lv.name, title:'부부의 밤', place:'night', img:img(st.img), text:S => st.x(lv.name, j), resultImgs:[img(st.res), img(i === 0 ? 'n1' : NIGHT_STEPS[i - 1].img)],
+    return {id:`mnight_${id}_${S.m}_${i}`, lover:id, speaker:lv.name, title:'부부의 밤', place:'night', img:img(i + 1), text:S => st.x(lv.name, j), resultImgs:[img(i + 2), img(i + 1)],
       choices:[
         {label:st.t, sub:last ? '호감 ↑↑ · 스트레스 ↓↓' : '다음 단계로 · 호감↑ · 스트레스↓', run(S){ const ch = []; S._nightGo = !last; v.nights = (v.nights || 0) + 1; addAff(S, id, 2 + i, ch); fx(S, {stress:-(3 + i), bond:0.6}, ch); return {text:st.go(lv.name), chips:ch, mood:'shy'}; }},
         {label:st.stop, sub:'호감 ↑ · 스트레스 ↓ · 체력 ↑', run(S){ const ch = []; S._nightGo = false; addAff(S, id, 1.5, ch); fx(S, {stress:-5, hp:2}, ch); return {text:st.no(lv.name), chips:ch}; }},

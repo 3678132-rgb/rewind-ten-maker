@@ -187,7 +187,7 @@ function openPicker(i, cat){
       return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
     }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
-    $('b-auto').onclick = () => { S.plan = autoPlan(); save(); closeSheet(); render(); };
+    $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
     $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
     document.querySelectorAll('.tab').forEach(b => b.onclick = () => { pickCat = b.dataset.c; draw(); });
     const placed = () => { save(); const nx = S.plan.findIndex(x => !x); if(nx < 0){ closeSheet(); render(); } else { activeSlot = nx; render(); draw(); } };
@@ -247,10 +247,27 @@ function showLove(){
     if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫 비밀' : '') + (S.partner === id && v.stage >= 1 ? ' ❤ 공식' : '');
-    return `<button class="lcard" data-call="${id}" ${callable ? '' : 'disabled'}><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cb">${callable ? '📞' : '·'}</span></button>`; };
-  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화해요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
+    const dt = dateTargets(S).includes(id);
+    return `<div class="lcard ${callable ? '' : 'off'}" data-call="${id}"><img class="av" src="art/face_${id}_happy.webp" alt="" onerror="this.src='art/lv_${id}.webp'"><span><b>${esc(lv.name)} · ${LOVE_STAGE[v.stage] || '지인'}${tag}</b><small>${esc(lv.job || '')}</small><div class="hb"><i style="width:${clamp(v.aff, 0, 100)}%"></i></div></span><span class="cbw"><span class="cb">${callable ? '📞' : '·'}</span>${dt ? `<button class="mini dt" data-dt="${id}">💞 데이트</button>` : ''}</span></div>`; };
+  openSheet(sheetHead('연애', met.length ? `만난 사람 ${met.length}명 · 탭하면 전화, 💞 데이트로 이번 달 일정에 넣어요` : '아직 마음에 둔 사람이 없어요.') + met.map(row).join('') + `<div class="foot">${met.length < ids.length ? '캠퍼스와 직장에서 새로운 인연을 더 만날 수 있어요. 만난 사람과는 데이트(관계 탭)로 가까워져요.' : ''}</div>`);
   $('x').onclick = closeSheet;
-  document.querySelectorAll('[data-call]').forEach(b => b.onclick = async () => { const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+  document.querySelectorAll('[data-call]').forEach(b => b.onclick = async e => {
+    const dtb = e.target.closest && e.target.closest('[data-dt]'); if(dtb){ e.stopPropagation(); return planDateWith(dtb.dataset.dt); }
+    if(b.classList.contains('off')) return;
+    const r = tryCall(S, b.dataset.call); if(typeof r === 'string'){ toast(r); return; } closeSheet(); await playEvent(r); save(); render(); });
+}
+// 연애 시트에서 곧바로 이번 달 빈 칸에 이 사람과의 데이트를 넣는다
+function planDateWith(id){
+  const a = ACTS.date, why = a.req ? a.req(S) : null; if(why){ toast(why); return; }
+  if(a.cost > S.cash){ toast('자금이 모자라요'); return; }
+  const slot = S.plan.findIndex(x => !x); if(slot < 0){ toast('이번 달 칸이 모두 찼어요. 스케줄에서 바꿔 주세요'); return; }
+  setPlan(slot, 'date'); S.dateTo = S.dateTo || []; S.dateTo[slot] = id; save(); closeSheet(); render(); toast(`${SLOT_NAMES[slot]}에 ${LOVERS[id].name}와 데이트를 넣었어요`);
+}
+// 추천 계획이 데이트를 넣을 때는 여러 명 중 호감이 높은 사람부터 돌아가며 정한다
+function assignDates(){
+  S.dateTo = S.dateTo || [];
+  const ts = dateTargets(S).sort((a, b) => S.love[b].aff - S.love[a].aff); if(!ts.length) return;
+  let k = 0; S.plan.forEach((id, i) => { if(id === 'date'){ S.dateTo[i] = ts[(S.m + k) % ts.length]; k++; } });
 }
 function showShop(){
   const rows = Object.keys(ITEMS).map(id => { const it = ITEMS[id], n = owned(S, id), cap = it.stack || 1, full = n >= cap, poor = S.cash < it.price;

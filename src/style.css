@@ -373,3 +373,6 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .apop .apf.ill .fsp{top:14%;bottom:7%;left:6%;right:6%}
 .apop .apf.ill .fsp::after{bottom:-3%;background:rgba(30,20,10,.25)}
 .apop .apf.ill .fsp img{filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.lcard.off{opacity:.62}
+.lcard .cbw{display:grid;gap:5px;justify-items:end;align-items:center}
+.lcard .mini.dt{font-size:11.5px;padding:5px 9px;border-radius:99px;background:#ffe3ea;color:#c2415f;border:0;font-weight:700;white-space:nowrap}

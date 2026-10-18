@@ -61,6 +61,27 @@ Object.assign(ACTS, {
   live:   {cat:'활동', icon:'📱', name:'SNS·라이브 방송', desc:'브이로그와 팬 라이브. 관심은 양날의 검.', cost:0, hp:-1, stress:2, eff:{neg:2.0, dare:1.0}, run(S, ch, out){ if(isIdol(S)){ addFans(S, 0.1 + S.st.neg / 400, ch); if(R() < 0.06){ addScandal(S, 5, ch); out.note = '라이브 중에 뒤로 비친 무언가 때문에 커뮤니티가 시끄러워졌다.'; } } else { addFans(S, 0.02 + S.st.charm / 2000, ch); out.note = '연습생 브이로그 조회수가 조금씩 오른다. 아직은 예비 팬들.'; } }},
   diet:   {cat:'나', icon:'🥗', name:'관리·다이어트', desc:'체중계와 거울 사이. 비주얼은 오르지만 마음이 깎인다.', cost:8, hp:-4, stress:6, eff:{charm:3.0, self:-0.6}},
 });
+// 연습생·무소속·팬 적은 신인이 할 수 있는 부업(미니게임을 잘하면 수입이 더 붙는다)
+const sideOk = S => isIdol(S) && fansOf(S) >= 5 ? '팬 5만 명이 넘으면 이런 일은 안 들어와요' : null;
+const gameBonus = (S, ch, pay) => { const m = S._gameMul; if(m == null || Math.abs(m - 1) < 0.05) return ''; const d = Math.round(pay * (m - 1)); bump(S, 'cash', d, ch); return d > 0 ? ` 반응이 좋아서 ${d}만 원을 더 받았다.` : ` 실수가 잦아서 ${-d}만 원이 깎였다.`; };
+Object.assign(ACTS, {
+  shopmodel: {cat:'돈', icon:'👗', name:'쇼핑몰 피팅 모델', desc:'온라인 쇼핑몰 신상 촬영. 하루 종일 옷을 갈아입고 같은 미소를 짓는다.', cost:0, hp:-6, stress:4, pay:55, eff:{charm:1.6, sense:0.8},
+    req:S => sideOk(S) || (S.st.charm < 25 ? '비주얼 25 필요' : null), run(S, ch, out){
+      out.note = pick(['봄 신상 서른 벌. 갈아입을 때마다 실장님이 “턱 살짝, 좋아!”를 외쳤다.', '스튜디오 조명 아래 원피스만 열두 벌. 거울 속 나는 점점 모델 같아졌다.', '길거리 촬영이라 지나가던 사람들이 힐끔힐끔 봤다. 그래도 표정은 무너지지 않았다.']);
+      if(R() < 0.12){ bump(S, 'cash', 20, ch); addFans(S, isIdol(S) ? 0.15 : 0.03, ch); out.note += ' 내 착용 사진이 쇼핑몰 메인에 걸렸다. “이 모델 누구예요?” 댓글이 달렸다.'; }
+      else if(isTrainee(S) && R() < 0.1){ bump(S, 'stress', 4, ch); out.note += ' 회사에 들킬까 봐 마스크를 쓰고 출근했다.'; }
+      out.note += gameBonus(S, ch, 55); }},
+  cosmetic:  {cat:'돈', icon:'💄', name:'화장품 모델(신인)', desc:'로드숍 브랜드 SNS 광고 촬영. 클로즈업 하나에 피부 컨디션이 다 보인다.', cost:0, hp:-5, stress:5, pay:80, eff:{charm:2.2, neg:0.6},
+    req:S => sideOk(S) || (S.st.charm < 40 ? '비주얼 40 필요' : null), run(S, ch, out){
+      out.note = pick(['립 틴트 하나를 스무 번 발랐다 지웠다. 입술이 얼얼하다.', '“눈으로만 웃어 주세요.” 감독님 말에 거울 앞에서 한참 연습했다.', '쿠션 팩트를 톡톡 두드리는 손등 컷만 오십 번 찍었다.']);
+      if(R() < 0.1){ bump(S, 'cash', 30, ch); addFans(S, isIdol(S) ? 0.3 : 0.05, ch); out.note += ' 광고 영상이 SNS에서 퍼졌다. 브랜드가 다음 시즌도 같이 하자고 했다.'; }
+      out.note += gameBonus(S, ch, 80); }},
+  eventstage:{cat:'돈', icon:'🎪', name:'지방 행사 무대', desc:'지역 축제, 개업식, 대학 축제 오프닝. 관객이 열 명이어도 무대는 무대.', cost:0, hp:-9, stress:5, pay:65, eff:{know:1.2, skill:1.2, dare:1.2},
+    req:S => sideOk(S) || ((S.st.know + S.st.skill) / 2 < 35 ? '보컬·댄스 평균 35 필요' : null), run(S, ch, out){
+      out.note = pick(['군청 앞 특설 무대. 앞줄 어르신들이 박수를 박자보다 빨리 쳤다.', '휴대폰 매장 개업식. 풍선 인형 옆에서 두 곡을 불렀다.', '대학 축제 오프닝. 다들 메인 가수를 기다렸지만, 몇 명은 끝까지 내 이름을 물어봤다.', '비 오는 수산 축제 무대. 우비를 입은 관객 스무 명이 끝까지 자리를 지켰다.']);
+      addFans(S, isIdol(S) ? 0.08 : 0.02, ch); if(R() < 0.08){ fx(S, {self:1.5}, ch); out.note += ' 무대가 끝나고 꼬마 하나가 사인을 해 달라며 공책을 내밀었다.'; }
+      out.note += gameBonus(S, ch, 65); }},
+});
 // 기존 활동을 아이돌 생활에 맞게
 Object.assign(ACTS.exercise, {cat:'나', name:'체력 훈련', desc:'세 시간짜리 무대를 버틸 몸. 체력이 곧 실력이다.'});
 Object.assign(ACTS.style, {cat:'나', name:'스타일링·피부 관리', desc:'카메라는 모공까지 본다.'});
@@ -75,7 +96,7 @@ ACTS.date.desc = '마음 가는 사람과 보내는 시간. 데뷔 후엔 들키
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 
 // ── 스케줄 미니게임: 화면에서 게임을 하면 S._actMul(0.6~1.4)이 채워지고, 그 칸의 능력치 상승에 곱해진다 ─────
-const ACT_GAME = {vocal:'pitch', dance:'moves', write:'melody', stage:'pose', musicshow:'pose'};
+const ACT_GAME = {vocal:'pitch', dance:'moves', write:'melody', stage:'pose', musicshow:'pose', shopmodel:'pose', cosmetic:'pose', eventstage:'pitch'};
 const _doActionBase = doAction;
 doAction = function(S, id){
   const mul = S._actMul; S._actMul = null; const a = ACTS[id];

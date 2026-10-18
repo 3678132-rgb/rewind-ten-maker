@@ -513,12 +513,12 @@ const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhu
 function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.webp`; }
 // 계절(3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울)과 2.5등신 캐릭터 스프라이트(두 장이 번갈아 움직인다)
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
-const SPRITE = {vocal:'hobby', dance:'exercise', stage:'style', write:'journal', reaudition:'job', musicshow:'job', variety:'job', fansign:'friends', cf:'job', live:'hobby', diet:'exercise', study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
+const SPRITE = {shopmodel:'style', cosmetic:'style', eventstage:'hobby', vocal:'hobby', dance:'exercise', stage:'style', write:'journal', reaudition:'job', musicshow:'job', variety:'job', fansign:'friends', cf:'job', live:'hobby', diet:'exercise', study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
 for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
 // 졸업 뒤에는 학교 대신 도시 배경에서 움직인다
 const CITY_ACT_BG = {exercise:'ct_river', friends:'ct_mall', club:'ct_night', date:'ct_cinema', travel:'ct_river', cafe:'ct_books', tutor:'ct_office'};
 // 아이돌 활동 팝업 배경
-const IDOL_ACT_BG = {vocal:'bg_studio', dance:'bg_practice', stage:'bg_practice', write:'bg_studio', reaudition:'bg_eval', musicshow:'bg_stage', variety:'bg_stage', fansign:'bg_stage', cf:'bg_studio', live:'bg_dorm', diet:'bg_dorm'};
+const IDOL_ACT_BG = {shopmodel:'ct_mall', cosmetic:'ct_beauty', eventstage:'bg_stage', vocal:'bg_studio', dance:'bg_practice', stage:'bg_practice', write:'bg_studio', reaudition:'bg_eval', musicshow:'bg_stage', variety:'bg_stage', fansign:'bg_stage', cf:'bg_studio', live:'bg_dorm', diet:'bg_dorm'};
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관

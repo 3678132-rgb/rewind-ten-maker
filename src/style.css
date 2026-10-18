@@ -469,3 +469,12 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .board{margin:10px 0 4px;padding:10px 12px;border-radius:14px;background:#f3f5fc}.bd-h{font-size:12px;font-weight:800;color:#6a7398;margin-bottom:6px}
 .bd-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;color:#2b3560}.bd-row.me{font-weight:800;color:#c2266f}.bd-r{width:18px;text-align:right;font-weight:800}.bd-n{width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bd-bar{flex:1;height:8px;border-radius:4px;background:#dde3f2;overflow:hidden}.bd-bar i{display:block;height:100%;background:linear-gradient(90deg,#8f5cff,#ff9cc0)}.bd-row.me .bd-bar i{background:linear-gradient(90deg,#ff4f97,#ffb36b)}
 .bd-cut{font-size:11px;color:#ff4f97;text-align:center;margin:3px 0;font-weight:700}
+.mg{padding:4px 2px 2px;text-align:center}.mg-t{font-weight:900;font-size:17px;color:#2b3560}.mg-s{font-size:12.5px;color:#6a7398;margin:4px 0 12px}
+.mg-fb{height:30px;line-height:30px;margin:10px 0 6px;font-weight:900;font-size:19px;color:#6a7398}.mg-fb.perfect{color:#ff4f97}.mg-fb.good{color:#7b4dff}.mg-fb.miss{color:#3a4063}
+.mg-skip{margin-top:4px;opacity:.75}
+.pt-track{position:relative;height:46px;border-radius:14px;background:#1b1f3d;overflow:hidden;margin-bottom:12px}.pt-band{position:absolute;top:0;bottom:0;background:rgba(255,95,162,.6);box-shadow:0 0 16px rgba(255,95,162,.9)}.pt-fill{position:absolute;left:0;top:14px;bottom:14px;width:0;border-radius:0 9px 9px 0;background:linear-gradient(90deg,#7ad3ff,#fff)}
+.sm-show{height:64px;line-height:64px;font-size:46px;margin-bottom:8px}
+.sm-pad{display:grid;gap:8px}.sm-pad.moves{grid-template-columns:repeat(4,1fr)}.sm-pad.melody{grid-template-columns:repeat(5,1fr)}
+.sm-b{height:64px;border:0;border-radius:14px;font-size:22px;font-weight:800;color:#fff;background:#4a5180;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .08s,filter .08s}
+.sm-pad.melody .n0{background:#ff6b8b}.sm-pad.melody .n1{background:#ffa94d}.sm-pad.melody .n2{background:#ffd43b;color:#5a4500}.sm-pad.melody .n3{background:#51cf66}.sm-pad.melody .n4{background:#4dabf7}
+.sm-b.lit{transform:scale(1.08);filter:brightness(1.45);box-shadow:0 0 18px rgba(255,255,255,.9)}.sm-b.bad{background:#3a4063!important}

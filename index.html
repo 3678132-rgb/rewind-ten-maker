@@ -474,6 +474,15 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 .board{margin:10px 0 4px;padding:10px 12px;border-radius:14px;background:#f3f5fc}.bd-h{font-size:12px;font-weight:800;color:#6a7398;margin-bottom:6px}
 .bd-row{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;color:#2b3560}.bd-row.me{font-weight:800;color:#c2266f}.bd-r{width:18px;text-align:right;font-weight:800}.bd-n{width:92px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bd-bar{flex:1;height:8px;border-radius:4px;background:#dde3f2;overflow:hidden}.bd-bar i{display:block;height:100%;background:linear-gradient(90deg,#8f5cff,#ff9cc0)}.bd-row.me .bd-bar i{background:linear-gradient(90deg,#ff4f97,#ffb36b)}
 .bd-cut{font-size:11px;color:#ff4f97;text-align:center;margin:3px 0;font-weight:700}
+.mg{padding:4px 2px 2px;text-align:center}.mg-t{font-weight:900;font-size:17px;color:#2b3560}.mg-s{font-size:12.5px;color:#6a7398;margin:4px 0 12px}
+.mg-fb{height:30px;line-height:30px;margin:10px 0 6px;font-weight:900;font-size:19px;color:#6a7398}.mg-fb.perfect{color:#ff4f97}.mg-fb.good{color:#7b4dff}.mg-fb.miss{color:#3a4063}
+.mg-skip{margin-top:4px;opacity:.75}
+.pt-track{position:relative;height:46px;border-radius:14px;background:#1b1f3d;overflow:hidden;margin-bottom:12px}.pt-band{position:absolute;top:0;bottom:0;background:rgba(255,95,162,.6);box-shadow:0 0 16px rgba(255,95,162,.9)}.pt-fill{position:absolute;left:0;top:14px;bottom:14px;width:0;border-radius:0 9px 9px 0;background:linear-gradient(90deg,#7ad3ff,#fff)}
+.sm-show{height:64px;line-height:64px;font-size:46px;margin-bottom:8px}
+.sm-pad{display:grid;gap:8px}.sm-pad.moves{grid-template-columns:repeat(4,1fr)}.sm-pad.melody{grid-template-columns:repeat(5,1fr)}
+.sm-b{height:64px;border:0;border-radius:14px;font-size:22px;font-weight:800;color:#fff;background:#4a5180;touch-action:manipulation;user-select:none;-webkit-user-select:none;transition:transform .08s,filter .08s}
+.sm-pad.melody .n0{background:#ff6b8b}.sm-pad.melody .n1{background:#ffa94d}.sm-pad.melody .n2{background:#ffd43b;color:#5a4500}.sm-pad.melody .n3{background:#51cf66}.sm-pad.melody .n4{background:#4dabf7}
+.sm-b.lit{transform:scale(1.08);filter:brightness(1.45);box-shadow:0 0 18px rgba(255,255,255,.9)}.sm-b.bad{background:#3a4063!important}
 </style></head><body>
 <div id="app">
  <section id="title" class="screen on">
@@ -484,7 +493,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #134 · 2026.10.18<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #135 · 2026.10.18<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -523,7 +532,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #134 · 2026.10.18</div>
+ <div id="buildtag">빌드 #135 · 2026.10.18</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -774,10 +783,10 @@ Object.assign(ACTS, {
   vocal:  {cat:'연습', icon:'🎤', name:'보컬 레슨', desc:'호흡, 발성, 음정. 마흔의 귀가 스무 살의 목을 가르친다.', cost:0, hp:-4, stress:5, eff:{know:5, work:1.4}},
   dance:  {cat:'연습', icon:'💃', name:'댄스 연습', desc:'거울 앞에서 같은 동작을 백 번. 땀이 실력이 된다.', cost:0, hp:-8, stress:4, eff:{skill:5, dare:0.6, work:1.4}},
   stage:  {cat:'연습', icon:'🎬', name:'무대·표정 연습', desc:'카메라를 찾는 눈, 엔딩 포즈, 무대 위의 3초.', cost:0, hp:-5, stress:3, eff:{sense:3.4, charm:1.4, work:1.0}},
-  write:  {cat:'연습', icon:'📝', name:'작사·작곡 공부', desc:'남의 노래가 아니라 내 노래를. 오래 걸리지만 남는다.', cost:5, hp:-3, stress:4, eff:{sense:2.0, ins:1.6, know:1.0, work:0.8}, run(S, ch, out){ const I = IDOL(S); if(R() < 0.12 + S.st.sense / 400){ I.songs++; out.note = `곡 하나를 끝까지 완성했다. 지금까지 쓴 노래 ${I.songs}곡.`; fx(S, {self:1}, ch); } }},
+  write:  {cat:'연습', icon:'📝', name:'작사·작곡 공부', desc:'남의 노래가 아니라 내 노래를. 오래 걸리지만 남는다.', cost:5, hp:-3, stress:4, eff:{sense:2.0, ins:1.6, know:1.0, work:0.8}, run(S, ch, out){ const I = IDOL(S); if(R() < (0.12 + S.st.sense / 400) * (S._gameMul || 1)){ I.songs++; out.note = `곡 하나를 끝까지 완성했다. 지금까지 쓴 노래 ${I.songs}곡.`; fx(S, {self:1}, ch); } }},
   reaudition: {cat:'연습', icon:'🚪', name:'오디션 재도전', desc:'다른 기획사의 문을 두드린다. 떨어져도 다시.', cost:10, hp:-5, stress:9, eff:{dare:1.2}, req:S => isOut(S) ? (S.m >= 72 ? '이제 오디션 나이가 지났다' : null) : '연습생·데뷔 후에는 필요 없어요', run(S, ch, out){
     const p = clamp(0.005 + (S.st.know + S.st.skill + S.st.charm - 180) / 1000, 0.005, 0.06); if(R() < p){ const I = IDOL(S); I.stage = 'idol'; I.debutAt = S.m; I.group = `${INDIE_AGENCY.split(' ')[0]} 솔로`; I.solo = true; S.track = 'actor'; addFans(S, 0.5, ch); gauge(S, 'work', 4, ch); out.note = `${INDIE_AGENCY}에서 연락이 왔다. 작은 회사지만, 솔로로 데뷔하자고.`; } else out.note = '“다음 기회에.” 같은 말을 또 들었다. 그래도 문은 하나 더 남아 있다.'; }},
-  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + (S.st.sense + S.st.charm) / 400 * (1 + Math.min(fansOf(S), 60) / 60), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
+  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, (0.15 + (S.st.sense + S.st.charm) / 400 * (1 + Math.min(fansOf(S), 60) / 60)) * (S._gameMul || 1), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
   variety: {cat:'활동', icon:'🎙️', name:'예능 출연', desc:'웃기면 뜨고, 실수하면 박제된다.', cost:0, hp:-5, stress:5, eff:{dare:2.4, charm:0.8}, req:needIdol, run(S, ch, out){ const hit = R() < 0.25 + S.st.dare / 220; addFans(S, hit ? 0.5 + Math.min(fansOf(S), 80) / 50 : 0.1, ch); if(!hit && R() < 0.15){ addScandal(S, 6, ch); out.note = '긴장해서 던진 말 한마디가 짤로 돌았다. 해명할 수도 없는 애매한 말.'; } else out.note = hit ? '아무 생각 없이 한 리액션이 터졌다. 다음 날 실시간 검색어에 내 이름이 있었다.' : '편집에서 거의 잘렸다. 분량은 3초. 그래도 얼굴은 남았다.'; if(hit && S.st.dare > 55) IDOL(S).variety = true; }},
   fansign: {cat:'활동', icon:'✍️', name:'팬사인회', desc:'한 사람 한 사람과 눈을 맞추는 시간.', cost:0, hp:-4, stress:-2, eff:{neg:2.4, self:1.0}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + S.st.neg / 300, ch); out.note = pick(['“언니 노래 듣고 수능 버텼어요.” 펜을 쥔 손이 잠깐 멈췄다.', '포스트잇에 적힌 질문 서른 개. 하나하나 대답하다 시간이 다 갔다.', '같은 얼굴을 세 번째 봤다. 이름을 불러 주자 그 팬이 울었다.']); }},
   cf:     {cat:'돈', icon:'📸', name:'광고·화보 촬영', desc:'얼굴이 곧 계약서. 인기만큼 들어온다.', cost:0, hp:-4, stress:3, eff:{charm:1.2}, req:S => !isIdol(S) ? '데뷔 후 가능' : fansOf(S) < 5 ? '팬 5만 명부터 들어와요' : null, run(S, ch, out){ bump(S, 'cash', Math.round(20 + fansOf(S) * 2.2), ch); out.note = '하루 종일 같은 미소를 지었다. 광고판 속 나는 피곤해 보이지 않았다.'; }},
@@ -797,6 +806,15 @@ ACTS.date.run = function(S, ch, out){ _dateRun.call(this, S, ch, out); if(isIdol
 ACTS.date.desc = '마음 가는 사람과 보내는 시간. 데뷔 후엔 들키면 열애설.';
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 
+// ── 스케줄 미니게임: 화면에서 게임을 하면 S._actMul(0.6~1.4)이 채워지고, 그 칸의 능력치 상승에 곱해진다 ─────
+const ACT_GAME = {vocal:'pitch', dance:'moves', write:'melody', stage:'pose', musicshow:'pose'};
+const _doActionBase = doAction;
+doAction = function(S, id){
+  const mul = S._actMul; S._actMul = null; const a = ACTS[id];
+  if(mul == null || !a) return _doActionBase(S, id);
+  const orig = a.eff; if(orig){ const e = {}; for(const k in orig) e[k] = STAT[k] && orig[k] > 0 ? orig[k] * mul : orig[k]; a.eff = e; }
+  S._gameMul = mul; try{ const out = _doActionBase(S, id); out.game = mul; return out; } finally{ a.eff = orig; S._gameMul = null; }
+};
 // ── 정산: 연습생은 숙소 제공·용돈, 데뷔 후 1년 반은 정산 0, 그 뒤 팬 수에 비례 ─────
 const idolIncome = S => { if(!isIdol(S)) return 0; if(sinceDebut(S) < 18) return 0; return Math.round(20 + Math.min(fansOf(S), 150) * 0.55 + IDOL(S).wins * 2); };
 const idolCost = S => isIdol(S) ? (sinceDebut(S) < 18 ? 0 : 30) : isOut(S) ? 20 : 10; // 연습생·신인은 숙소·식비를 회사가 댄다
@@ -7950,12 +7968,65 @@ async function playMarriedNight(id, out){
   for(const ev of steps){ if(!S._nightGo || S.ending) break; await playEvent(ev); }
   S._nightGo = false;
 }
+// ── 스케줄 미니게임(연습 칸): 보컬=음정, 댄스=안무 순서, 작곡=멜로디, 무대·음방=엔딩 포즈 타이밍. 결과 0~1 ─────
+const GAMES_KEY = 'rt_games';
+const gamesOn = () => { try{ return localStorage.getItem(GAMES_KEY) !== 'off'; }catch(e){ return true; } };
+const gameWord = m => m >= 1.3 ? '🎮 대성공! 능력치 상승 ×' + m.toFixed(1) + '.' : m >= 1.05 ? '🎮 성공! 능력치 상승 ×' + m.toFixed(1) + '.' : m >= 0.9 ? '🎮 보통.' : '🎮 아쉬움… 능력치 상승 ×' + m.toFixed(1) + '.';
+let _ac = null; function beep(f, d = 0.18){ try{ _ac = _ac || new (window.AudioContext || window.webkitAudioContext)(); const o = _ac.createOscillator(), g = _ac.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.12, _ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + d); o.connect(g); g.connect(_ac.destination); o.start(); o.stop(_ac.currentTime + d); }catch(e){} }
+function actGame(id, slot){
+  return new Promise(done => {
+    const a = ACTS[id], kind = ACT_GAME[id], el = $('act');
+    const T = {pitch:['🎤 음정 맞추기', '버튼을 꾹 누르면 음이 올라가요. 빛나는 칸에서 손을 떼세요!'], moves:['💃 안무 따라 하기', '화살표 순서를 잘 보고 똑같이 눌러요.'], melody:['🎹 멜로디 만들기', '빛나는 음 순서를 기억했다가 그대로 연주해요.'], pose:['📸 엔딩 포즈', '막대가 가운데 빛나는 칸에 올 때 탭!']}[kind];
+    el.innerHTML = `<div class="apop mgpop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slot}</span></div><div class="mg"><div class="mg-t">${T[0]}</div><div class="mg-s">${T[1]}</div><div class="mg-box" id="mgb"></div><div class="mg-fb" id="mgf">준비…</div><button class="btn ghost sm mg-skip" id="mgskip">건너뛰기 (보통 결과)</button></div></div>`;
+    el.classList.add('on');
+    const box = $('mgb'), fb = $('mgf'); let over = false, timers = [], raf = 0;
+    const later = (f, ms) => timers.push(setTimeout(f, ms));
+    const finish = v => { if(over) return; over = true; timers.forEach(clearTimeout); cancelAnimationFrame(raf); const m = 0.6 + v * 0.8;
+      fb.className = 'mg-fb ' + (m >= 1.3 ? 'perfect' : m >= 1.05 ? 'good' : 'miss'); fb.textContent = m >= 1.3 ? `대성공! ×${m.toFixed(1)}` : m >= 1.05 ? `성공! ×${m.toFixed(1)}` : m >= 0.9 ? '보통' : `아쉬워요 ×${m.toFixed(1)}`;
+      later(() => { el.classList.remove('on'); done(v); }, 900); };
+    $('mgskip').onclick = () => { over = true; timers.forEach(clearTimeout); cancelAnimationFrame(raf); el.classList.remove('on'); done(0.5); };
+    const say = (t, c = '') => { fb.textContent = t; fb.className = 'mg-fb ' + c; };
+    if(kind === 'pitch'){ // 3번: 누르고 있다가 목표 칸에서 떼기
+      box.innerHTML = `<div class="pt-track"><div class="pt-band" id="ptb"></div><div class="pt-fill" id="ptf"></div></div><button class="btn rg-tap" id="pth">꾹 누르기 🎵</button>`;
+      let r = 0, sc = 0, lv = 0, hold = false, last = 0, band = 0; const W = 12;
+      const setRound = () => { band = 35 + R() * 45; $('ptb').style.left = band + '%'; $('ptb').style.width = W + '%'; lv = 0; $('ptf').style.width = '0%'; say(`${r + 1} / 3`); };
+      const step = now => { if(!hold || over) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; lv += dt * (38 + lv * 0.9); $('ptf').style.width = Math.min(100, lv) + '%'; if(lv >= 100){ hold = false; judge(); return; } raf = requestAnimationFrame(step); };
+      const judge = () => { const c = band + W / 2, d = Math.abs(lv - c); const v = lv >= 100 ? 0 : d <= W / 2 ? 1 : d <= W / 2 + 7 ? 0.5 : 0; sc += v; beep(v >= 1 ? 784 : v > 0 ? 523 : 220, 0.25);
+        say(lv >= 100 ? '음이탈!' : v >= 1 ? 'PERFECT' : v > 0 ? 'GOOD' : 'MISS', lv >= 100 ? 'miss' : v >= 1 ? 'perfect' : v > 0 ? 'good' : 'miss'); r++; if(r >= 3) later(() => finish(sc / 3), 500); else later(setRound, 700); };
+      const down = e => { e.preventDefault(); if(over || hold || r >= 3) return; hold = true; last = performance.now(); raf = requestAnimationFrame(step); };
+      const up = e => { if(!hold) return; e.preventDefault(); hold = false; cancelAnimationFrame(raf); judge(); };
+      const hb = $('pth'); hb.addEventListener('pointerdown', down); hb.addEventListener('pointerup', up); hb.addEventListener('pointercancel', up); hb.addEventListener('pointerleave', up);
+      later(setRound, 400);
+    } else if(kind === 'moves' || kind === 'melody'){ // 기억해서 따라 누르기: 4개 → 5개
+      const notes = kind === 'moves' ? ['⬅️', '⬆️', '⬇️', '➡️'] : ['도', '레', '미', '솔', '라'], freq = [523, 587, 659, 784, 880];
+      box.innerHTML = (kind === 'moves' ? '<div class="sm-show" id="sms"></div>' : '') + `<div class="sm-pad ${kind}">${notes.map((n, k) => `<button class="sm-b n${k}" data-k="${k}">${n}</button>`).join('')}</div>`;
+      const btns = [...box.querySelectorAll('.sm-b')]; let round = 0, seq = [], pos = 0, ok = 0, total = 0, input = false;
+      const flash = k => { const b = btns[k]; b.classList.add('lit'); beep(freq[k % freq.length]); later(() => b.classList.remove('lit'), 330); if(kind === 'moves'){ $('sms').textContent = notes[k]; later(() => { if($('sms')) $('sms').textContent = ''; }, 380); } };
+      const play = () => { input = false; const len = round === 0 ? 4 : 5; seq = Array.from({length:len}, () => Math.floor(R() * notes.length)); pos = 0; total += len; say('잘 보세요…');
+        seq.forEach((k, i) => later(() => flash(k), 500 + i * 560)); later(() => { input = true; say('따라 하세요!', 'good'); }, 500 + seq.length * 560); };
+      const endRound = () => { input = false; round++; if(round >= 2) later(() => finish(ok / total), 450); else later(play, 800); };
+      btns.forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if(!input || over) return; const k = +b.dataset.k; flash(k);
+        if(k === seq[pos]){ ok++; pos++; if(pos >= seq.length){ say('완벽!', 'perfect'); endRound(); } } else { say('틀렸어요', 'miss'); b.classList.add('bad'); later(() => b.classList.remove('bad'), 400); endRound(); } }));
+      later(play, 300);
+    } else { // pose: 움직이는 막대 타이밍 3번
+      box.innerHTML = `<div class="rg-track" id="pst"><div class="rg-zone"><b></b></div><div class="rg-cur" id="psc"></div></div><button class="btn rg-tap" id="psb">찰칵! 📸</button>`;
+      let k = 0, sc = 0, p = 0, dir = 1, last = 0, t0 = 0, lock = true; const spd = 0.85;
+      const start = () => { p = R() < 0.5 ? 0 : 1; dir = p ? -1 : 1; t0 = last = performance.now(); lock = false; say(`${k + 1} / 3`); raf = requestAnimationFrame(step); };
+      const step = now => { if(over) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; p += dir * spd * (1 + k * 0.15) * dt; if(p >= 1){ p = 1; dir = -1; } if(p <= 0){ p = 0; dir = 1; } $('psc').style.left = p * 100 + '%'; if(now - t0 > 3200) return judge(true); raf = requestAnimationFrame(step); };
+      const judge = to => { if(lock) return; lock = true; cancelAnimationFrame(raf); const d = Math.abs(p - 0.5), v = to ? 0 : d <= 0.045 ? 1 : d <= 0.11 ? 0.6 : d <= 0.17 ? 0.25 : 0; sc += v; beep(v >= 1 ? 880 : v > 0 ? 660 : 220);
+        say(v >= 1 ? 'PERFECT' : v >= 0.6 ? 'GOOD' : v > 0 ? 'BAD' : 'MISS', v >= 1 ? 'perfect' : v >= 0.6 ? 'good' : 'miss'); k++; if(k >= 3) later(() => finish(sc / 3), 500); else later(start, 600); };
+      const tap = e => { e.preventDefault(); judge(false); }; $('psb').addEventListener('pointerdown', tap); $('pst').addEventListener('pointerdown', tap);
+      later(start, 500);
+    }
+  });
+}
 async function runMonth(){
   seedMonth(S); S.lastPlan = S.plan.slice(); const skipLog = [];
   for(let i = 0; i < 3; i++){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
-    S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    if(!fell && ACT_GAME[id] && gamesOn()) S._actMul = 0.6 + (await actGame(id, SLOT_NAMES[first])) * 0.8;
+    S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); if(out.game != null) out.note = `${gameWord(out.game)} ${out.note || ''}`.trim(); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     if(getSpeed() === 'skip' && !['jobhunt', 'date'].includes(id) && !out.burnout){ skipLog.push({a, out}); }
     else if(id === 'date' && S.married && S.love[S.married] && !fell){ await playMarriedNight(S.married, out); }
     else await showAct(SLOT_NAMES[first], id, out, first);
@@ -8007,10 +8078,11 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #134 · 2026.10.18<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-games">🎮 연습 미니게임: ${gamesOn() ? '켜짐' : '꺼짐'}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #135 · 2026.10.18<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
+    $('m-games').onclick = () => { const on = !gamesOn(); try{ localStorage.setItem(GAMES_KEY, on ? 'on' : 'off'); }catch(e){} $('m-games').textContent = '🎮 연습 미니게임: ' + (on ? '켜짐' : '꺼짐'); toast('연습 미니게임 ' + (on ? '켜짐' : '꺼짐')); };
     $('m-speed').onclick = () => { const order = ['normal', 'fast', 'skip'], nx = order[(order.indexOf(getSpeed()) + 1) % 3]; setSpeed(nx); $('m-speed').textContent = '⏩ 스케줄 연출: ' + SPEED_LB[nx]; toast('스케줄 연출: ' + SPEED_LB[nx]); };
     $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);
@@ -8069,7 +8141,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#134 · 2026.10.18'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#135 · 2026.10.18'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

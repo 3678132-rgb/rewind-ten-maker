@@ -51,10 +51,10 @@ Object.assign(ACTS, {
   vocal:  {cat:'연습', icon:'🎤', name:'보컬 레슨', desc:'호흡, 발성, 음정. 마흔의 귀가 스무 살의 목을 가르친다.', cost:0, hp:-4, stress:5, eff:{know:5, work:1.4}},
   dance:  {cat:'연습', icon:'💃', name:'댄스 연습', desc:'거울 앞에서 같은 동작을 백 번. 땀이 실력이 된다.', cost:0, hp:-8, stress:4, eff:{skill:5, dare:0.6, work:1.4}},
   stage:  {cat:'연습', icon:'🎬', name:'무대·표정 연습', desc:'카메라를 찾는 눈, 엔딩 포즈, 무대 위의 3초.', cost:0, hp:-5, stress:3, eff:{sense:3.4, charm:1.4, work:1.0}},
-  write:  {cat:'연습', icon:'📝', name:'작사·작곡 공부', desc:'남의 노래가 아니라 내 노래를. 오래 걸리지만 남는다.', cost:5, hp:-3, stress:4, eff:{sense:2.0, ins:1.6, know:1.0, work:0.8}, run(S, ch, out){ const I = IDOL(S); if(R() < 0.12 + S.st.sense / 400){ I.songs++; out.note = `곡 하나를 끝까지 완성했다. 지금까지 쓴 노래 ${I.songs}곡.`; fx(S, {self:1}, ch); } }},
+  write:  {cat:'연습', icon:'📝', name:'작사·작곡 공부', desc:'남의 노래가 아니라 내 노래를. 오래 걸리지만 남는다.', cost:5, hp:-3, stress:4, eff:{sense:2.0, ins:1.6, know:1.0, work:0.8}, run(S, ch, out){ const I = IDOL(S); if(R() < (0.12 + S.st.sense / 400) * (S._gameMul || 1)){ I.songs++; out.note = `곡 하나를 끝까지 완성했다. 지금까지 쓴 노래 ${I.songs}곡.`; fx(S, {self:1}, ch); } }},
   reaudition: {cat:'연습', icon:'🚪', name:'오디션 재도전', desc:'다른 기획사의 문을 두드린다. 떨어져도 다시.', cost:10, hp:-5, stress:9, eff:{dare:1.2}, req:S => isOut(S) ? (S.m >= 72 ? '이제 오디션 나이가 지났다' : null) : '연습생·데뷔 후에는 필요 없어요', run(S, ch, out){
     const p = clamp(0.005 + (S.st.know + S.st.skill + S.st.charm - 180) / 1000, 0.005, 0.06); if(R() < p){ const I = IDOL(S); I.stage = 'idol'; I.debutAt = S.m; I.group = `${INDIE_AGENCY.split(' ')[0]} 솔로`; I.solo = true; S.track = 'actor'; addFans(S, 0.5, ch); gauge(S, 'work', 4, ch); out.note = `${INDIE_AGENCY}에서 연락이 왔다. 작은 회사지만, 솔로로 데뷔하자고.`; } else out.note = '“다음 기회에.” 같은 말을 또 들었다. 그래도 문은 하나 더 남아 있다.'; }},
-  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + (S.st.sense + S.st.charm) / 400 * (1 + Math.min(fansOf(S), 60) / 60), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
+  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, (0.15 + (S.st.sense + S.st.charm) / 400 * (1 + Math.min(fansOf(S), 60) / 60)) * (S._gameMul || 1), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
   variety: {cat:'활동', icon:'🎙️', name:'예능 출연', desc:'웃기면 뜨고, 실수하면 박제된다.', cost:0, hp:-5, stress:5, eff:{dare:2.4, charm:0.8}, req:needIdol, run(S, ch, out){ const hit = R() < 0.25 + S.st.dare / 220; addFans(S, hit ? 0.5 + Math.min(fansOf(S), 80) / 50 : 0.1, ch); if(!hit && R() < 0.15){ addScandal(S, 6, ch); out.note = '긴장해서 던진 말 한마디가 짤로 돌았다. 해명할 수도 없는 애매한 말.'; } else out.note = hit ? '아무 생각 없이 한 리액션이 터졌다. 다음 날 실시간 검색어에 내 이름이 있었다.' : '편집에서 거의 잘렸다. 분량은 3초. 그래도 얼굴은 남았다.'; if(hit && S.st.dare > 55) IDOL(S).variety = true; }},
   fansign: {cat:'활동', icon:'✍️', name:'팬사인회', desc:'한 사람 한 사람과 눈을 맞추는 시간.', cost:0, hp:-4, stress:-2, eff:{neg:2.4, self:1.0}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + S.st.neg / 300, ch); out.note = pick(['“언니 노래 듣고 수능 버텼어요.” 펜을 쥔 손이 잠깐 멈췄다.', '포스트잇에 적힌 질문 서른 개. 하나하나 대답하다 시간이 다 갔다.', '같은 얼굴을 세 번째 봤다. 이름을 불러 주자 그 팬이 울었다.']); }},
   cf:     {cat:'돈', icon:'📸', name:'광고·화보 촬영', desc:'얼굴이 곧 계약서. 인기만큼 들어온다.', cost:0, hp:-4, stress:3, eff:{charm:1.2}, req:S => !isIdol(S) ? '데뷔 후 가능' : fansOf(S) < 5 ? '팬 5만 명부터 들어와요' : null, run(S, ch, out){ bump(S, 'cash', Math.round(20 + fansOf(S) * 2.2), ch); out.note = '하루 종일 같은 미소를 지었다. 광고판 속 나는 피곤해 보이지 않았다.'; }},
@@ -74,6 +74,15 @@ ACTS.date.run = function(S, ch, out){ _dateRun.call(this, S, ch, out); if(isIdol
 ACTS.date.desc = '마음 가는 사람과 보내는 시간. 데뷔 후엔 들키면 열애설.';
 for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 
+// ── 스케줄 미니게임: 화면에서 게임을 하면 S._actMul(0.6~1.4)이 채워지고, 그 칸의 능력치 상승에 곱해진다 ─────
+const ACT_GAME = {vocal:'pitch', dance:'moves', write:'melody', stage:'pose', musicshow:'pose'};
+const _doActionBase = doAction;
+doAction = function(S, id){
+  const mul = S._actMul; S._actMul = null; const a = ACTS[id];
+  if(mul == null || !a) return _doActionBase(S, id);
+  const orig = a.eff; if(orig){ const e = {}; for(const k in orig) e[k] = STAT[k] && orig[k] > 0 ? orig[k] * mul : orig[k]; a.eff = e; }
+  S._gameMul = mul; try{ const out = _doActionBase(S, id); out.game = mul; return out; } finally{ a.eff = orig; S._gameMul = null; }
+};
 // ── 정산: 연습생은 숙소 제공·용돈, 데뷔 후 1년 반은 정산 0, 그 뒤 팬 수에 비례 ─────
 const idolIncome = S => { if(!isIdol(S)) return 0; if(sinceDebut(S) < 18) return 0; return Math.round(20 + Math.min(fansOf(S), 150) * 0.55 + IDOL(S).wins * 2); };
 const idolCost = S => isIdol(S) ? (sinceDebut(S) < 18 ? 0 : 30) : isOut(S) ? 20 : 10; // 연습생·신인은 숙소·식비를 회사가 댄다

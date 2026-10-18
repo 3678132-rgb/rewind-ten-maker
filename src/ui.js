@@ -578,12 +578,65 @@ async function playMarriedNight(id, out){
   for(const ev of steps){ if(!S._nightGo || S.ending) break; await playEvent(ev); }
   S._nightGo = false;
 }
+// ── 스케줄 미니게임(연습 칸): 보컬=음정, 댄스=안무 순서, 작곡=멜로디, 무대·음방=엔딩 포즈 타이밍. 결과 0~1 ─────
+const GAMES_KEY = 'rt_games';
+const gamesOn = () => { try{ return localStorage.getItem(GAMES_KEY) !== 'off'; }catch(e){ return true; } };
+const gameWord = m => m >= 1.3 ? '🎮 대성공! 능력치 상승 ×' + m.toFixed(1) + '.' : m >= 1.05 ? '🎮 성공! 능력치 상승 ×' + m.toFixed(1) + '.' : m >= 0.9 ? '🎮 보통.' : '🎮 아쉬움… 능력치 상승 ×' + m.toFixed(1) + '.';
+let _ac = null; function beep(f, d = 0.18){ try{ _ac = _ac || new (window.AudioContext || window.webkitAudioContext)(); const o = _ac.createOscillator(), g = _ac.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.12, _ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, _ac.currentTime + d); o.connect(g); g.connect(_ac.destination); o.start(); o.stop(_ac.currentTime + d); }catch(e){} }
+function actGame(id, slot){
+  return new Promise(done => {
+    const a = ACTS[id], kind = ACT_GAME[id], el = $('act');
+    const T = {pitch:['🎤 음정 맞추기', '버튼을 꾹 누르면 음이 올라가요. 빛나는 칸에서 손을 떼세요!'], moves:['💃 안무 따라 하기', '화살표 순서를 잘 보고 똑같이 눌러요.'], melody:['🎹 멜로디 만들기', '빛나는 음 순서를 기억했다가 그대로 연주해요.'], pose:['📸 엔딩 포즈', '막대가 가운데 빛나는 칸에 올 때 탭!']}[kind];
+    el.innerHTML = `<div class="apop mgpop"><div class="aph"><h2>${a.icon} ${esc(actName(S, id))}</h2><span class="ptag">${slot}</span></div><div class="mg"><div class="mg-t">${T[0]}</div><div class="mg-s">${T[1]}</div><div class="mg-box" id="mgb"></div><div class="mg-fb" id="mgf">준비…</div><button class="btn ghost sm mg-skip" id="mgskip">건너뛰기 (보통 결과)</button></div></div>`;
+    el.classList.add('on');
+    const box = $('mgb'), fb = $('mgf'); let over = false, timers = [], raf = 0;
+    const later = (f, ms) => timers.push(setTimeout(f, ms));
+    const finish = v => { if(over) return; over = true; timers.forEach(clearTimeout); cancelAnimationFrame(raf); const m = 0.6 + v * 0.8;
+      fb.className = 'mg-fb ' + (m >= 1.3 ? 'perfect' : m >= 1.05 ? 'good' : 'miss'); fb.textContent = m >= 1.3 ? `대성공! ×${m.toFixed(1)}` : m >= 1.05 ? `성공! ×${m.toFixed(1)}` : m >= 0.9 ? '보통' : `아쉬워요 ×${m.toFixed(1)}`;
+      later(() => { el.classList.remove('on'); done(v); }, 900); };
+    $('mgskip').onclick = () => { over = true; timers.forEach(clearTimeout); cancelAnimationFrame(raf); el.classList.remove('on'); done(0.5); };
+    const say = (t, c = '') => { fb.textContent = t; fb.className = 'mg-fb ' + c; };
+    if(kind === 'pitch'){ // 3번: 누르고 있다가 목표 칸에서 떼기
+      box.innerHTML = `<div class="pt-track"><div class="pt-band" id="ptb"></div><div class="pt-fill" id="ptf"></div></div><button class="btn rg-tap" id="pth">꾹 누르기 🎵</button>`;
+      let r = 0, sc = 0, lv = 0, hold = false, last = 0, band = 0; const W = 12;
+      const setRound = () => { band = 35 + R() * 45; $('ptb').style.left = band + '%'; $('ptb').style.width = W + '%'; lv = 0; $('ptf').style.width = '0%'; say(`${r + 1} / 3`); };
+      const step = now => { if(!hold || over) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; lv += dt * (38 + lv * 0.9); $('ptf').style.width = Math.min(100, lv) + '%'; if(lv >= 100){ hold = false; judge(); return; } raf = requestAnimationFrame(step); };
+      const judge = () => { const c = band + W / 2, d = Math.abs(lv - c); const v = lv >= 100 ? 0 : d <= W / 2 ? 1 : d <= W / 2 + 7 ? 0.5 : 0; sc += v; beep(v >= 1 ? 784 : v > 0 ? 523 : 220, 0.25);
+        say(lv >= 100 ? '음이탈!' : v >= 1 ? 'PERFECT' : v > 0 ? 'GOOD' : 'MISS', lv >= 100 ? 'miss' : v >= 1 ? 'perfect' : v > 0 ? 'good' : 'miss'); r++; if(r >= 3) later(() => finish(sc / 3), 500); else later(setRound, 700); };
+      const down = e => { e.preventDefault(); if(over || hold || r >= 3) return; hold = true; last = performance.now(); raf = requestAnimationFrame(step); };
+      const up = e => { if(!hold) return; e.preventDefault(); hold = false; cancelAnimationFrame(raf); judge(); };
+      const hb = $('pth'); hb.addEventListener('pointerdown', down); hb.addEventListener('pointerup', up); hb.addEventListener('pointercancel', up); hb.addEventListener('pointerleave', up);
+      later(setRound, 400);
+    } else if(kind === 'moves' || kind === 'melody'){ // 기억해서 따라 누르기: 4개 → 5개
+      const notes = kind === 'moves' ? ['⬅️', '⬆️', '⬇️', '➡️'] : ['도', '레', '미', '솔', '라'], freq = [523, 587, 659, 784, 880];
+      box.innerHTML = (kind === 'moves' ? '<div class="sm-show" id="sms"></div>' : '') + `<div class="sm-pad ${kind}">${notes.map((n, k) => `<button class="sm-b n${k}" data-k="${k}">${n}</button>`).join('')}</div>`;
+      const btns = [...box.querySelectorAll('.sm-b')]; let round = 0, seq = [], pos = 0, ok = 0, total = 0, input = false;
+      const flash = k => { const b = btns[k]; b.classList.add('lit'); beep(freq[k % freq.length]); later(() => b.classList.remove('lit'), 330); if(kind === 'moves'){ $('sms').textContent = notes[k]; later(() => { if($('sms')) $('sms').textContent = ''; }, 380); } };
+      const play = () => { input = false; const len = round === 0 ? 4 : 5; seq = Array.from({length:len}, () => Math.floor(R() * notes.length)); pos = 0; total += len; say('잘 보세요…');
+        seq.forEach((k, i) => later(() => flash(k), 500 + i * 560)); later(() => { input = true; say('따라 하세요!', 'good'); }, 500 + seq.length * 560); };
+      const endRound = () => { input = false; round++; if(round >= 2) later(() => finish(ok / total), 450); else later(play, 800); };
+      btns.forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if(!input || over) return; const k = +b.dataset.k; flash(k);
+        if(k === seq[pos]){ ok++; pos++; if(pos >= seq.length){ say('완벽!', 'perfect'); endRound(); } } else { say('틀렸어요', 'miss'); b.classList.add('bad'); later(() => b.classList.remove('bad'), 400); endRound(); } }));
+      later(play, 300);
+    } else { // pose: 움직이는 막대 타이밍 3번
+      box.innerHTML = `<div class="rg-track" id="pst"><div class="rg-zone"><b></b></div><div class="rg-cur" id="psc"></div></div><button class="btn rg-tap" id="psb">찰칵! 📸</button>`;
+      let k = 0, sc = 0, p = 0, dir = 1, last = 0, t0 = 0, lock = true; const spd = 0.85;
+      const start = () => { p = R() < 0.5 ? 0 : 1; dir = p ? -1 : 1; t0 = last = performance.now(); lock = false; say(`${k + 1} / 3`); raf = requestAnimationFrame(step); };
+      const step = now => { if(over) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; p += dir * spd * (1 + k * 0.15) * dt; if(p >= 1){ p = 1; dir = -1; } if(p <= 0){ p = 0; dir = 1; } $('psc').style.left = p * 100 + '%'; if(now - t0 > 3200) return judge(true); raf = requestAnimationFrame(step); };
+      const judge = to => { if(lock) return; lock = true; cancelAnimationFrame(raf); const d = Math.abs(p - 0.5), v = to ? 0 : d <= 0.045 ? 1 : d <= 0.11 ? 0.6 : d <= 0.17 ? 0.25 : 0; sc += v; beep(v >= 1 ? 880 : v > 0 ? 660 : 220);
+        say(v >= 1 ? 'PERFECT' : v >= 0.6 ? 'GOOD' : v > 0 ? 'BAD' : 'MISS', v >= 1 ? 'perfect' : v >= 0.6 ? 'good' : 'miss'); k++; if(k >= 3) later(() => finish(sc / 3), 500); else later(start, 600); };
+      const tap = e => { e.preventDefault(); judge(false); }; $('psb').addEventListener('pointerdown', tap); $('pst').addEventListener('pointerdown', tap);
+      later(start, 500);
+    }
+  });
+}
 async function runMonth(){
   seedMonth(S); S.lastPlan = S.plan.slice(); const skipLog = [];
   for(let i = 0; i < 3; i++){
     let id = S.plan[i]; if(!id || id === '>') continue; let a = ACTS[id]; const first = i;
     let fell = false; if(a.cost && a.cost > S.cash || (a.req && a.req(S))){ fell = true; id = 'rest'; a = ACTS[id]; }
-    S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
+    if(!fell && ACT_GAME[id] && gamesOn()) S._actMul = 0.6 + (await actGame(id, SLOT_NAMES[first])) * 0.8;
+    S.curDate = S.dateTo && S.dateTo[first] || null; S.curJob = S.jobTo && S.jobTo[first] || null; const out = doAction(S, id); if(out.game != null) out.note = `${gameWord(out.game)} ${out.note || ''}`.trim(); S.curDate = null; S.curJob = null; i += a.slots - 1; if(fell) out.note = '조건이 맞지 않아 계획을 바꿔 쉬었다.';
     if(getSpeed() === 'skip' && !['jobhunt', 'date'].includes(id) && !out.burnout){ skipLog.push({a, out}); }
     else if(id === 'date' && S.married && S.love[S.married] && !fell){ await playMarriedNight(S.married, out); }
     else await showAct(SLOT_NAMES[first], id, out, first);
@@ -635,10 +688,11 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-games">🎮 연습 미니게임: ${gamesOn() ? '켜짐' : '꺼짐'}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 __BUILD__<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
+    $('m-games').onclick = () => { const on = !gamesOn(); try{ localStorage.setItem(GAMES_KEY, on ? 'on' : 'off'); }catch(e){} $('m-games').textContent = '🎮 연습 미니게임: ' + (on ? '켜짐' : '꺼짐'); toast('연습 미니게임 ' + (on ? '켜짐' : '꺼짐')); };
     $('m-speed').onclick = () => { const order = ['normal', 'fast', 'skip'], nx = order[(order.indexOf(getSpeed()) + 1) % 3]; setSpeed(nx); $('m-speed').textContent = '⏩ 스케줄 연출: ' + SPEED_LB[nx]; toast('스케줄 연출: ' + SPEED_LB[nx]); };
     $('m-update').onclick = () => checkUpdate(true);
     $('m-slots').onclick = () => showSlots(true);

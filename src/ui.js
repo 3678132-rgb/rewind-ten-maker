@@ -1,5 +1,5 @@
 // ── UI (ENGINE 밖) ─────────────────────────────────────────────
-const SAVE_KEY = 'rewind-ten-v1', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_KEY = 'rewind-ten-slots-v1', SLOT_N = 5;
+const SAVE_KEY = 'rewind-ten-idol-v3', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_KEY = 'rewind-ten-idol-slots-v3', SLOT_N = 5;
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
@@ -29,7 +29,7 @@ const HERO_JOB = new Set(__HERO_JOB__); // art/age<나이>_<직업>.webp: 직업
 const HERO_RIPE = new Set(__HERO_RIPE__); // 첫날밤 이후 달라진 분위기(눈빛·화장)의 주인공
 const DATE_ART = new Set(__DATE_ART__); // art/dt_<연인>_<번호>.webp (데이트 일러스트)
 const ripeNow = S => !!S && Object.values(S.love || {}).some(v => v && v.intimate);
-const heroImg = S => { const k = heroKey(S); if(S.hired && S.track && !inLawSchool(S) && HERO_JOB.has(`${k}_${S.track}`)) return `art/${k}_${S.track}.webp`; if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
+const heroImg = S => { const k = heroKey(S); if(isIdol(S) && HERO_JOB.has(`${k}_actor`)) return `art/${k}_actor.webp`; if(!isIdol(S) && HERO_JOB.has(`${k}_trainee`)) return `art/${k}_trainee.webp`; if(HERO_RIPE.has(k) && ripeNow(S)) return `art/${k}_ripe.webp`; const se = typeof seasonOf === 'function' ? seasonOf(S) : 'spring', f = `${k}_${se}`; return `art/${se !== 'spring' && HERO_SEASONAL.has(f) ? f : k}.webp`; };
 // 이벤트 결과의 칩으로 표정을 고른다
 function faceFor(ch){ let up = 0, down = 0, tired = false; for(const c of ch || []){ if(c.label === '스트레스' ? c.d > 3 : c.label === '체력' && c.d < -3) tired = true; if(c.label in PILLAR || c.label === '기억 선명도') (c.d > 0 ? up += c.d : down -= c.d); }
   return tired ? 'tired' : down > up + 1 ? 'sad' : up >= 4 ? 'happy' : up > 0 ? 'shy' : 'determined'; }
@@ -50,8 +50,8 @@ const chipHTML = ch => (ch || []).filter(c => Math.abs(c.d) >= 0.05).map(c => `<
 // ── 타이틀·시작 설정(한 화면에 질문 하나씩) ─────────────────────
 const WIZ = [
   {key:'name',   q:'이름을 알려 주세요', p:'스무 살로 돌아가는 사람의 이름이에요.'},
-  {key:'major',  q:`${UNIVERSITY}, 어느 학과로 갈까요?`, p:'학과에 따라 시작 능력치와 어울리는 직업이 달라져요.', list:() => MAJORS, cols:2},
-  {key:'origin', q:'마흔의 나는 어떤 일을 했었나요?', p:'되감기 전의 경력이 타고난 강점이 돼요.', list:() => ORIGINS, cols:1},
+  {key:'major',  q:'어떤 포지션을 꿈꾸나요?', p:'포지션에 따라 시작 능력치가 달라져요.', list:() => MAJORS, cols:2},
+  {key:'origin', q:'꿈을 접은 마흔의 나는 무슨 일을 했나요?', p:'되감기 전의 경력이 타고난 강점이 돼요.', list:() => ORIGINS, cols:1},
   {key:'regret', q:'가장 후회하는 건 무엇인가요?', p:'그 후회가 이번 생의 출발점이에요.', list:() => REGRETS, cols:1},
 ];
 let wizStep = 0, wizName = '서윤';
@@ -107,11 +107,11 @@ function actTags(S, id, max){
 function autoPlan(){
   const ok = (id, idx) => { const a = ACTS[id]; return !!a && !(a.req && a.req(S)) && (!a.cost || a.cost <= S.cash) && (a.slots || 1) <= 3 - idx; };
   const P = {work:S.work, bond:S.bond, self:S.self}, low = Object.keys(P).sort((x, y) => P[x] - P[y]);
-  const pools = {work:S.hired ? ['job', 'project', 'cert', 'job'] : (S.m < 48 ? ['study', 'intern', 'project', 'cert'] : ['jobhunt', 'project']),
-    bond:['friends', 'family', 'club', dateTarget(S) ? 'date' : 'friends'], self:['journal', 'exercise', 'hobby', 'style']};
+  const pools = {work:isIdol(S) ? ['musicshow', 'vocal', 'dance', 'variety', 'fansign'] : isOut(S) ? ['reaudition', 'vocal', 'dance'] : ['vocal', 'dance', 'stage', 'vocal', 'dance', 'write'],
+    bond:['friends', 'family', 'live', dateTarget(S) ? 'date' : 'friends'], self:['journal', 'exercise', 'hobby', 'style']};
   const picks = [];
   if(S.hp < 30 || S.stress > 75) picks.push('rest');
-  if(S.cash < 80) picks.push(S.hired && !inLawSchool(S) ? 'job' : (ok('tutor', 0) ? 'tutor' : 'cafe'));
+  if(S.cash < 80) picks.push(ok('cf', 0) ? 'cf' : 'cafe');
   for(let r = 0; r < 3; r++) for(const k of low) picks.push(pools[k][(S.m + r * 2 + low.indexOf(k)) % pools[k].length]);
   const plan = [null, null, null]; let i = 0;
   for(const id of picks){ if(i > 2) break; if(ok(id, i)){ plan[i] = id; const sl = ACTS[id].slots || 1; if(sl === 2) plan[i + 1] = '>'; i += sl; } }
@@ -138,18 +138,18 @@ function paintIcons(){ document.querySelectorAll('[data-icon]').forEach(el => { 
 function ring(v, color, label){ const r = 17, c = 2 * Math.PI * r, f = clamp(v, 0, 100) / 100; return `<svg viewBox="0 0 46 46" aria-label="${label} ${Math.round(v)}"><circle cx="23" cy="23" r="${r}" fill="none" stroke="#dde3f2" stroke-width="5"/><circle cx="23" cy="23" r="${r}" fill="none" stroke="${color}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(c * f).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 23 23)"/><text x="23" y="27.5" text-anchor="middle" font-size="12.5" font-weight="800" fill="#14181B">${Math.round(v)}</text></svg>`; }
 // 하단 탭 → 활동 분류. 가운데 '홈'은 스케줄 시트를 연다
 // 스케줄 분류 이름(화면에 보이는 말). 안쪽 키(공부·일·돈…)는 그대로 두고 보이는 이름만 바꾼다.
-const CAT_LABEL = {'공부':'배움', '일':'커리어', '돈':'머니', '관계':'인연', '나':'셀프케어', '휴식':'휴식', '캠퍼스':'캠퍼스', '홈':'홈'};
+const CAT_LABEL = {'연습':'연습', '활동':'활동', '공부':'배움', '일':'커리어', '돈':'머니', '관계':'인연', '나':'셀프케어', '휴식':'휴식', '캠퍼스':'캠퍼스', '홈':'홈'};
 const catLabel = c => CAT_LABEL[c] || c;
-const TABS = [{cat:'공부', ic:'edu'}, {cat:'일', ic:'work'}, {cat:'돈', ic:'money'}, {cat:'홈', ic:'home', home:true}, {cat:'휴식', ic:'rest'}, {cat:'나', ic:'self'}, {cat:'관계', ic:'heart'}];
+const TABS = [{cat:'연습', ic:'edu'}, {cat:'활동', ic:'work'}, {cat:'돈', ic:'money'}, {cat:'홈', ic:'home', home:true}, {cat:'휴식', ic:'rest'}, {cat:'나', ic:'self'}, {cat:'관계', ic:'heart'}];
 let pickCat = null, activeSlot = 0;
 function firstEmpty(){ const i = S.plan.findIndex(x => !x); return i < 0 ? 0 : i; }
 function weakest(){ const P = {work:S.work, bond:S.bond, self:S.self}; return Object.keys(P).sort((a, b) => P[a] - P[b])[0]; }
 function adviceText(){
-  if(S.m === 0 && !S.seen.advice0) return {t:'스무 살의 3월이야. 한 달에 활동 세 칸. 일·관계·나, 세 기둥을 모두 50 위로 올려야 \'자유 시계\'가 열려. 아래 탭에서 활동을 골라 봐.'};
+  if(S.m === 0 && !S.seen.advice0) return {t:'오늘부터 연습생이야. 한 달에 활동 세 칸, 매달 말엔 월말평가가 있어. 실력·관계·마음, 세 기둥을 모두 50 위로 올려야 \'자유 시계\'가 열려. 아래 탭에서 활동을 골라 봐.'};
   if(S.hp < 30) return {t:'몸이 먼저야. 체력이 바닥이면 번아웃이 와. 이번 달엔 휴식 한 칸을 꼭 넣어.'};
   if(S.stress > 75) return {t:'스트레스가 너무 높아. 쉬거나 취미로 풀지 않으면 한 달을 통째로 날릴 수 있어.'};
-  if(S.cash < 60) return {t:'통장이 비어 간다. 알바나 일로 자금을 먼저 채워 둬.'};
-  const w = weakest(), msg = {work:'일 기둥이 가장 약해. ' + (S.hired ? '회사 업무와 프로젝트에 칸을 더 써 보자.' : S.m < 48 ? '공부와 인턴으로 진로를 준비하자.' : '구직 활동을 서두르자.'), bond:'관계 기둥이 약해. 친구, 가족, 마음에 둔 사람과 시간을 보내 봐. 전화도 좋아.', self:'나 기둥이 약해. 운동, 일기, 취미로 나를 돌보는 시간이 필요해.'};
+  if(S.cash < 60) return {t:isIdol(S) ? '통장이 비어 간다. 데뷔 초엔 정산이 없어. 광고나 화보로 버텨 보자.' : '통장이 비어 간다. 빚이 300만 원을 넘으면 끝이야. 아르바이트로 조금씩 채워 둬.'};
+  const w = weakest(), msg = {work:'실력 기둥이 가장 약해. ' + (isIdol(S) ? '음악방송과 예능, 연습에 칸을 더 써 보자.' : isOut(S) ? '오디션 재도전과 연습을 멈추지 마.' : '보컬·댄스 연습으로 월말평가를 준비하자.'), bond:'관계 기둥이 약해. 친구, 가족, 마음에 둔 사람과 시간을 보내 봐. 전화도 좋아.', self:'마음 기둥이 약해. 일기, 취미, 체력 훈련으로 나를 돌보는 시간이 필요해.'};
   return {t:msg[w]};
 }
 function showDialog(){ const a = adviceText(); $('dlg-head').textContent = '일흔의 나'; $('dlg-body').textContent = a.t; $('dialog').hidden = false; if(S.m === 0) S.seen.advice0 = true; }
@@ -161,13 +161,13 @@ function render(){
   $('tb-date').textContent = `${yearOf(S)}년 ${monthOf(S)}월`;
   $('hud-age').innerHTML = `${ageOf(S)}세${S.round > 1 ? ` · ${S.round}회차` : ''}<br>${left}개월 남음`;
   $('hud-prog').style.width = (100 * S.m / TOTAL_MONTHS) + '%';
-  const jobLine = S.hired && CAREERS[S.track] ? (inLawSchool(S) ? `${UNIVERSITY} 로스쿨` : `${coName(S)} · ${rankName(S)}`) : (S.track ? `${UNIVERSITY} ${majorOf(S).name} · 구직 중` : `${UNIVERSITY} ${majorOf(S).name}`);
+  const jobLine = idolStatusLine(S);
   $('tb-sub').textContent = `${S.name} · ${jobLine}`;
   const chip = (i, label, v, warn) => `<div class="res"><i>${i}</i><span>${label}</span><b class="${warn ? 'warn' : ''}">${v}</b></div>`;
   $('hud-res').innerHTML = chip('₩', '자금', fmtMoney(S.cash), S.cash < 60) + chip('◈', '선명도', Math.round(S.clarity), S.clarity < 25) + (S.borrowed ? chip('빌', '빌린 인생', S.borrowed, true) : '') + chip('☎', '통화', callsLeft(S) + '회', false) + chip('⏳', `${chapterOf(S)}장`, `조각 ${SS(S).pieces}/10`, false);
   $('g-hp').innerHTML = ring(S.hp, '#4cc25a', '체력'); $('g-st').innerHTML = ring(S.stress, '#ff6a4d', '스트레스');
   $('call-badge').textContent = callsLeft(S) || '';
-  const campusOn = S.m < CAMPUS_END, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도시 산책
+  const campusOn = false, fcp = $('fab-cp'); // 재학 중에는 캠퍼스 산책, 졸업하면 도시 산책
   if(fcp){ fcp.dataset.sheet = campusOn ? 'campus' : 'city'; $('fab-cp-lb').textContent = campusOn ? `캠퍼스 ${cpLeft(S)}/${CAMPUS_VISITS}` : `도시 ${cpLeft(S)}/${CAMPUS_VISITS}`; const ic = $('fab-cp-ic'); ic.innerHTML = ICONS[campusOn ? 'edu' : 'home'] || ''; ic.dataset.painted = '1'; }
   const full = !S.plan.some(x => !x);
   $('slots3').innerHTML = [0, 1, 2].map(i => {
@@ -286,7 +286,7 @@ function openPicker(i, cat){
       const pay = id === 'job' && S.hired ? jobOf(S).pay : a.pay;
       const em = [pay ? `+${Math.round(pay * earnedMult(S))}만` : '', a.slots > 1 ? '2칸' : ''].filter(Boolean).join(' · ');
       return `<button class="act ${S.plan[activeSlot] === id ? 'on' : ''}" data-id="${id}" ${why ? 'disabled' : ''}><span class="top"><span class="ic">${a.icon}</span><b>${actName(S, id)}</b></span>${em ? `<span class="em">${em}</span>` : ''}${why ? `<span class="why">${why}</span>` : `<span class="d">${id === 'date' && S.married ? '불 꺼진 침실에서 배우자와 보내는 밤. 키스한다 · 볼을 만진다 · 어루만진다, 원하는 만큼만.' : id === 'club' && grad(S) ? '퇴근 후 와인 모임·러닝 크루·독서 모임. 회사 밖에서 새로운 사람을 만난다.' : a.desc}</span><span class="tg">${actTags(S, id).map(t => `<i class="${t.c}">${t.t}</i>`).join('')}</span>`}</button>`;
-    }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${livingCost(S)}만${allowance(S) ? ` (지원 +${allowance(S)}만)` : ''}</div>`);
+    }).join('') + `</div><div class="foot">이번 달 활동비 ${spend}만 · 생활비 ${idolCost(S)}만${momAllowance(S) ? ` (엄마 용돈 +${momAllowance(S)}만)` : ''}${idolIncome(S) ? ` · 정산 +${idolIncome(S)}만` : ''}</div>`);
     $('x').onclick = () => { closeSheet(); render(); };
     $('b-auto').onclick = () => { S.plan = autoPlan(); assignDates(); save(); closeSheet(); render(); };
     $('b-prev').onclick = () => { if(S.lastPlan){ S.plan = S.lastPlan.slice(); save(); closeSheet(); render(); } };
@@ -338,10 +338,13 @@ function showStats(){
   $('x').onclick = closeSheet;
 }
 function showCareer(){
-  const m = majorOf(S);
-  const list = CAREER_IDS.map(id => { const c = CAREERS[id], p = fitP(S, id), cur = S.track === id;
-    return `<div class="kv"><span>${c.icon} ${c.name}${cur ? ' ✔' : ''}${m.fav.includes(id) ? ' ★' : ''}<br><small class="sub">${c.company}</small></span><b>${cur && S.hired ? rankName(S) : fitLabel(p)}</b></div>`; }).join('');
-  openSheet(sheetHead('진로', `${UNIVERSITY} ${m.name}${S.interest && CAREERS[S.interest] ? ' · 관심 ' + CAREERS[S.interest].name : ''}`) + `<div class="sub">★ 학과와 어울리는 직업 · 능력치가 높을수록 합격률이 올라가요.</div>` + list + (S.hired && CAREERS[S.track] ? `<div class="foot">현재 ${inLawSchool(S) ? '로스쿨 재학' : CAREERS[S.track].company + ' ' + rankName(S)} · 월급 ${payOf(S)}만${!inLawSchool(S) && (S.rank || 0) < 3 ? ` · 다음 승진(${CAREERS[S.track].ranks[(S.rank || 0) + 1]}) 일 기둥 ${PROMO_NEED[S.rank || 0]} 이상 · 직전 승진·입사 후 ${PROMO_GAP}개월` : ''}${S.gifts ? ` · 선물 ${S.gifts}개` : ''}</div>` : '<div class="foot">3~4학년에 진로를 정하고 구직 활동을 하면 입사할 수 있어요.</div>'));
+  const I = IDOL(S), ev = I.evals.slice(-8);
+  const next = isTrainee(S) ? (S.m < DEBUT_PICK_M ? `데뷔조 발표까지 ${DEBUT_PICK_M - S.m}개월 (최근 6회 평균 5.5위 이내면 데뷔조)` : I.debutTeam ? `데뷔까지 ${Math.max(0, DEBUT_M - S.m)}개월` : I.survival ? `서바이벌 「스타 메이커」 ${Math.max(0, SURVIVAL_M[0] - S.m)}개월 뒤` : '') : isIdol(S) ? `다음 컴백까지 ${6 - (sinceDebut(S) % 6 || 6) + (sinceDebut(S) % 6 === 0 ? 6 : 0)}개월 · 12월 연말 시상식` : '오디션 재도전(연습 탭)으로 다시 데뷔를 노릴 수 있어요';
+  const bars = ev.length ? `<div class="evbars">${ev.map(e => `<span title="${e.m}"><i style="height:${Math.round((13 - e.rank) / 12 * 100)}%"></i><b>${e.rank}</b></span>`).join('')}</div>` : '<div class="sub">아직 월말평가 기록이 없어요.</div>';
+  const kv = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
+  openSheet(sheetHead('데뷔 현황', idolStatusLine(S)) + `<div class="sub">${next}</div>` + (isTrainee(S) || I.evals.length ? '<h3>월말평가 순위 (최근 8회 · 낮을수록 좋음)</h3>' + bars + (I.warn ? `<div class="sub" style="color:#c93a66">하위권 연속 ${I.warn}회 — 4회면 방출</div>` : '') : '') +
+    '<h3>기록</h3>' + kv('그룹', I.group || (I.debutTeam ? GROUP_NAME + ' (데뷔 예정)' : '—')) + kv('팬', fmtFans(I.fans)) + kv('컴백', I.comebacks + '회') + kv('음악방송 1위', I.wins + '회') + kv('수상', I.awards.length ? I.awards.join(', ') : '—') + kv('자작곡', I.songs + '곡') + kv('스캔들 위험', Math.round(I.scandal)) +
+    `<div class="foot">월 생활비 ${idolCost(S)}만${momAllowance(S) ? ` · 엄마 용돈 +${momAllowance(S)}만` : ''}${isIdol(S) ? (sinceDebut(S) < 18 ? ' · 데뷔 후 1년 반은 정산 0' : ` · 정산 +${idolIncome(S)}만`) : ''}</div>`);
   $('x').onclick = closeSheet;
 }
 function showLove(){
@@ -475,15 +478,17 @@ const ACT_ART = new Set(['study','cert','tutor','cafe','intern','project','jobhu
 function jobArtFor(c, intern){ const k = intern ? '' : (S.m >= 96 ? '_30' : S.m >= 72 ? '_27' : ''); return `art/job_${c}${k}.webp`; }
 // 계절(3~5 봄, 6~8 여름, 9~11 가을, 12~2 겨울)과 2.5등신 캐릭터 스프라이트(두 장이 번갈아 움직인다)
 const seasonOf = S => { const m = monthOf(S); return m >= 3 && m <= 5 ? 'spring' : m >= 6 && m <= 8 ? 'summer' : m >= 9 && m <= 11 ? 'autumn' : 'winter'; };
-const SPRITE = {study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
+const SPRITE = {vocal:'hobby', dance:'exercise', stage:'style', write:'journal', reaudition:'job', musicshow:'job', variety:'job', fansign:'friends', cf:'job', live:'hobby', diet:'exercise', study:'study', cert:'study', tutor:'study', cafe:'cafe', intern:'job', project:'job', jobhunt:'job', job:'job', future:'journal', journal:'journal', exercise:'exercise', hobby:'hobby', style:'style', family:'family', friends:'friends', club:'friends', date:'date', travel:'travel', rest:'rest'};
 for(const k in CAMPUS_PLACES) SPRITE['cp_' + k] = CAMPUS_PLACES[k].sprite; // 교정 장소별 캐릭터 동작
 // 졸업 뒤에는 학교 대신 도시 배경에서 움직인다
 const CITY_ACT_BG = {exercise:'ct_river', friends:'ct_mall', club:'ct_night', date:'ct_cinema', travel:'ct_river', cafe:'ct_books', tutor:'ct_office'};
+// 아이돌 활동 팝업 배경
+const IDOL_ACT_BG = {vocal:'bg_studio', dance:'bg_practice', stage:'bg_practice', write:'bg_studio', reaudition:'bg_eval', musicshow:'bg_stage', variety:'bg_stage', fansign:'bg_stage', cf:'bg_studio', live:'bg_dorm', diet:'bg_dorm'};
 const OUTDOOR = new Set(['exercise', 'friends', 'club', 'date', 'travel', 'cafe', 'tutor']);
 const seasonBg = (S, place) => `art/bg_${place}_${seasonOf(S)}.webp`;
 // 신분별 복장: 직장인(_w) · 인턴(_i) · 대학생(기본). 운동은 운동복, 잠은 잠옷이라 신분과 무관
 const OUTFIT_SETS = new Set(['study', 'job', 'journal', 'hobby', 'style', 'family', 'friends', 'travel']);
-const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : S.hired && !inLawSchool(S) ? '_w' : id === 'intern' ? '_i' : '';
+const outfitSuffix = (S, id) => !OUTFIT_SETS.has(SPRITE[id]) ? '' : isIdol(S) ? '_w' : '';
 // 이미지가 없으면 data-fb 의 다음 후보로 바꾼다(a|b|c)
 function cfb(img){ const l = (img.dataset.fb || '').split('|').filter(Boolean); const nx = l.shift(); img.dataset.fb = l.join('|'); if(nx) img.src = nx; else img.onerror = null; }
 // 스케줄 연출 속도: normal(기본) / fast(짧게, 결과도 자동 진행) / skip(팝업 없이 정산에서 한꺼번에)
@@ -503,9 +508,9 @@ function showAct(slotName, id, out, first = 0, opts = {}){
       inner = `<div class="fart dt" style="background-image:url(art/dt_${out.lover}_${n}.webp)"></div>`;
     } else if(sp){
       // 직업 일: 큰 일러스트 대신 직업별 2.5등신 캐릭터(두 장이 번갈아 움직인다). 직업 세트가 없으면 직장인 → 기본 순서로 대체
-      const jobSet = sp === 'job' ? (id === 'intern' ? 'job_intern' : S.hired && CAREERS[S.track] ? `job_${S.track}` : 'job_i') : null;
+      const jobSet = sp === 'job' ? (isIdol(S) ? 'job_actor' : 'job_i') : null;
       const spf = sp === 'date' && out.lover ? `date_${out.lover}` : jobSet || sp + outfitSuffix(S, id);
-      const sbg = sp === 'job' ? 'art/bg_office.webp' : grad(S) && CITY_ACT_BG[id] ? `art/${CITY_ACT_BG[id]}.webp` : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
+      const sbg = IDOL_ACT_BG[id] ? `art/${IDOL_ACT_BG[id]}.webp), url(art/bg_office.webp` : sp === 'job' ? 'art/bg_office.webp' : grad(S) && CITY_ACT_BG[id] ? `art/${CITY_ACT_BG[id]}.webp` : seasonBg(S, OUTDOOR.has(id) ? 'campus' : 'room'), bgA = ACTS[id].cp ? `art/cp_${ACTS[id].cp}.webp), url(${sbg}` : sbg;
       const fb = jobSet ? ['job_w', 'job'] : [];
       cls += ' ill'; frameBg = `style="background-image:url(${bgA})"`; // 장소 일러스트를 깔고 그 위에서 캐릭터가 움직인다
       const fbA = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_a.webp`).join('|'), fbB = (fb.length ? fb : [sp]).map(x => `art/chibi/${x}_b.webp`).join('|');
@@ -568,7 +573,7 @@ async function runMonth(){
   save(); render();
 }
 async function startFlow(){ // 새 게임: 프롤로그 먼저
-  seedMonth(S); await playEvent(S.round > 1 ? ROUND2 : PROLOGUE); save(); render();
+  seedMonth(S); await playEvent(S.round > 1 ? ROUND2_NOW : PROLOGUE_NOW); save(); render();
 }
 
 // ── 엔딩 ──────────────────────────────────────────────────────

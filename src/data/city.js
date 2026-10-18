@@ -1,17 +1,17 @@
 // 도시 산책: 졸업 뒤에는 학교 대신 시내 8곳을 돌아다닌다(스케줄 칸을 쓰지 않고 한 달 3번). 장소에서 쇼핑도 한다. ENGINE 구간(DOM 금지)
 // 장면 글은 city_friends.js (CT_FRIEND[장소]), city_lovers_a/b/c.js (CT_LOVER_A/B/C[인물][장소] = {pre, love})
 const CITY_PLACES = {
-  office: {name:'회사 근처', icon:'🏢', cost:0, hp:-2, stress:-1, eff:{work:1.4, bond:0.6},            desc:'점심 골목과 퇴근길 횡단보도. 동료나 아는 얼굴을 마주치기 쉬워요.'},
-  cinema: {name:'영화관',   icon:'🎬', cost:0, hp:0,  stress:-5, eff:{sense:1.2, self:0.8},            desc:'팝콘 냄새와 어두운 객석. 혼자도, 둘이도 좋은 곳.'},
-  museum: {name:'미술관',   icon:'🖼️', cost:0, hp:1,  stress:-6, eff:{sense:1.4, know:0.8},            desc:'조용한 전시실. 마음이 느려지는 곳이에요.'},
-  mall:   {name:'백화점',   icon:'🛍️', cost:0, hp:-1, stress:-4, eff:{charm:1.2, sense:0.6},           desc:'쇼윈도와 에스컬레이터. 구경만 해도 기분이 풀려요.'},
-  beauty: {name:'뷰티 스토어', icon:'💄', cost:0, hp:0,  stress:-4, eff:{charm:1.5, sense:0.5},           desc:'샘플을 발라 보고 수다를 떠는 곳. 요즘 유행이 다 모여 있어요.'},
-  books:  {name:'서점',     icon:'📖', cost:0, hp:1,  stress:-4, eff:{know:1.6, ins:0.8},              desc:'책 냄새가 나는 서가. 의외의 사람을 만나기도 해요.'},
-  river:  {name:'한강공원', icon:'🌉', cost:0, hp:3,  stress:-8, eff:{self:1.4, dare:0.5},             desc:'강바람과 돗자리. 걷기만 해도 숨이 트여요.'},
-  night:  {name:'야식 거리', icon:'🌃', cost:0, hp:-1, stress:-6, eff:{bond:1.4, neg:0.6},              desc:'불 켜진 포장마차와 골목. 밤에 마음이 풀리는 사람들이 모여요.'},
+  office: {name:'소속사 근처', icon:'🏢', cost:0, hp:-2, stress:-1, eff:{work:1.4, bond:0.6},            desc:'연습실 건물 앞 골목과 편의점 파라솔. 동기나 소속사 사람을 마주치기 쉬워요.'},
+  cinema: {name:'영화관',   icon:'🎬', cost:0, hp:0,  stress:-5, eff:{sense:1.2, self:0.8},            desc:'쉬는 날의 조조 영화와 심야 상영. 어두운 객석에선 아무도 나를 보지 않아요.'},
+  museum: {name:'미술관',   icon:'🖼️', cost:0, hp:1,  stress:-6, eff:{sense:1.4, know:0.8},            desc:'조용한 전시실. 콘셉트 공부도 되고, 숨 가쁜 마음이 느려지는 곳이에요.'},
+  mall:   {name:'백화점',   icon:'🛍️', cost:0, hp:-1, stress:-4, eff:{charm:1.2, sense:0.6},           desc:'쇼윈도와 에스컬레이터. 연습복 말고 예쁜 옷을 구경만 해도 기분이 풀려요.'},
+  beauty: {name:'뷰티 스토어', icon:'💄', cost:0, hp:0,  stress:-4, eff:{charm:1.5, sense:0.5},           desc:'샘플을 발라 보고 수다를 떠는 곳. 무대 메이크업 공부도 여기서 해요.'},
+  books:  {name:'서점',     icon:'📖', cost:0, hp:1,  stress:-4, eff:{know:1.6, ins:0.8},              desc:'책 냄새가 나는 서가. 가사 노트와 대본을 고르다 의외의 사람을 만나기도 해요.'},
+  river:  {name:'한강공원', icon:'🌉', cost:0, hp:3,  stress:-8, eff:{self:1.4, dare:0.5},             desc:'강바람과 돗자리. 연습에 지친 몸이 걷기만 해도 숨이 트여요.'},
+  night:  {name:'야식 거리', icon:'🌃', cost:0, hp:-1, stress:-6, eff:{bond:1.4, neg:0.6},              desc:'연습 끝난 새벽에도 불이 켜진 분식집과 포장마차. 늦게까지 버틴 사람들이 모여요.'},
 };
 const CITY_KEYS = Object.keys(CITY_PLACES);
-const cityOn = S => S.m >= CAMPUS_END;                      // 졸업하면 캠퍼스 대신 도시
+const cityOn = S => true;                                     // 아이돌 판: 처음부터 도시 산책
 const CT_LOVER_ALL = () => Object.assign({}, typeof CT_LOVER_A !== 'undefined' ? CT_LOVER_A : {}, typeof CT_LOVER_B !== 'undefined' ? CT_LOVER_B : {}, typeof CT_LOVER_C !== 'undefined' ? CT_LOVER_C : {});
 for(const key of CITY_KEYS){ const p = CITY_PLACES[key], id = 'ct_' + key; ACTS[id] = {id, ct:key, slots:1, cat:'캠퍼스', icon:p.icon, name:p.name, desc:p.desc, cost:0, eff:{}}; }
 
@@ -35,7 +35,7 @@ function cityVisit(S, key){
   return out;
 }
 function cityQuiet(S, place, visitCh){
-  const p = CITY_PLACES[place], line = pick(['오늘은 아는 얼굴이 보이지 않았다. 그래도 도시의 소음이 오히려 편했다.', '한참을 걸었지만 마주친 사람은 없었다. 혼자 걷는 퇴근길도 나쁘지 않다.', '아무도 마주치지 않았다. 대신 쇼윈도에 비친 내 모습이 생각보다 괜찮아 보였다.']);
+  const p = CITY_PLACES[place], line = pick(['오늘은 아는 얼굴이 보이지 않았다. 그래도 도시의 소음이 오히려 편했다.', '한참을 걸었지만 마주친 사람은 없었다. 연습 끝나고 혼자 걷는 밤길도 나쁘지 않다.', '아무도 마주치지 않았다. 대신 쇼윈도에 비친 내 모습이 생각보다 괜찮아 보였다.']);
   return {id:`ct_q_${place}_${S.m}_${Math.floor(R() * 1e4)}`, speaker:'', title:p.name, place:'city', img:`art/ct_${place}.webp`, text:S => `${p.desc}\n\n${line}`,
     choices:[{label:'다음에 또 와야지', sub:'', run(S){ return {text:'한 바퀴 돌고 나니 머리가 한결 가벼워졌다.', chips:(visitCh || []).slice()}; }}]};
 }
@@ -73,38 +73,38 @@ function cityEncounter(S, place, visitCh){
 // ───── 쇼핑: 장소별로 사고 싶은 것이 다르다. price 는 만원. who:true 면 함께 갈 사람(썸·연인)이 있을 때 그 사람 호감도 오른다 ─────
 const CITY_SHOP = {
   office: [
-    {id:'lunch',   icon:'🍱', name:'동료와 점심 한 끼',  price:2,  desc:'관계 +1.2, 스트레스 -2.',                         fx:{bond:1.2, stress:-2}},
-    {id:'coffeeset', icon:'☕', name:'팀 커피 돌리기',   price:3,  desc:'관계 +1.5, 협상 +0.6.',                           fx:{bond:1.5, neg:0.6}},
+    {id:'lunch',   icon:'🍱', name:'동기들과 분식 한 그릇', price:2,  desc:'관계 +1.2, 스트레스 -2.',                         fx:{bond:1.2, stress:-2}},
+    {id:'coffeeset', icon:'☕', name:'연습실에 음료 돌리기', price:3,  desc:'관계 +1.5, 팬소통 +0.6.',                           fx:{bond:1.5, neg:0.6}},
   ],
   cinema: [
-    {id:'ticket1', icon:'🎟️', name:'영화표 한 장',      price:2,  desc:'혼자 보는 영화. 감각 +1.2, 스트레스 -8.',          fx:{sense:1.2, stress:-8}},
+    {id:'ticket1', icon:'🎟️', name:'영화표 한 장',      price:2,  desc:'혼자 보는 영화. 표현력 +1.2, 스트레스 -8.',          fx:{sense:1.2, stress:-8}},
     {id:'ticket2', icon:'🎫', name:'영화표 두 장',      price:4,  desc:'함께 볼 사람과. 호감 +3, 스트레스 -6.',            fx:{sense:0.8, stress:-6}, who:3},
     {id:'popcorn', icon:'🍿', name:'팝콘 세트',         price:1,  desc:'스트레스 -2.',                                    fx:{stress:-2}},
   ],
   museum: [
-    {id:'exh1',    icon:'🖼️', name:'전시 관람권',       price:2,  desc:'감각 +1.6, 학식 +0.6.',                           fx:{sense:1.6, know:0.6}},
-    {id:'exh2',    icon:'🎨', name:'전시 관람권 두 장',  price:4,  desc:'함께 감상. 호감 +3, 감각 +1.',                     fx:{sense:1.0}, who:3},
-    {id:'catalog', icon:'📔', name:'전시 도록',         price:5,  desc:'학식 +1.5, 감각 +1.',                             fx:{know:1.5, sense:1}},
+    {id:'exh1',    icon:'🖼️', name:'전시 관람권',       price:2,  desc:'표현력 +1.6, 보컬 +0.6.',                           fx:{sense:1.6, know:0.6}},
+    {id:'exh2',    icon:'🎨', name:'전시 관람권 두 장',  price:4,  desc:'함께 감상. 호감 +3, 표현력 +1.',                     fx:{sense:1.0}, who:3},
+    {id:'catalog', icon:'📔', name:'전시 도록',         price:5,  desc:'보컬 +1.5, 표현력 +1.',                             fx:{know:1.5, sense:1}},
   ],
   mall: [
-    {id:'outfit',  icon:'👗', name:'새 옷 한 벌',       price:15, desc:'매력 +1.6, 나 +1.',                               fx:{charm:1.6, self:1}},
-    {id:'bag',     icon:'👜', name:'가죽 가방',         price:40, desc:'매력 +2.4, 나 +2.',                               fx:{charm:2.4, self:2}},
+    {id:'outfit',  icon:'👗', name:'새 옷 한 벌',       price:15, desc:'비주얼 +1.6, 마음 +1.',                               fx:{charm:1.6, self:1}},
+    {id:'bag',     icon:'👜', name:'가죽 가방',         price:40, desc:'비주얼 +2.4, 마음 +2.',                               fx:{charm:2.4, self:2}},
     {id:'giftbox', icon:'🎁', name:'선물 세트',         price:8,  desc:'다음 데이트에서 호감 +5. 쓰면 사라져요.',          item:'gift'},
   ],
   beauty: [
-    {id:'skincare',icon:'🧴', name:'스킨케어 세트',     price:6,  desc:'매력 +1.2, 스트레스 -2.',                         fx:{charm:1.2, stress:-2}},
-    {id:'lip',     icon:'💄', name:'립 틴트',           price:2,  desc:'매력 +0.6, 나 +0.4.',                             fx:{charm:0.6, self:0.4}},
-    {id:'perfume', icon:'🌸', name:'향수',              price:25, desc:'매달 매력이 오르고 데이트 호감이 +1 더 오른다.',     item:'perfume'},
+    {id:'skincare',icon:'🧴', name:'스킨케어 세트',     price:6,  desc:'비주얼 +1.2, 스트레스 -2.',                         fx:{charm:1.2, stress:-2}},
+    {id:'lip',     icon:'💄', name:'립 틴트',           price:2,  desc:'비주얼 +0.6, 마음 +0.4.',                             fx:{charm:0.6, self:0.4}},
+    {id:'perfume', icon:'🌸', name:'향수',              price:25, desc:'매달 비주얼이 오르고 데이트 호감이 +1 더 오른다.',     item:'perfume'},
   ],
   books: [
-    {id:'novel',   icon:'📕', name:'소설책 한 권',      price:1,  desc:'감각 +0.6, 스트레스 -3.',                         fx:{sense:0.6, stress:-3}},
-    {id:'bookset', icon:'📚', name:'전공 서적 세트',    price:15, desc:'학식 +2.5, 통찰 +1 (최대 3회).',                   item:'books'},
-    {id:'notebook',icon:'📓', name:'다이어리와 펜',     price:2,  desc:'나 +1, 실무 +0.6.',                               fx:{self:1, work:0.6}},
+    {id:'novel',   icon:'📕', name:'소설책 한 권',      price:1,  desc:'표현력 +0.6, 스트레스 -3.',                         fx:{sense:0.6, stress:-3}},
+    {id:'bookset', icon:'📚', name:'음악 이론서 세트',  price:15, desc:'보컬 +2.5, 멘탈 +1 (최대 3회).',                   item:'books'},
+    {id:'notebook',icon:'📓', name:'다이어리와 펜',     price:2,  desc:'마음 +1, 실력 +0.6.',                               fx:{self:1, work:0.6}},
   ],
   river: [
     {id:'ramen',   icon:'🍜', name:'한강 라면',         price:1,  desc:'체력 +3, 스트레스 -4.',                           fx:{stress:-4}, hp:3},
     {id:'bike',    icon:'🚲', name:'자전거 대여',       price:1,  desc:'함께 타요. 호감 +3, 체력 +2.',                     fx:{dare:0.5}, hp:2, who:3},
-    {id:'mat',     icon:'🧺', name:'돗자리와 간식',     price:3,  desc:'스트레스 -6, 나 +0.6.',                           fx:{stress:-6, self:0.6}},
+    {id:'mat',     icon:'🧺', name:'돗자리와 간식',     price:3,  desc:'스트레스 -6, 마음 +0.6.',                           fx:{stress:-6, self:0.6}},
   ],
   night: [
     {id:'late',    icon:'🍢', name:'야식 한 상',        price:3,  desc:'체력 +3, 스트레스 -6.',                           fx:{stress:-6}, hp:3},
@@ -121,7 +121,6 @@ function cityCompanion(S){
 // 구입: 실패하면 안내 문구, 성공하면 null (결과 문장은 S._shopNote)
 function cityBuy(S, place, id){
   const it = (CITY_SHOP[place] || []).find(x => x.id === id); if(!it) return '없는 물건이에요';
-  if(!S.hired) return '취업한 뒤에 쇼핑할 수 있어요';
   if(S.cash < it.price) return '자금이 모자라요';
   if(it.item){ const r = buyItem(S, it.item); if(r) return r; S._shopNote = `${ITEMS[it.item].name}을(를) 샀다.`; return null; }
   let who = null; if(it.who){ who = cityCompanion(S); if(!who) return '함께할 사람이 아직 없어요'; }

@@ -457,3 +457,5 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
 
 .dexrow{grid-template-columns:44px 1fr}.dexrow .g.th{width:44px;height:64px;border-radius:10px;background-size:cover;background-position:center 25%;font-size:0;box-shadow:0 2px 8px rgba(20,30,70,.25)}
 .dexrow{grid-template-columns:44px 1fr auto}.dexrow:not(:has(.th)){grid-template-columns:34px 1fr auto}
+
+.evbars{display:flex;gap:6px;align-items:flex-end;height:90px;margin:6px 0 4px}.evbars span{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}.evbars i{display:block;width:100%;background:linear-gradient(180deg,#ff9cc0,#8f5cff);border-radius:6px 6px 2px 2px}.evbars b{font-size:11px;color:#2b3560;margin-top:2px}

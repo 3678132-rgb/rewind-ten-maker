@@ -1,9 +1,9 @@
 // 자동 플레이 테스트: node sim.mjs  → errors {} 이어야 한다
 import fs from 'fs'; import vm from 'vm';
-const files = ['src/engine.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy2_a.js', 'src/data/intimacy2_b.js', 'src/data/intimacy2_c.js', 'src/data/intimacy.js', 'src/data/regret.js', 'src/data/lstory_core.js', 'src/data/lstory_a.js', 'src/data/lstory_b.js', 'src/data/lstory_c.js', 'src/data/lstory_d.js', 'src/data/campus_scenes.js', 'src/data/campus.js', 'src/data/city_friends.js', 'src/data/city_lovers_a.js', 'src/data/city_lovers_b.js', 'src/data/city_lovers_c.js', 'src/data/city.js', 'src/data/city_npc.js', 'src/data/career2.js', 'src/data/jobs2.js', 'src/data/events.js', 'src/data/events2.js', 'src/data/story_core.js', 'src/data/special_a.js', 'src/data/special_b.js', 'src/data/special_c.js', 'src/data/story_a.js', 'src/data/story_rival_w.js', 'src/data/story_b.js', 'src/data/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/data/endings.js'];
+const files = ['src/engine.js', 'src/idol/idol_core.js', 'src/data/lovers.js', 'src/data/romance.js', 'src/data/romance2.js', 'src/data/romance3.js', 'src/data/intimacy_a.js', 'src/data/intimacy_b.js', 'src/data/intimacy_c.js', 'src/data/intimacy2_a.js', 'src/data/intimacy2_b.js', 'src/data/intimacy2_c.js', 'src/data/intimacy.js', 'src/data/regret.js', 'src/data/lstory_core.js', 'src/data/lstory_a.js', 'src/data/lstory_b.js', 'src/data/lstory_c.js', 'src/data/lstory_d.js', 'src/data/campus_scenes.js', 'src/data/campus.js', 'src/data/city_friends.js', 'src/data/city_lovers_a.js', 'src/data/city_lovers_b.js', 'src/data/city_lovers_c.js', 'src/data/city.js', 'src/data/city_npc.js', 'src/data/career2.js', 'src/data/jobs2.js', 'src/data/events.js', 'src/idol/events_a.js', 'src/idol/events_b.js', 'src/data/story_core.js', 'src/data/special_a.js', 'src/data/special_b.js', 'src/data/special_c.js', 'src/idol/story_a.js', 'src/idol/story_b.js', 'src/idol/story_c.js', 'src/data/story.js', 'src/data/calls.js', 'src/idol/endings.js', 'src/idol/idol_wire.js'];
 const src = files.filter(f => fs.existsSync(f)).map(f => fs.readFileSync(f, 'utf8')).join('\n');
 const ctx = {console, Math}; vm.createContext(ctx);
-vm.runInContext(src + '\n;globalThis.E={newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,MAJORS,CAREERS,inLawSchool,LOVERS,contactsOf,callEvent,tryCall,callsLeft,EVENTS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);
+vm.runInContext(src + '\n;globalThis.E={isIdol,isOut,isTrainee,IDOL,newGame,doAction,settle,fixedEvents,pickEvent,computeEnding,ACTS,ENDINGS,ORIGINS,REGRETS,MAJORS,CAREERS,inLawSchool,LOVERS,contactsOf,callEvent,tryCall,callsLeft,EVENTS,ENDING_IDS,finalPillars,dateTarget,TOTAL_MONTHS,actName};', ctx);
 const E = ctx.E;
 const games = +process.argv[2] || 1500, strat = process.argv[3] || 'mix';
 const errs = {}, ends = {}, seenEv = {}; let bad = 0;
@@ -19,13 +19,13 @@ function chooseAct(S, i, mode){
   if(mode === 'random'){ const ids = Object.keys(E.ACTS).filter(ok); return rnd(ids); }
   // smart: 가장 낮은 축을 올리되, 체력·돈을 챙긴다
   if(S.hp < 30 || S.stress > 75) return 'rest';
-  if(S.cash < 80 && ok('job') && S.hired && !E.inLawSchool(S)) return 'job';
-  if(S.cash < 80) return ok('tutor') ? 'tutor' : 'cafe';
-  if(!S.hired && S.m >= 36 && ok('jobhunt') && Math.random() < 0.6) return 'jobhunt';
+  if(S.cash < 80 && ok('cf')) return 'cf';
+  if(S.cash < 80) return ok('cafe') ? 'cafe' : 'rest';
+  
   const P = {work:S.work, bond:S.bond, self:S.self}; const low = Object.keys(P).sort((a, b) => P[a] - P[b])[0];
   const pools = {
-    work: S.hired ? ['job', 'job', 'cert', 'project'] : S.m < 48 ? ['study', 'intern', 'project', 'cert'] : ['jobhunt', 'project'],
-    bond: ['friends', 'family', 'club', 'date', 'date'],
+    work: E.isIdol(S) ? ['musicshow', 'vocal', 'dance', 'variety', 'fansign'] : E.isOut(S) ? ['reaudition', 'vocal', 'dance'] : ['vocal', 'dance', 'stage', 'vocal', 'dance', 'write'],
+    bond: ['friends', 'family', 'date', 'live'],
     self: ['journal', 'exercise', 'hobby', 'style', 'travel'],
   };
   const pool = pools[low].filter(ok); return pool.length ? rnd(pool) : (ok('rest') ? 'rest' : 'rest');

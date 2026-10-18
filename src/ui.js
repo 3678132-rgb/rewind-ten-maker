@@ -2,7 +2,16 @@
 const SAVE_KEY = 'rewind-ten-idol-v3', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_KEY = 'rewind-ten-idol-slots-v3', SLOT_N = 5;
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
+// 대본 속 기본 이름 '서윤'을 플레이어가 정한 이름으로(받침에 맞춰 조사도 바꾼다)
+const DEF_NAME = '서윤';
+const NAME_JOSA = [['이에요', '예요'], ['이었', '였'], ['이야', '야'], ['이나', '나'], ['이랑', '랑'], ['이라', '라'], ['이가', '가'], ['이는', '는'], ['이를', '를'], ['이의', '의'], ['이도', '도'], ['이만', '만'], ['이한테', '한테'], ['이에게', '에게'], ['으로', '로'], ['은', '는'], ['을', '를'], ['과', '와'], ['아', '야'], ['이', '가']];
+function heroName(t){
+  if(typeof S === 'undefined' || !S || !S.name || S.name === DEF_NAME || t.indexOf(DEF_NAME) < 0) return t;
+  const n = S.name, c = n.charCodeAt(n.length - 1), has = c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0;
+  return t.replace(/서윤(이에요|이었|이야|이나|이랑|이라|이가|이는|이를|이의|이도|이만|이한테|이에게|으로|은|을|과|아(?![가-힣])|이(?![가-힣]))?/g, (m, j) => {
+    if(!j) return n; const r = NAME_JOSA.find(x => x[0] === j); return n + (has ? j : r[1]); });
+}
+const esc = s => heroName(String(s)).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', city:'🏙️', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
@@ -400,7 +409,7 @@ function showDex(){
 }
 // 엔딩 크게 보기 + 공유(이미지로 저장하거나 SNS로 보내기)
 function showEndingCard(id){
-  const e = endVarOf(id), who = S ? S.name : '나', letter = e.letter.replace(/\{name\}/g, who);
+  const e = endVarOf(id), who = S ? S.name : '나', letter = heroName(e.letter.replace(/\{name\}/g, who));
   let el = document.getElementById('ecard'); if(!el){ el = document.createElement('div'); el.id = 'ecard'; $('app').appendChild(el); }
   const art = endArt(id, e);
   el.innerHTML = `<div class="ecbg" style="background-image:url(${art})"></div><div class="ecshade"></div><div class="ecbody"><button class="ecx" id="ec-x" aria-label="닫기">✕</button><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${esc(e.sub)}</span><h1>${esc(e.title)}</h1><div class="letter">${esc(letter)}\n\n— 일흔 살의 나로부터</div><div class="ecbtns"><button class="btn" id="ec-share">공유하기</button><button class="btn ghost" id="ec-save">이미지 저장</button></div></div>`;

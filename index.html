@@ -474,7 +474,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
    <button class="btn blue" id="b-new">새로 시작</button>
    <button class="btn ghost sm" id="b-slots" style="display:none;background:rgba(255,255,255,.8)">저장 슬롯 불러오기</button>
    <button class="btn ghost sm" id="b-cont" style="display:none;background:rgba(255,255,255,.8)">이어하기</button>
-   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #132 · 2026.10.18<br><span id="fitdiag"></span></div>
+   <div class="note">저장은 이 기기에만 보관돼요. · 빌드 #133 · 2026.10.18<br><span id="fitdiag"></span></div>
   </div>
  </section>
  <section id="setup" class="screen">
@@ -513,7 +513,7 @@ h1,h2,h3,.wordmark,.hud-line b,.sh-head b,.wizq h2,input[type=text]{font-family:
  <div id="agegate" class="agegate"><div class="agbox"><div class="agmark">19</div><h2>성인 이용 안내</h2><p>이 게임에는 성인 연애 묘사(암시적 장면)가 포함되어 있어<br>만 19세 이상만 이용할 수 있어요.</p><label for="ag-year">태어난 해</label><select id="ag-year"></select><button id="ag-ok" class="agok">확인하고 시작하기</button><button id="ag-no" class="agno">나가기</button><small id="ag-msg"></small></div></div>
  <div id="act" class="actcard"></div>
  <div id="ev" class="evcard"></div>
- <div id="buildtag">빌드 #132 · 2026.10.18</div>
+ <div id="buildtag">빌드 #133 · 2026.10.18</div>
  <div class="ov" id="ov"><div class="sheet" id="sheet"></div></div>
 </div>
 <script>// ==ENGINE== 순수 게임 로직 (DOM 금지: sim.mjs가 이 파일들을 그대로 실행한다)
@@ -7348,7 +7348,16 @@ fixedEvents = function(S){
 const SAVE_KEY = 'rewind-ten-idol-v3', ENDINGS_KEY = 'rewind-ten-endings-v1', SLOTS_KEY = 'rewind-ten-idol-slots-v3', SLOT_N = 5;
 let S = null, setupSel = {major:'biz', origin:'office', regret:'work'};
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
+// 대본 속 기본 이름 '서윤'을 플레이어가 정한 이름으로(받침에 맞춰 조사도 바꾼다)
+const DEF_NAME = '서윤';
+const NAME_JOSA = [['이에요', '예요'], ['이었', '였'], ['이야', '야'], ['이나', '나'], ['이랑', '랑'], ['이라', '라'], ['이가', '가'], ['이는', '는'], ['이를', '를'], ['이의', '의'], ['이도', '도'], ['이만', '만'], ['이한테', '한테'], ['이에게', '에게'], ['으로', '로'], ['은', '는'], ['을', '를'], ['과', '와'], ['아', '야'], ['이', '가']];
+function heroName(t){
+  if(typeof S === 'undefined' || !S || !S.name || S.name === DEF_NAME || t.indexOf(DEF_NAME) < 0) return t;
+  const n = S.name, c = n.charCodeAt(n.length - 1), has = c >= 0xAC00 && c <= 0xD7A3 && (c - 0xAC00) % 28 !== 0;
+  return t.replace(/서윤(이에요|이었|이야|이나|이랑|이라|이가|이는|이를|이의|이도|이만|이한테|이에게|으로|은|을|과|아(?![가-힣])|이(?![가-힣]))?/g, (m, j) => {
+    if(!j) return n; const r = NAME_JOSA.find(x => x[0] === j); return n + (has ? j : r[1]); });
+}
+const esc = s => heroName(String(s)).replace(/[&<>]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;'}[c]));
 const PLACE_ICON = {rain:'🌧️', shop:'⏳', night:'🌙', campus:'🎓', city:'🏙️', cafe:'☕', room:'🏠'};
 const PLACE_IMG = {shop:'art/bg_shop.webp', rain:'art/bg_alley.webp'}, PLACE_POS = {rain:'50% 50%', shop:'50% 40%'};
 const heroKey = S => S.m < 24 ? 'age20' : S.m < 48 ? 'age22' : S.m < 72 ? 'age25' : S.m < 96 ? 'age27' : 'age30';
@@ -7746,7 +7755,7 @@ function showDex(){
 }
 // 엔딩 크게 보기 + 공유(이미지로 저장하거나 SNS로 보내기)
 function showEndingCard(id){
-  const e = endVarOf(id), who = S ? S.name : '나', letter = e.letter.replace(/\{name\}/g, who);
+  const e = endVarOf(id), who = S ? S.name : '나', letter = heroName(e.letter.replace(/\{name\}/g, who));
   let el = document.getElementById('ecard'); if(!el){ el = document.createElement('div'); el.id = 'ecard'; $('app').appendChild(el); }
   const art = endArt(id, e);
   el.innerHTML = `<div class="ecbg" style="background-image:url(${art})"></div><div class="ecshade"></div><div class="ecbody"><button class="ecx" id="ec-x" aria-label="닫기">✕</button><div class="big">${e.icon}</div><span class="tag ${e.free ? '' : 'ret'}">${esc(e.sub)}</span><h1>${esc(e.title)}</h1><div class="letter">${esc(letter)}\n\n— 일흔 살의 나로부터</div><div class="ecbtns"><button class="btn" id="ec-share">공유하기</button><button class="btn ghost" id="ec-save">이미지 저장</button></div></div>`;
@@ -7946,7 +7955,7 @@ function initGame(){
   $('btn-advice').onclick = () => { if($('dialog').hidden) showDialog(); else $('dialog').hidden = true; };
   $('dlg-x').onclick = () => { $('dialog').hidden = true; };
   document.querySelectorAll('[data-sheet]').forEach(b => b.onclick = () => ({stat:showStats, career:showCareer, love:showLove, dex:showDex, shop:showShop, campus:showCampus, city:showCity, dex:showDex}[b.dataset.sheet])());
-  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #132 · 2026.10.18<br><span id="diag"></span></div>`);
+  $('b-menu').onclick = () => { openSheet(sheetHead('메뉴') + `<div class="menu-list"><button class="btn ghost sm" id="m-dex">📖 도감 (엔딩·인물)</button><button class="btn ghost sm" id="m-speed">⏩ 스케줄 연출: ${SPEED_LB[getSpeed()]}</button><button class="btn ghost sm" id="m-update">🔄 새 버전 확인</button><button class="btn ghost sm" id="m-slots">💾 저장 · 불러오기 (슬롯 5개)</button><button class="btn ghost sm" id="m-title">🏠 타이틀로 (자동 저장)</button></div><div class="foot">빌드 #133 · 2026.10.18<br><span id="diag"></span></div>`);
     $('x').onclick = closeSheet;
     try{ const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;bottom:0;padding-bottom:env(safe-area-inset-bottom);padding-top:env(safe-area-inset-top);visibility:hidden'; document.body.appendChild(pr); const cs = getComputedStyle(pr), sb = cs.paddingBottom, st = cs.paddingTop; pr.remove(); const sa = window.navigator.standalone === true || matchMedia('(display-mode: standalone)').matches; $('diag').textContent = `화면 ${innerWidth}×${innerHeight} · 기기 ${screen.width}×${screen.height} · 안전영역 위 ${st}/아래 ${sb} · ${sa ? '홈 화면 앱' : '브라우저'}`; }catch(e){}
     $('m-dex').onclick = () => { closeSheet(); showDex(); };
@@ -8008,7 +8017,7 @@ function probeFit(big){
 fitFull(); addEventListener('resize', fitFull); addEventListener('orientationchange', () => setTimeout(fitFull, 300)); setTimeout(fitFull, 600);
 
 // ── 새 버전 확인: 사파리는 페이지를 몇 분간 기억해 두므로, 서버의 빌드 번호와 비교해 알려 준다 ──
-const BUILD_NO = parseInt(('#132 · 2026.10.18'.match(/#(\d+)/) || [0, 0])[1], 10);
+const BUILD_NO = parseInt(('#133 · 2026.10.18'.match(/#(\d+)/) || [0, 0])[1], 10);
 async function checkUpdate(manual){
   try{
     const r = await fetch(location.pathname + '?_=' + Date.now(), {cache:'no-store'}); const txt = await r.text();

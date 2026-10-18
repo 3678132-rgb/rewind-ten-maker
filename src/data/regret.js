@@ -46,9 +46,9 @@ function menFightEvent(S){
   return {id:key, speaker:'', title:'마주친 두 사람', place:'night', img:'art/ct_night.webp', cut:d.a, cut2:d.b, cutVar:'b', cut2Var:'b',
     text:S => `${A.name}와 ${B.name}가 한 골목에서 마주쳤다. 서로를 알아보는 데는 일 초도 걸리지 않았다. “…네가 걔구나.” 공기가 팽팽하게 당겨졌다. 내 이름이 두 사람 사이에서 칼날처럼 오갔다. 어떻게 할까.`,
     choices:[
-      {label:'둘 사이에 서서 말린다', sub:'호감 -3 · 스트레스↑ · 협상 +', run(S){ const ch = []; addAff(S, d.a, -3, ch); addAff(S, d.b, -3, ch); fx(S, {stress:7, neg:1.2, self:1}, ch); return {text:'“그만해요. 둘 다.” 목소리가 떨렸지만 두 사람이 동시에 입을 닫았다. 멱살을 잡던 손이 천천히 풀렸다. 그날 밤은 아무도 웃지 않았다.', chips:ch, mood:'sad'}; }},
+      {label:'둘 사이에 서서 말린다', sub:'호감 -3 · 스트레스↑ · 팬소통 + · 데뷔 후엔 스캔들 위험', run(S){ const ch = []; addAff(S, d.a, -3, ch); addAff(S, d.b, -3, ch); fx(S, {stress:7, neg:1.2, self:1}, ch); if(isIdol(S)) addScandal(S, 6, ch); return {text:'“그만해요. 둘 다.” 목소리가 떨렸지만 두 사람이 동시에 입을 닫았다. 멱살을 잡던 손이 천천히 풀렸다. 그날 밤은 아무도 웃지 않았다.', chips:ch, mood:'sad'}; }},
       {label:`${A.name}의 곁에 선다`, sub:`${B.name} 호감 -14`, run(S){ const ch = []; addAff(S, d.a, 5, ch); addAff(S, d.b, -14, ch); fx(S, {stress:5, bond:-1}, ch); return {text:`${B.name}는 말없이 나를 보다가 주먹을 풀고 돌아섰다. “…그래. 알겠어.” 뒷모습이 오래 남았다. ${A.name}의 손은 여전히 떨리고 있었다.`, chips:ch, mood:'serious'}; }},
       {label:`${B.name}의 곁에 선다`, sub:`${A.name} 호감 -14`, run(S){ const ch = []; addAff(S, d.b, 5, ch); addAff(S, d.a, -14, ch); fx(S, {stress:5, bond:-1}, ch); return {text:`${A.name}는 숨을 한 번 삼키고 고개를 돌렸다. “…그게 네 대답이구나.” 먼저 자리를 떠난 건 그였다.`, chips:ch, mood:'serious'}; }},
-      {label:'아무 말도 못 하고 도망친다', sub:'스트레스↑↑ · 둘 다 호감 -6', run(S){ const ch = []; addAff(S, d.a, -6, ch); addAff(S, d.b, -6, ch); fx(S, {stress:10, self:-2}, ch); return {text:'숨이 막혀서 뒤돌아 뛰었다. 등 뒤로 두 사람의 목소리가 엉켜 따라왔다. 이틀 동안 휴대폰을 꺼 두었다.', chips:ch, mood:'sad'}; }},
+      {label:'아무 말도 못 하고 도망친다', sub:'스트레스↑↑ · 둘 다 호감 -6', run(S){ const ch = []; addAff(S, d.a, -6, ch); addAff(S, d.b, -6, ch); fx(S, {stress:10, self:-2}, ch); return {text:'숨이 막혀서 모자를 눌러쓰고 뒤돌아 뛰었다. 등 뒤로 두 사람의 목소리가 엉켜 따라왔다. 이틀 동안 휴대폰을 꺼 두었다.', chips:ch, mood:'sad'}; }},
     ]};
 }

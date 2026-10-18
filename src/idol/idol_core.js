@@ -53,9 +53,9 @@ Object.assign(ACTS, {
   stage:  {cat:'연습', icon:'🎬', name:'무대·표정 연습', desc:'카메라를 찾는 눈, 엔딩 포즈, 무대 위의 3초.', cost:0, hp:-5, stress:3, eff:{sense:3.4, charm:1.4, work:1.0}},
   write:  {cat:'연습', icon:'📝', name:'작사·작곡 공부', desc:'남의 노래가 아니라 내 노래를. 오래 걸리지만 남는다.', cost:5, hp:-3, stress:4, eff:{sense:2.0, ins:1.6, know:1.0, work:0.8}, run(S, ch, out){ const I = IDOL(S); if(R() < 0.12 + S.st.sense / 400){ I.songs++; out.note = `곡 하나를 끝까지 완성했다. 지금까지 쓴 노래 ${I.songs}곡.`; fx(S, {self:1}, ch); } }},
   reaudition: {cat:'연습', icon:'🚪', name:'오디션 재도전', desc:'다른 기획사의 문을 두드린다. 떨어져도 다시.', cost:10, hp:-5, stress:9, eff:{dare:1.2}, req:S => isOut(S) ? (S.m >= 72 ? '이제 오디션 나이가 지났다' : null) : '연습생·데뷔 후에는 필요 없어요', run(S, ch, out){
-    const p = clamp(0.05 + (S.st.know + S.st.skill + S.st.charm - 120) / 300, 0.03, 0.5); if(R() < p){ const I = IDOL(S); I.stage = 'idol'; I.debutAt = S.m; I.group = `${INDIE_AGENCY.split(' ')[0]} 솔로`; I.solo = true; S.track = 'actor'; addFans(S, 0.5, ch); gauge(S, 'work', 4, ch); out.note = `${INDIE_AGENCY}에서 연락이 왔다. 작은 회사지만, 솔로로 데뷔하자고.`; } else out.note = '“다음 기회에.” 같은 말을 또 들었다. 그래도 문은 하나 더 남아 있다.'; }},
-  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, 0.2 + (S.st.sense + S.st.charm) / 300 * (1 + fansOf(S) / 60), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
-  variety: {cat:'활동', icon:'🎙️', name:'예능 출연', desc:'웃기면 뜨고, 실수하면 박제된다.', cost:0, hp:-5, stress:5, eff:{dare:2.4, charm:0.8}, req:needIdol, run(S, ch, out){ const hit = R() < 0.25 + S.st.dare / 220; addFans(S, hit ? 0.6 + fansOf(S) / 25 : 0.1, ch); if(!hit && R() < 0.15){ addScandal(S, 6, ch); out.note = '긴장해서 던진 말 한마디가 짤로 돌았다. 해명할 수도 없는 애매한 말.'; } else out.note = hit ? '아무 생각 없이 한 리액션이 터졌다. 다음 날 실시간 검색어에 내 이름이 있었다.' : '편집에서 거의 잘렸다. 분량은 3초. 그래도 얼굴은 남았다.'; if(hit && S.st.dare > 55) IDOL(S).variety = true; }},
+    const p = clamp(0.005 + (S.st.know + S.st.skill + S.st.charm - 180) / 1000, 0.005, 0.06); if(R() < p){ const I = IDOL(S); I.stage = 'idol'; I.debutAt = S.m; I.group = `${INDIE_AGENCY.split(' ')[0]} 솔로`; I.solo = true; S.track = 'actor'; addFans(S, 0.5, ch); gauge(S, 'work', 4, ch); out.note = `${INDIE_AGENCY}에서 연락이 왔다. 작은 회사지만, 솔로로 데뷔하자고.`; } else out.note = '“다음 기회에.” 같은 말을 또 들었다. 그래도 문은 하나 더 남아 있다.'; }},
+  musicshow: {cat:'활동', icon:'📺', name:'음악방송', desc:'매주 무대. 사전녹화는 새벽 다섯 시.', cost:0, hp:-9, stress:6, eff:{sense:1.6, work:1.2}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + (S.st.sense + S.st.charm) / 400 * (1 + Math.min(fansOf(S), 60) / 60), ch); out.note = pick(['새벽 사전녹화, 대기실 쪽잠, 3분의 무대. 엔딩 포즈 때 카메라 빨간 불이 나를 찾았다.', '리허설에서 이어모니터가 나갔다. 본방에선 손짓 하나로 넘겼다. 대기실에서 다리가 풀렸다.', '응원법이 처음으로 크게 들렸다. 무대 아래 형광봉이 우리 색이었다.']); }},
+  variety: {cat:'활동', icon:'🎙️', name:'예능 출연', desc:'웃기면 뜨고, 실수하면 박제된다.', cost:0, hp:-5, stress:5, eff:{dare:2.4, charm:0.8}, req:needIdol, run(S, ch, out){ const hit = R() < 0.25 + S.st.dare / 220; addFans(S, hit ? 0.5 + Math.min(fansOf(S), 80) / 50 : 0.1, ch); if(!hit && R() < 0.15){ addScandal(S, 6, ch); out.note = '긴장해서 던진 말 한마디가 짤로 돌았다. 해명할 수도 없는 애매한 말.'; } else out.note = hit ? '아무 생각 없이 한 리액션이 터졌다. 다음 날 실시간 검색어에 내 이름이 있었다.' : '편집에서 거의 잘렸다. 분량은 3초. 그래도 얼굴은 남았다.'; if(hit && S.st.dare > 55) IDOL(S).variety = true; }},
   fansign: {cat:'활동', icon:'✍️', name:'팬사인회', desc:'한 사람 한 사람과 눈을 맞추는 시간.', cost:0, hp:-4, stress:-2, eff:{neg:2.4, self:1.0}, req:needIdol, run(S, ch, out){ addFans(S, 0.15 + S.st.neg / 300, ch); out.note = pick(['“언니 노래 듣고 수능 버텼어요.” 펜을 쥔 손이 잠깐 멈췄다.', '포스트잇에 적힌 질문 서른 개. 하나하나 대답하다 시간이 다 갔다.', '같은 얼굴을 세 번째 봤다. 이름을 불러 주자 그 팬이 울었다.']); }},
   cf:     {cat:'돈', icon:'📸', name:'광고·화보 촬영', desc:'얼굴이 곧 계약서. 인기만큼 들어온다.', cost:0, hp:-4, stress:3, eff:{charm:1.2}, req:S => !isIdol(S) ? '데뷔 후 가능' : fansOf(S) < 5 ? '팬 5만 명부터 들어와요' : null, run(S, ch, out){ bump(S, 'cash', Math.round(20 + fansOf(S) * 2.2), ch); out.note = '하루 종일 같은 미소를 지었다. 광고판 속 나는 피곤해 보이지 않았다.'; }},
   live:   {cat:'활동', icon:'📱', name:'SNS·라이브 방송', desc:'브이로그와 팬 라이브. 관심은 양날의 검.', cost:0, hp:-1, stress:2, eff:{neg:2.0, dare:1.0}, run(S, ch, out){ if(isIdol(S)){ addFans(S, 0.1 + S.st.neg / 400, ch); if(R() < 0.06){ addScandal(S, 5, ch); out.note = '라이브 중에 뒤로 비친 무언가 때문에 커뮤니티가 시끄러워졌다.'; } } else { addFans(S, 0.02 + S.st.charm / 2000, ch); out.note = '연습생 브이로그 조회수가 조금씩 오른다. 아직은 예비 팬들.'; } }},
@@ -76,7 +76,7 @@ for(const id in ACTS){ ACTS[id].id = id; ACTS[id].slots = ACTS[id].slots || 1; }
 
 // ── 정산: 연습생은 숙소 제공·용돈, 데뷔 후 1년 반은 정산 0, 그 뒤 팬 수에 비례 ─────
 const idolIncome = S => { if(!isIdol(S)) return 0; if(sinceDebut(S) < 18) return 0; return Math.round(20 + Math.min(fansOf(S), 150) * 0.55 + IDOL(S).wins * 2); };
-const idolCost = S => isIdol(S) ? (sinceDebut(S) < 18 ? 0 : 30) : isOut(S) ? 30 : 10; // 연습생·신인은 숙소·식비를 회사가 댄다
+const idolCost = S => isIdol(S) ? (sinceDebut(S) < 18 ? 0 : 30) : isOut(S) ? 20 : 10; // 연습생·신인은 숙소·식비를 회사가 댄다
 const momAllowance = S => isTrainee(S) || isOut(S) ? ((S.mom || 0) >= 55 ? 30 : (S.mom || 0) >= 35 ? 15 : 5) : 0;
 settle = function(S){
   const ch = [];
@@ -96,23 +96,35 @@ settle = function(S){
 
 // ── 월말평가 ─────────────────────────────────────────────────
 const EVAL_SONGS = ['걸그룹 커버 메들리', '발라드 한 곡 + 프리스타일', '팀 퍼포먼스', '자작 랩 32마디', '선배 그룹 타이틀곡', '라이브 보컬 테스트', '카메라 테스트', '무반주 아카펠라'];
-const fieldScore = m => 22 + Math.min(m, 36) * 0.75; // 다른 연습생들도 조금씩 는다
-function evalRankOf(S, score){ const f = fieldScore(S.m); const offs = [-22, -16, -11, -7, -3, 0, 3, 7, 11, 15]; let above = 0; for(const o of offs) if(f + o + rand(-5, 5) > score) above++; if(f + 17 + rand(-4, 4) > score) above++; /* 서하린 */ return above + 1; }
+// 함께 경쟁하는 연습생 11명: 시작 점수 s0, 한 달 성장 g. 30개월 뒤엔 성장이 느려진다
+const PEERS = [
+  {name:'서하린', s0:44, g:1.25, ace:true}, {name:'지수', s0:36, g:1.1}, {name:'소연', s0:35, g:1.05}, {name:'하은', s0:24.5, g:1.4},
+  {name:'태윤', s0:29.5, g:1.05}, {name:'민서', s0:28, g:1.1}, {name:'유나', s0:30, g:0.95}, {name:'채린', s0:25, g:1.15},
+  {name:'다은', s0:28, g:0.9}, {name:'예진', s0:23, g:1.0}, {name:'수아', s0:21, g:0.95}];
+const peerScore = (p, m) => p.s0 + p.g * Math.min(m, 30) + p.g * 0.35 * Math.max(0, Math.min(m, 60) - 30);
+// 이번 달 순위표: 연습생 전원 점수(조금씩 흔들린다). me 는 내 점수
+function evalBoard(S, me){ const b = PEERS.map(p => ({name:p.name, sc:peerScore(p, S.m) + rand(-6, 6)})); b.push({name:S.name, sc:me, me:true}); b.sort((x, y) => y.sc - x.sc); return b; }
+const boardLine = b => b.map((x, i) => ({r:i + 1, name:x.name, me:!!x.me, sc:Math.round(x.sc)}));
+// 미니게임 결과(0~1). 화면에서 리듬 게임을 하면 S._perf 가 채워지고, 없으면(시뮬레이션) 보통 실력으로 친다
+const takePerf = S => { const v = S._perf; S._perf = null; return v == null ? 0.3 + R() * 0.45 : v; };
+const perfWord = v => v >= 0.85 ? '완벽한 무대' : v >= 0.6 ? '깔끔한 무대' : v >= 0.35 ? '몇 번 박자를 놓쳤다' : '실수가 많았다';
 function evalBase(S){ return S.st.know * 0.32 + S.st.skill * 0.32 + S.st.sense * 0.18 + S.st.charm * 0.18 - (S.hp < 30 ? 6 : 0) - (S.stress > 75 ? 6 : 0); }
 function evalEvent(S){
   const song = EVAL_SONGS[S.m % EVAL_SONGS.length], mo = monthOf(S);
-  const finish = (S, bonus, extra) => { const I = IDOL(S), ch = []; const score = evalBase(S) + bonus + rand(-6, 6); const rank = evalRankOf(S, score); I.lastRank = rank; I.evals.push({m:S.m, rank, score:Math.round(score)});
+  const finish = (S, bonus, extra, hard) => { const I = IDOL(S), ch = []; const perf = takePerf(S); const score = evalBase(S) + bonus + (perf - 0.5) * (hard ? 18 : 12) + rand(-4, 4);
+    const board = evalBoard(S, score), rank = board.findIndex(x => x.me) + 1; I.lastRank = rank; I.evals.push({m:S.m, rank, score:Math.round(score)}); I.board = boardLine(board);
+    extra = `${perfWord(perf)}.` + (extra ? ' ' + extra : '');
     gauge(S, 'work', rank <= 3 ? 3 : rank <= 6 ? 1.5 : 0.5, ch); bump(S, 'stress', rank >= 9 ? 8 : 2, ch); if(rank <= 3) gauge(S, 'self', 1.5, ch);
     if(rank >= 10){ I.warn++; } else I.warn = 0;
     const comment = rank === 1 ? '오 실장이 처음으로 박수를 쳤다. “이번 달 1위, 서윤.” 하린의 표정이 굳었다.' : rank <= 3 ? `상위권 ${rank}위. “좋아. 이 감이면 데뷔조 얘기가 나올 거야.”` : rank <= 6 ? `중간, ${rank}위. “나쁘진 않은데, 기억에 남진 않아.”` : rank <= 9 ? `${rank}위. 오 실장이 펜으로 이름 옆에 작은 점을 찍었다.` : `${rank}위, 하위권. “다음 달도 이러면 면담이야.”`;
-    return {text:(extra ? extra + ' ' : '') + comment + (I.warn >= 3 ? ' 하위권이 세 번째다. 방출 경고를 받았다.' : ''), chips:ch, mood:rank <= 3 ? 'happy' : rank >= 9 ? 'sad' : undefined}; };
-  const ch3 = S.clarity >= 20 && S.m >= 3 ? [{label:'아직 나오지 않은 히트곡을 먼저 부른다', sub:'미래 지식 · 점수 크게 + · 선명도 -8', run(S){ S.borrowed++; bump(S, 'clarity', -8); return finish(S, 12, '심사위원들이 처음 듣는 멜로디에 고개를 들었다. 2년 뒤에나 나올 노래였다.'); }}] : [];
+    return {board:I.board, text:(extra ? extra + ' ' : '') + comment + (I.warn >= 3 ? ' 하위권이 세 번째다. 방출 경고를 받았다.' : ''), chips:ch, mood:rank <= 3 ? 'happy' : rank >= 9 ? 'sad' : undefined}; };
+  const ch3 = S.clarity >= 20 && S.m >= 3 ? [{label:'아직 나오지 않은 히트곡을 먼저 부른다', sub:'미래 지식 · 점수 크게 + · 선명도 -8', run(S){ S.borrowed++; bump(S, 'clarity', -8); S._perf = 0.75; return finish(S, 10, '심사위원들이 처음 듣는 멜로디에 고개를 들었다. 2년 뒤에나 나올 노래였다.'); }}] : [];
   return {id:`eval_${S.m}`, once:true, speaker:'오 실장', cut:'teamlead', title:`${mo}월 월말평가 · ${song}`, place:'stage', img:'art/bg_eval.webp',
-    text:S => `연습실 거울 앞, 심사위원석에 오 실장과 트레이너들이 앉았다. 이번 달 과제는 「${song}」. 지난달 순위: ${lastRank(S) ? lastRank(S) + '위' : '첫 평가'}. 어떻게 할까?`,
+    text:S => `연습실 거울 앞, 심사위원석에 오 실장과 트레이너들이 앉았다. 연습생 열두 명 중 데뷔조는 다섯 자리. 이번 달 과제는 「${song}」. 지난달 순위: ${lastRank(S) ? lastRank(S) + '위' : '첫 평가'}. 어떻게 할까?`,
     choices:[
-      {label:'연습한 그대로, 실수 없이', sub:'안정적 · 기본 점수', run(S){ return finish(S, 2); }},
-      {label:'고난도 동작으로 승부를 건다', sub:'예능감·댄스가 높을수록 대박, 아니면 실수', run(S){ const b = (S.st.dare + S.st.skill) / 2 > 45 ? rand(4, 14) : rand(-12, 6); return finish(S, b, b > 0 ? '마지막 턴이 깔끔하게 떨어졌다.' : '착지에서 발이 미끄러졌다.'); }},
-      {label:'내 목소리를 살린 편곡으로', sub:'표현력·멘탈이 높을수록 +', run(S){ return finish(S, (S.st.sense + S.st.ins) / 12 - 4, '익숙한 노래가 낯설게 들렸다. 심사위원 하나가 펜을 내려놓았다.'); }},
+      {label:'연습한 그대로, 실수 없이', sub:'리듬 게임 · 느린 박자 · 기본 점수', game:{speed:1, notes:4}, run(S){ return finish(S, 2); }},
+      {label:'고난도 동작으로 승부를 건다', sub:'리듬 게임 · 빠른 박자 · 잘하면 대박, 놓치면 크게 깎인다', game:{speed:1.5, notes:5}, run(S){ const b = (S.st.dare + S.st.skill) / 2 > 45 ? rand(2, 9) : rand(-6, 3); return finish(S, b, b > 0 ? '마지막 턴이 깔끔하게 떨어졌다.' : '착지에서 발이 흔들렸다.', true); }},
+      {label:'내 목소리를 살린 편곡으로', sub:'리듬 게임 · 보통 박자 · 표현력·멘탈이 높을수록 +', game:{speed:1.2, notes:4}, run(S){ return finish(S, (S.st.sense + S.st.ins) / 12 - 4, '익숙한 노래가 낯설게 들렸다. 심사위원 하나가 펜을 내려놓았다.'); }},
       ...ch3,
     ]};
 }
@@ -127,10 +139,14 @@ function cutEvent(S){
       {label:'엄마 집으로 돌아가 쉰다', sub:'무소속 · 마음 회복', run(S){ const I = IDOL(S), ch = []; I.stage = 'out'; S.mom = clamp((S.mom || 30) + 10, 0, 100); fx(S, {self:3, stress:-15, bond:2}, ch); return {text:'엄마는 아무것도 묻지 않고 밥을 차렸다. “그래도 해 봤잖아.” 그 말이 오래 남았다.', chips:ch, mood:'sad'}; }},
     ]};
 }
+// 데뷔조: 최근 6번 평가 평균 점수로 연습생 열두 명 중 5위 안
+function debutStanding(S){ const e = IDOL(S).evals.slice(-6); if(!e.length) return {pos:12, rival:PEERS[4]}; const my = e.reduce((a, x) => a + x.score, 0) / e.length;
+  const avg = p => e.reduce((a, x) => a + peerScore(p, x.m), 0) / e.length; const ps = PEERS.map(p => ({p, v:avg(p)})).sort((a, b) => b.v - a.v);
+  const pos = 1 + ps.filter(x => x.v > my).length; const fifth = ps.filter(x => !['서하린', '지수', '소연', '하은'].includes(x.p.name))[0]; return {pos, rival:fifth.p, gap:Math.round(my - fifth.v)}; }
 function debutPickEvent(S){
-  const ok = avgRecentRank(S) <= 5.5;
+  const st = debutStanding(S), ok = st.pos <= 5;
   return {id:'debut_pick', once:true, speaker:'오 실장', cut:'teamlead', title:'데뷔조 발표', place:'stage', img:'art/bg_eval.webp',
-    text:S => `연습생 전원이 연습실에 모였다. 오 실장이 종이 한 장을 펼쳤다. “${GROUP_NAME} 데뷔 멤버를 발표한다. 서하린, 지수, 소연, 하은…” 최근 평균 순위 ${avgRecentRank(S).toFixed(1)}위. ${ok ? '마지막 이름이 불렸다. “…서윤.”' : '마지막 이름은 내 것이 아니었다.'}`,
+    text:S => `연습생 전원이 연습실에 모였다. 오 실장이 종이 한 장을 펼쳤다. “${GROUP_NAME} 데뷔 멤버를 발표한다. 서하린, 지수, 소연, 하은…” 최근 반년 평균 점수 ${st.pos}위(다섯 자리). ${ok ? `마지막 자리를 두고 ${josa(st.rival.name, '과', '와')} 나만 남았다. 마지막 이름이 불렸다. “…${S.name}.”` : `마지막 이름이 불렸다. “…${st.rival.name}.” ${josa(st.rival.name, '이', '가')} 울면서 나를 끌어안았다. ${st.gap > -4 ? '정말 한 끗 차이였다.' : '차이는 생각보다 컸다.'}`}`,
     choices: ok ? [
       {label:'눈물을 참고 고개를 숙인다', sub:'데뷔조 확정 · 마음 +3', run(S){ const ch = []; IDOL(S).debutTeam = true; fx(S, {self:3, work:2, stress:-5}, ch); S.album.push(`${GROUP_NAME} 데뷔조 합류`); return {text:'하린이 처음으로 내 쪽을 돌아봤다. “이제 같은 팀이네요. 발목 잡지 마요.”', chips:ch, mood:'happy'}; }},
       {label:'센터 자리를 원한다고 말한다', sub:'데뷔조 확정 · 하린 관계 -2 · 도전', run(S){ const ch = []; IDOL(S).debutTeam = true; fx(S, {dare:2, work:2}, ch); rivalMood(S, -2, ch); SF(S).wantCenter = true; return {text:'연습실이 조용해졌다. 오 실장이 웃었다. “센터는 평가로 정한다. 하린이랑 붙어 봐.”', chips:ch}; }},
@@ -143,22 +159,22 @@ function debutEvent(S, group, via){
   return {id:'debut_' + via, once:true, speaker:'', title:`데뷔 쇼케이스 · ${group}`, place:'stage', img:'art/bg_stage.webp',
     text:S => `${yearOf(S)}년 ${monthOf(S)}월. 쇼케이스 무대 뒤, 인이어를 끼는 손이 떨린다. 마흔의 나는 이 무대에 서 본 적이 없다. 막이 오르기 10초 전.`,
     choices:[
-      {label:'카메라를 똑바로 보고 웃는다', sub:'데뷔 · 비주얼 + · 팬 +', run(S){ return debutDone(S, group, {charm:2}); }},
-      {label:'첫 소절에 모든 걸 건다', sub:'데뷔 · 보컬 + · 팬 +', run(S){ return debutDone(S, group, {know:2}); }},
+      {label:'카메라를 똑바로 보고 웃는다', sub:'리듬 게임 · 데뷔 무대 · 비주얼 + · 잘할수록 첫 팬 +', game:{speed:1.25, notes:5}, run(S){ return debutDone(S, group, {charm:2}); }},
+      {label:'첫 소절에 모든 걸 건다', sub:'리듬 게임 · 데뷔 무대 · 보컬 + · 잘할수록 첫 팬 +', game:{speed:1.25, notes:5}, run(S){ return debutDone(S, group, {know:2}); }},
     ]};
 }
-function debutDone(S, group, eff){ const I = IDOL(S), ch = []; I.stage = 'idol'; I.debutAt = S.m; I.group = group; I.contract = S.m + 84; S.track = 'actor'; fx(S, Object.assign({work:4, self:3, stress:-5}, eff), ch); addFans(S, 2 + (S.st.charm + S.st.know) / 40, ch); S.album.push(`${group} 데뷔`); return {text:'막이 올랐다. 조명이 너무 밝아서 객석이 보이지 않았다. 대신 응원 소리가 들렸다. 3분 30초가 3초처럼 지나갔다.', chips:ch, mood:'happy'}; }
+function debutDone(S, group, eff){ const I = IDOL(S), ch = []; I.stage = 'idol'; I.debutAt = S.m; I.group = group; I.contract = S.m + 84; S.track = 'actor'; fx(S, Object.assign({work:4, self:3, stress:-5}, eff), ch); addFans(S, 1.5 + (S.st.charm + S.st.know) / 50 + takePerf(S) * 3, ch); S.album.push(`${group} 데뷔`); return {text:'막이 올랐다. 조명이 너무 밝아서 객석이 보이지 않았다. 대신 응원 소리가 들렸다. 3분 30초가 3초처럼 지나갔다.', chips:ch, mood:'happy'}; }
 function survivalEvent(S, ep){
   const titles = ['1화 · 등급 평가', '3화 · 팀 배틀', '최종화 · 생방송 데뷔 평가'];
-  const finish = (S, mul, text) => { const I = IDOL(S), ch = []; const v = (S.st.charm * 0.35 + S.st.dare * 0.25 + S.st.know * 0.2 + S.st.skill * 0.2 + rand(-8, 8)) * mul; I.survival.votes = (I.survival.votes || 0) + v; addFans(S, v / 60, ch); fx(S, {stress:5}, ch);
+  const finish = (S, mul, text) => { const I = IDOL(S), ch = []; const perf = takePerf(S); const v = (S.st.charm * 0.35 + S.st.dare * 0.25 + S.st.know * 0.2 + S.st.skill * 0.2 + (perf - 0.5) * 30 + rand(-8, 8)) * mul; I.survival.votes = (I.survival.votes || 0) + v; addFans(S, v / 60, ch); fx(S, {stress:5}, ch);
     if(ep < 2) return {text:`${text} 이번 화 순위: ${Math.max(1, Math.round(30 - v / 3))}위.`, chips:ch};
     const ok = I.survival.votes >= 150; if(ok){ const r = debutDone(S, PROJECT_GROUP, {}); r.text = `${text} 마지막 호명. “데뷔 멤버 7위… 서윤!” ` + r.text; r.chips = ch.concat(r.chips); return r; }
     I.stage = 'out'; return {text:`${text} 7위 안에 내 이름은 없었다. 무대 위에서 끝까지 웃었다.`, chips:ch, mood:'sad'}; };
   return {id:'survival_' + ep, once:true, speaker:'', title:`스타 메이커 ${titles[ep]}`, place:'stage', img:'art/bg_stage.webp',
     text:S => ep === 0 ? '방송국 세트장, 백 명의 연습생이 피라미드 의자에 앉았다. 내 이름표 옆에는 소속사 대신 ‘개인 연습생’이라고 적혀 있다.' : ep === 1 ? '팀 배틀. 같은 팀 연습생이 파트 분배로 울고 있다. 센터를 맡으면 표가 몰리지만, 실수하면 다 내 탓이다.' : '생방송 최종화. 실시간 문자 투표가 화면 아래로 흐른다. 마지막 무대다.',
     choices:[
-      {label:'센터를 맡는다', sub:'표 많이 · 실수 위험', run(S){ return finish(S, R() < 0.25 + S.st.dare / 200 ? 1.3 : 0.8, '센터에 섰다.'); }},
-      {label:'팀원을 살리는 파트를 맡는다', sub:'표 보통 · 관계 +', run(S){ fx(S, {bond:2}); return finish(S, 1.0, '팀원들이 나를 끌어안았다.'); }},
+      {label:'센터를 맡는다', sub:'리듬 게임 · 빠른 박자 · 표 많이, 실수 위험', game:{speed:1.5, notes:5}, run(S){ return finish(S, R() < 0.25 + S.st.dare / 200 ? 1.3 : 0.8, '센터에 섰다.'); }},
+      {label:'팀원을 살리는 파트를 맡는다', sub:'리듬 게임 · 보통 박자 · 관계 +', game:{speed:1.15, notes:4}, run(S){ fx(S, {bond:2}); return finish(S, 1.0, '팀원들이 나를 끌어안았다.'); }},
       {label:'카메라에 진심을 말한다', sub:'팬소통이 높을수록 +', run(S){ return finish(S, 0.8 + S.st.neg / 150, '“한 번만 더 기회를 주세요.” 진심이었다.'); }},
     ]};
 }
@@ -166,10 +182,10 @@ function survivalEvent(S, ep){
 function comebackEvent(S){
   const n = IDOL(S).comebacks + 1;
   const finish = (S, fit, concept) => { const I = IDOL(S), ch = []; I.comebacks = n; I.lastComeback = S.m;
-    const power = fansOf(S) * 0.8 + (S.st.know + S.st.skill + S.st.sense + S.st.charm) / 4 * fit + rand(-10, 10) + (S.work - 50) / 3;
-    const chart = clamp(Math.round(110 - power), 1, 100); addFans(S, Math.max(0.3, power / 25), ch); gauge(S, 'work', 2, ch);
+    const power = 24 * Math.log10(1 + fansOf(S)) + (S.st.know + S.st.skill + S.st.sense + S.st.charm) / 4 * fit * 0.55 + rand(-14, 14) + (S.work - 50) / 4 - Math.min(20, IDOL(S).comebacks * 1.5); // 해마다 경쟁 그룹도 강해진다
+    const chart = clamp(Math.round(100 - power), 1, 100); addFans(S, Math.max(0.3, (100 - chart) / 18), ch); gauge(S, 'work', 2, ch);
     let txt = `${concept} 콘셉트로 ${n}번째 컴백. 음원 차트 최고 ${chart}위.`;
-    if(chart <= 10 || (chart <= 25 && R() < 0.35)){ I.wins++; addFans(S, 1 + fansOf(S) * 0.05, ch); fx(S, {self:4, stress:-6}, ch); txt += ` 그리고 음악방송 1위! 앵콜 무대에서 노래를 다 못 불렀다. (통산 ${I.wins}번째 1위)`; S.album.push(`${I.group} ${n}번째 컴백 · 1위`); }
+    if(chart <= 3 || (chart <= 12 && R() < 0.3)){ I.wins++; addFans(S, 1 + Math.min(fansOf(S), 100) * 0.03, ch); fx(S, {self:4, stress:-6}, ch); txt += ` 그리고 음악방송 1위! 앵콜 무대에서 노래를 다 못 불렀다. (통산 ${I.wins}번째 1위)`; S.album.push(`${I.group} ${n}번째 컴백 · 1위`); }
     else txt += chart <= 40 ? ' 1위 후보에 올랐지만 아쉽게 2위.' : ' 성적은 아쉬웠다. 그래도 팬들은 더 단단해졌다.';
     return {text:txt, chips:ch, mood:chart <= 25 ? 'happy' : undefined}; };
   return {id:`comeback_${n}`, once:true, speaker:'', title:`${IDOL(S).group || GROUP_NAME} ${n}번째 컴백`, place:'stage', img:'art/bg_stage.webp',
@@ -183,7 +199,7 @@ function comebackEvent(S){
 }
 function awardsEvent(S){
   const I = IDOL(S), y = yearOf(S), rookie = sinceDebut(S) < 12;
-  const prize = rookie ? (fansOf(S) >= 6 || R() < 0.3 ? '신인상' : null) : (fansOf(S) >= 120 && I.wins >= 5 && S.work >= 65 ? '대상' : fansOf(S) >= 30 || I.wins >= 2 ? '본상' : null);
+  const prize = rookie ? (fansOf(S) >= 6 || R() < 0.3 ? '신인상' : null) : (fansOf(S) >= 110 && I.wins >= 4 && S.work >= 62 && R() < 0.5 ? '대상' : (fansOf(S) >= 60 || I.wins >= 3) && R() < 0.6 ? '본상' : null);
   return {id:`awards_${y}`, once:true, speaker:'', title:`${y} 골든 스테이지 어워즈`, place:'stage', img:'art/bg_awards.webp',
     text:S => `연말 시상식. 레드카펫 플래시가 터진다. ${prize ? `사회자가 봉투를 열었다. “${prize}… ${I.group}!”` : '이번 해 우리 이름은 불리지 않았다. 박수를 치는 손바닥이 뜨겁다.'}`,
     choices: prize ? [

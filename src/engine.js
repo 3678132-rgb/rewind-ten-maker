@@ -84,7 +84,7 @@ function newGame(name, originId, regretId, majorId){
 // ── 수치 변경 헬퍼 ─────────────────────────────────────────────
 function push(ch, label, d, money){ if(!ch) return; if(Math.abs(d) < 0.05) return; ch.push({label, d, money:!!money}); }
 function grow(S, k, base, ch){ const cur = S.st[k]; const nv = clamp(cur + base * 0.6 * Math.max(0.1, 1 - cur / 115), 0, 100); push(ch, STAT[k], nv - cur); S.st[k] = nv; }
-const GAUGE_SCALE = 0.395; // 3축 증가량 배율 (밸런스 조절용)
+const GAUGE_SCALE = 0.44; // 3축 증가량 배율 (밸런스 조절용)
 function gauge(S, k, d, ch){ const cur = S[k]; const nv = clamp(d > 0 ? cur + d * GAUGE_SCALE * Math.max(0.15, 1 - cur / 95) : cur + d, 0, 100); push(ch, PILLAR[k], nv - cur); S[k] = nv; if(d > 0 && k !== 'self' && k !== 'bond') S.last.work = S.m; if(d > 0 && k === 'bond') S.last.bond = S.m; if(d > 0 && k === 'self') S.last.self = S.m; }
 function bump(S, key, d, ch){
   if(key === 'cash'){ S.cash += d; push(ch, LABEL.cash, d, true); return; }

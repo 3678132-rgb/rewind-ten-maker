@@ -348,10 +348,10 @@ function showStats(){
 }
 function showCareer(){
   const I = IDOL(S), ev = I.evals.slice(-8);
-  const next = isTrainee(S) ? (S.m < DEBUT_PICK_M ? `데뷔조 발표까지 ${DEBUT_PICK_M - S.m}개월 (최근 6회 평균 5.5위 이내면 데뷔조)` : I.debutTeam ? `데뷔까지 ${Math.max(0, DEBUT_M - S.m)}개월` : I.survival ? `서바이벌 「스타 메이커」 ${Math.max(0, SURVIVAL_M[0] - S.m)}개월 뒤` : '') : isIdol(S) ? `다음 컴백까지 ${6 - (sinceDebut(S) % 6 || 6) + (sinceDebut(S) % 6 === 0 ? 6 : 0)}개월 · 12월 연말 시상식` : '오디션 재도전(연습 탭)으로 다시 데뷔를 노릴 수 있어요';
+  const next = isTrainee(S) ? (S.m < DEBUT_PICK_M ? `데뷔조 발표까지 ${DEBUT_PICK_M - S.m}개월 (연습생 12명 중 최근 6회 평균 점수 5위 안)` : I.debutTeam ? `데뷔까지 ${Math.max(0, DEBUT_M - S.m)}개월` : I.survival ? `서바이벌 「스타 메이커」 ${Math.max(0, SURVIVAL_M[0] - S.m)}개월 뒤` : '') : isIdol(S) ? `다음 컴백까지 ${6 - (sinceDebut(S) % 6 || 6) + (sinceDebut(S) % 6 === 0 ? 6 : 0)}개월 · 12월 연말 시상식` : '오디션 재도전(연습 탭)으로 다시 데뷔를 노릴 수 있어요';
   const bars = ev.length ? `<div class="evbars">${ev.map(e => `<span title="${e.m}"><i style="height:${Math.round((13 - e.rank) / 12 * 100)}%"></i><b>${e.rank}</b></span>`).join('')}</div>` : '<div class="sub">아직 월말평가 기록이 없어요.</div>';
   const kv = (k, v) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`;
-  openSheet(sheetHead('데뷔 현황', idolStatusLine(S)) + `<div class="sub">${next}</div>` + (isTrainee(S) || I.evals.length ? '<h3>월말평가 순위 (최근 8회 · 낮을수록 좋음)</h3>' + bars + (I.warn ? `<div class="sub" style="color:#c93a66">하위권 연속 ${I.warn}회 — 4회면 방출</div>` : '') : '') +
+  openSheet(sheetHead('데뷔 현황', idolStatusLine(S)) + `<div class="sub">${next}</div>` + (isTrainee(S) || I.evals.length ? '<h3>월말평가 순위 (최근 8회 · 낮을수록 좋음)</h3>' + bars + (I.warn ? `<div class="sub" style="color:#c93a66">하위권 연속 ${I.warn}회 — 4회면 방출</div>` : '') + (isTrainee(S) && !S.seen.debut_pick && I.evals.length ? (st => `<div class="sub" style="color:${st.pos <= 5 ? '#2a8a5b' : '#c93a66'}">데뷔조 경쟁(최근 6회 평균): 지금 ${st.pos}위 · 다섯 자리 안에 들어야 해요 · 발표는 ${DEBUT_PICK_M - S.m > 0 ? DEBUT_PICK_M - S.m + '달 뒤' : '이번 달'}</div>`)(debutStanding(S)) : '') + (I.board ? boardHTML(I.board) : '') : '') +
     '<h3>기록</h3>' + kv('그룹', I.group || (I.debutTeam ? GROUP_NAME + ' (데뷔 예정)' : '—')) + kv('팬', fmtFans(I.fans)) + kv('컴백', I.comebacks + '회') + kv('음악방송 1위', I.wins + '회') + kv('수상', I.awards.length ? I.awards.join(', ') : '—') + kv('자작곡', I.songs + '곡') + kv('스캔들 위험', Math.round(I.scandal)) +
     `<div class="foot">월 생활비 ${idolCost(S)}만${momAllowance(S) ? ` · 엄마 용돈 +${momAllowance(S)}만` : ''}${isIdol(S) ? (sinceDebut(S) < 18 ? ' · 데뷔 후 1년 반은 정산 0' : ` · 정산 +${idolIncome(S)}만`) : ''}</div>`);
   $('x').onclick = closeSheet;
@@ -454,6 +454,30 @@ function evOpen(ev, inner){
   $('evpanel').scrollTop = 0;
 }
 function evClose(){ $('ev').classList.remove('on'); paintEdge('game'); }
+// ── 리듬 미니게임: 움직이는 막대가 가운데 판정선에 올 때 탭. 결과 0~1 ─────────────
+function rhythmGame(ev, head, g, label){
+  return new Promise(done => {
+    const notes = g.notes || 4, base = 0.75 * (g.speed || 1); let k = 0, hits = [], pos = 0, dir = 1, last = 0, t0 = 0, raf = 0, lock = false;
+    evOpen(ev, head + `<div class="rg"><div class="rg-h">${esc(label)}</div><div class="rg-sub">막대가 가운데 빛나는 칸에 들어올 때 탭!</div><div class="rg-dots">${Array.from({length:notes}, (_, i) => `<i data-i="${i}"></i>`).join('')}</div><div class="rg-track" id="rgt"><div class="rg-zone"><b></b></div><div class="rg-cur" id="rgc"></div></div><div class="rg-fb" id="rgf">준비…</div><button class="btn rg-tap" id="rgb">탭!</button></div>`);
+    const cur = $('rgc'), fb = $('rgf');
+    const startNote = () => { pos = R() < 0.5 ? 0 : 1; dir = pos ? -1 : 1; t0 = last = performance.now(); lock = false; fb.textContent = `${k + 1} / ${notes}`; fb.className = 'rg-fb'; raf = requestAnimationFrame(step); };
+    const step = now => { const dt = Math.min(0.05, (now - last) / 1000); last = now; const sp = base * (1 + k * 0.12); pos += dir * sp * dt; if(pos >= 1){ pos = 1; dir = -1; } if(pos <= 0){ pos = 0; dir = 1; }
+      cur.style.left = (pos * 100) + '%'; if(now - t0 > 3200 / Math.sqrt(g.speed || 1)) return judge(true); raf = requestAnimationFrame(step); };
+    const judge = timeout => { if(lock) return; lock = true; cancelAnimationFrame(raf); const d = Math.abs(pos - 0.5), v = timeout ? 0 : d <= 0.045 ? 1 : d <= 0.11 ? 0.6 : d <= 0.17 ? 0.25 : 0;
+      hits.push(v); const w = v >= 1 ? 'PERFECT' : v >= 0.6 ? 'GOOD' : v > 0 ? 'BAD' : 'MISS'; fb.textContent = w; fb.className = 'rg-fb ' + w.toLowerCase();
+      const dot = document.querySelector(`.rg-dots i[data-i="${k}"]`); if(dot) dot.className = w.toLowerCase(); k++;
+      if(k >= notes){ const score = hits.reduce((a, x) => a + x, 0) / notes; setTimeout(() => { fb.textContent = `${hits.filter(x => x >= 1).length} PERFECT · ${hits.filter(x => x >= 0.6 && x < 1).length} GOOD · ${hits.filter(x => x < 0.6).length} MISS`; fb.className = 'rg-fb sum'; setTimeout(() => done(score), 900); }, 450); }
+      else setTimeout(startNote, 550); };
+    const tap = e => { if(e) e.preventDefault(); if(!lock) judge(false); };
+    $('rgb').addEventListener('pointerdown', tap); $('rgt').addEventListener('pointerdown', tap);
+    setTimeout(startNote, 700);
+  });
+}
+// 월말평가 순위표: 위 6명 + 나, 다섯째 아래에 데뷔조 선
+function boardHTML(b){
+  const top = b.slice(0, 6), me = b.find(x => x.me), rows = top.concat(me && me.r > 6 ? [me] : []), mx = Math.max(...b.map(x => x.sc)), mn = Math.min(...b.map(x => x.sc));
+  return `<div class="board"><div class="bd-h">이번 달 순위 · 연습생 ${b.length}명</div>${rows.map(x => `${x.r === 6 ? '<div class="bd-cut">— 데뷔조 다섯 자리 —</div>' : x.me && x.r > 7 ? '<div class="bd-cut" style="color:#9aa3c4">⋯</div>' : ''}<div class="bd-row ${x.me ? 'me' : ''}"><span class="bd-r">${x.r}</span><span class="bd-n">${esc(x.me ? x.name + ' (나)' : x.name)}</span><span class="bd-bar"><i style="width:${Math.round(18 + 82 * (x.sc - mn) / Math.max(1, mx - mn))}%"></i></span></div>`).join('')}</div>`;
+}
 function playEvent(ev){
   return new Promise(resolve => {
     S.seen[ev.id] = true; S.cd[ev.id] = S.m;
@@ -466,10 +490,12 @@ function playEvent(ev){
       if(beats.length){ const t = beats.shift(), ev2 = bimgs ? Object.assign({}, ev, {img: bimgs[Math.min(bi, bimgs.length - 1)]}) : ev; bi++; evOpen(ev2, head + `<div class="txt">${esc(t)}</div><button class="btn" id="enx">다음</button>`); $('enx').onclick = nextBeat; return; }
       if(bimgs) ev = Object.assign({}, ev, {img: bimgs[bimgs.length - 1]});
       const cs = ev.choices; evOpen(ev, head + `<div class="txt">${esc(ev.text(S))}</div>` + cs.map((c, k) => `<button class="ch" data-k="${k}"><b>${esc(c.label)}</b><span>${esc(c.sub || '')}</span></button>`).join(''));
-      document.querySelectorAll('#ev .ch').forEach(b => b.onclick = () => {
-        const out = cs[+b.dataset.k].run(S); save();
+      document.querySelectorAll('#ev .ch').forEach(b => b.onclick = async () => {
+        if(b.dataset.busy) return; document.querySelectorAll('#ev .ch').forEach(x => x.dataset.busy = '1');
+        const c = cs[+b.dataset.k]; if(c.game) S._perf = await rhythmGame(ev, head, c.game, c.label);
+        const out = c.run(S); save();
         if(!out.text){ evClose(); render(); return resolve(); }
-        evOpen(Object.assign({}, ev, out.mood === 'shy' && ev.cut ? {cutVar:'b'} : {}, ev.resultImgs && ev.resultImgs[+b.dataset.k] ? {img:ev.resultImgs[+b.dataset.k]} : {}), head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : ev.cut ? '' : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div><div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
+        evOpen(Object.assign({}, ev, out.mood === 'shy' && ev.cut ? {cutVar:'b'} : {}, ev.resultImgs && ev.resultImgs[+b.dataset.k] ? {img:ev.resultImgs[+b.dataset.k]} : {}), head + (ev.face ? `<img class="face" src="art/face_${ev.face === 'harin' ? (S.m >= 96 ? 'harin_l' : S.m >= 48 ? 'harin_w' : 'harin') : ev.face}_${out.mood || 'serious'}.webp" alt="" onerror="this.style.display='none'">` : ev.cut ? '' : faceImg(out.chips, ev.lover)) + `<div class="txt">${esc(out.text)}</div>${out.board ? boardHTML(out.board) : ''}<div class="chips" style="clear:both">${chipHTML(out.chips)}</div><button class="btn" id="enx" style="margin-top:14px">계속</button>`);
         $('enx').onclick = () => { evClose(); render(); resolve(); };
       });
     };

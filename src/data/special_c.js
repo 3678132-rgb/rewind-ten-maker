@@ -243,11 +243,11 @@ const _scPop = [
   ],
   text:S => `낯선 남자가 대답을 기다린다. 사람들의 시선이 힐끔 스쳐 간다.${_scNote(S)} 어떻게 할까?`,
   choices:[
-    {label:'정중히 거절한다', sub:'나 +1 · 매력 +1', run(S){
+    {label:'정중히 거절한다', sub:'마음 +1 · 비주얼 +1', run(S){
       const ch = []; fx(S, {self:1.5, charm:0.8, stress:-2}, ch);
       return {text: '“마음에 둔 사람이 있어서요. 말 걸어 줘서 고마워요.” ' + (S.st.charm >= 45 ? '그는 아쉬운 듯 웃으며 손끝으로 이마를 짚어 인사했다. 거절당했는데도 기분 나쁜 얼굴이 아니었다. ' : '그는 잠깐 머쓱하게 서 있다가 길을 비켜 주었다. ') + '돌아서는 내 걸음이 한결 곧았다.', chips:ch};
     }},
-    {label:'장난스럽게 받아넘긴다', sub:'도전 +1 · 매력 +1', run(S){
+    {label:'장난스럽게 받아넘긴다', sub:'예능감 +1 · 비주얼 +1', run(S){
       const ch = [];
       if(S.st.dare >= 45){ fx(S, {charm:1.5, dare:1, self:1}, ch); return {text:'“번호는 비싸요. 커피 열 잔 값은 있어야 알려 드려요.” 그가 웃음을 터뜨리며 두 손을 들었다. “졌어요. 다음엔 열 잔 들고 올게요.” 가볍게 손을 흔들고 돌아서는 내 입가에도 웃음이 남았다.', chips:ch}; }
       fx(S, {charm:0.8, stress:3}, ch); return {text:'“저 번호 안 팔아요!” 농담으로 받아쳤는데 그가 “그럼 이름만이라도”라며 한 걸음 더 다가왔다. 어색하게 웃으며 몇 번을 더 거절한 끝에야 겨우 빠져나왔다. 가슴이 괜히 두근거렸다.', chips:ch};
@@ -264,7 +264,7 @@ const _scPop = [
   speaker:'', title:'뒤늦은 고백', place:'night', img:'art/bg_practice.webp',
   text:S => { const id = _scSuitor(S) || 'minjun'; return `${_scAskSetting(S)}에서 ${josa(_scName(id), '이', '가')} 나를 불러 세운다. ${_scConf[id] || _scConf.minjun} 요즘 사람들 사이에서 내가 달라 보인다는 말이 많았는데, 이 사람도 그걸 본 걸까.${_scNote(S)}`; },
   choices:[
-    {label:'정중히 거절한다', sub:'나 +2 · 상대 호감↓', run(S){
+    {label:'정중히 거절한다', sub:'마음 +2 · 상대 호감↓', run(S){
       const ch = [], id = _scSuitor(S) || 'minjun'; addAff(S, id, -3, ch); fx(S, {self:2, stress:-1}, ch);
       return {text:`“마음은 정말 고마워요. 그래도 받을 수 없어요.” ${_scName(id)}${affOf(S, id) >= 50 ? '의 얼굴이 잠시 무너졌다가 천천히 펴졌다. “알겠어요. 그래도 말하길 잘했어요.”' : '은 아쉬운 듯 웃으며 고개를 끄덕였다. “부담 줘서 미안해요.”'} 돌아서는 길이 아프면서도 단단했다.`, chips:ch};
     }},
@@ -284,7 +284,7 @@ const _scPop = [
   speaker:'', title:'낯선 용기', place:'night', img:'art/bg_practice.webp', cut:'stranger2', cutVar:'a',
   text:S => `${isIdol(S) ? '음악방송 대기실 복도에서, 다른 소속사 남자 아이돌' : isTrainee(S) ? '같은 층 남자 연습생 가운데 처음 보는 얼굴' : '오디션장에서 마주친 낯선 지원자'}가 나를 불러 세운다. “저기, 요즘 자주 눈에 들어와서요. 커피 한 잔만 해요. 부담 갖지 말고요.” 말을 걸어 본 적도 없는 사람의 얼굴이 조금 붉다. 얼마 전까지 없던 일이다.${_scNote(S)}`,
   choices:[
-    {label:'정중히 거절한다', sub:'나 +2 · 매력 +1', run(S){
+    {label:'정중히 거절한다', sub:'마음 +2 · 비주얼 +1', run(S){
       const ch = []; fx(S, {self:2, charm:1, stress:-1}, ch);
       return {text:'“마음은 고마운데 커피는 어려울 것 같아요.” 그는 머쓱하게 웃으며 “그럴 줄 알았어요”라고 말했다. 돌아서면서 나는 스스로가 놀라웠다. 흔들리지 않고 말하는 내가 낯설면서 든든했다.', chips:ch};
     }},
@@ -293,7 +293,7 @@ const _scPop = [
       fx(S, {dare:1, charm:1.5, stress:3}, ch);
       return {text:'스케줄 사이 십오 분, 자판기 앞 구석 자리. 그는 의외로 말이 재미있었고, 나는 그 사이 몇 번이나 휴대폰을 내려다봤다. 헤어질 때 그가 “다음엔 정식으로 한 잔 더요”라고 했다. 아무 일도 아닌데 마음이 이상하게 가라앉지 않았다.', chips:ch};
     }},
-    {label:'소문이 날까 봐 선을 분명히 긋는다', sub:'통찰 +1 · 나 +1', run(S){
+    {label:'소문이 날까 봐 선을 분명히 긋는다', sub:'멘탈 +1 · 마음 +1', run(S){
       const ch = []; fx(S, {ins:1, self:1, stress:-1}, ch);
       return {text:'“저는 이런 오해를 만들고 싶지 않아요. 앞으로 편하게 인사만 해요.” 단호한 말에 그는 놀란 표정으로 고개를 끄덕였다. 한결 가벼워진 마음으로 돌아서며 깨달았다. 선을 긋는 데도 연습이 필요하다는 걸.', chips:ch};
     }},
@@ -309,7 +309,7 @@ const _scPop = [
   ],
   text:S => `사람들의 시선이 정말 달라졌다. 복도에서도, 엘리베이터에서도 누군가 돌아본다.${isIdol(S) ? ' 팬 커뮤니티에는 ‘요즘 분위기 달라졌다, 연애하나?’라는 글까지 올라왔다.' : ''}${officialOf(S) ? ` ${josa(_scName(officialOf(S)), '이', '가')} 이 소문을 알면 어떤 얼굴을 할까.` : ''} 소연의 장난스러운 눈이 대답을 기다린다.`,
   choices:[
-    {label:'웃으며 칭찬으로 받아들인다', sub:'나 +2 · 매력 +2', run(S){
+    {label:'웃으며 칭찬으로 받아들인다', sub:'마음 +2 · 비주얼 +2', run(S){
       const ch = []; fx(S, {self:2, charm:2, stress:-2}, ch);
       return {text:'“그래? 그럼 칭찬으로 들을게.” 어깨를 으쓱하자 소연이 박수를 쳤다. “바로 그거야! 그 여유!” 거울 속 내가 낯설지 않았다. 마흔의 내가 부러워하던 모습이 지금의 나라는 걸 인정하기로 했다.', chips:ch};
     }},
@@ -317,7 +317,7 @@ const _scPop = [
       const ch = []; S.popBuzz = 1; fx(S, {charm:3, dare:1, stress:1}, ch); if(officialOf(S)) addSusp(S, 2); if(isIdol(S)) addScandal(S, 4, ch);
       return {text:'“그래서 누가 그런 말을 했는데? 이름 불어 봐.” 장난으로 소연을 놀리자 둘이 한참 웃었다. 그런데 웃음 끝에 소연이 슬쩍 말했다. “근데 너무 즐기지는 마. 질투하는 사람 생기면 골치 아파.” 가볍게 넘겼지만 그 말이 마음에 얹혔다.', chips:ch};
     }},
-    {label:'사실 좀 불편하다고 털어놓는다', sub:'관계 +2 · 통찰 +1', mood:'shy', run(S){
+    {label:'사실 좀 불편하다고 털어놓는다', sub:'관계 +2 · 멘탈 +1', mood:'shy', run(S){
       const ch = []; fx(S, {bond:2, ins:1, stress:-3}, ch);
       return {text:'“사실… 시선이 따가울 때가 있어. 나는 그대로인데 사람들이 갑자기 다르게 봐.” 소연이 장난기를 거두고 내 손등을 토닥였다. “그럼 네가 중심을 잡아. 사람들은 네가 흔들리는 걸 보고 더 몰려드니까.” 의외로 단단한 조언이었다.', mood:'shy', chips:ch};
     }},
@@ -328,7 +328,7 @@ const _scPop = [
   speaker:'', title:'한꺼번에 다가오는 시선', place:'night', img:'art/ct_night.webp',
   text:S => `${isIdol(S) ? '연말 시상식 뒤풀이 자리' : '동기들과 간 모임 자리'}에서 사람들이 한꺼번에 몰려든다. 한 사람은 명함을 내밀고, 한 사람은 옆자리에 앉아 술잔을 채워 주고, 또 한 사람은 집까지 바래다주겠다며 웃는다.${S.popFlirt ? ' 그 속에는 지난번 번호를 받아 간 얼굴도 섞여 있다.' : ''} 취기가 오른 공기 속에서 내가 지금 얼마나 반짝이는지 알 수 있다. 어떻게 할까?`,
   choices:[
-    {label:'한 발 물러나 현실을 본다', sub:'나 +2 · 통찰 +2 · 스트레스↓', run(S){
+    {label:'한 발 물러나 현실을 본다', sub:'마음 +2 · 멘탈 +2 · 스트레스↓', run(S){
       const ch = []; fx(S, {self:2, ins:2, stress:-3}, ch);
       return {text:'잔을 내려놓고 숨을 골랐다. 이 시선들은 내가 누구여서가 아니라 지금 어떻게 보이느냐에 가깝다. 마흔의 내가 알던 사실이다. 정중히 인사하고 물 한 잔을 마시자 마음이 가라앉았다. 중심이 어디 있는지 다시 보였다.', chips:ch};
     }},
@@ -358,14 +358,14 @@ const _scPop = [
       addAff(S, id, 6, ch); fx(S, {stress:-2, bond:1}, ch); lvSet(S, id, 'jealTrust');
       return {text:_scJ1ok[id] || _scJ1ok.minjun, chips:ch};
     }},
-    {label:'서운함을 솔직히 말한다', sub:'나 +2 · 협상에 따라 호감 변화', run(S){
+    {label:'서운함을 솔직히 말한다', sub:'마음 +2 · 팬소통에 따라 호감 변화', run(S){
       const ch = [], id = _scOff(S), nm = _scName(id);
       if(S.st.neg + rand(-10, 10) >= 45){ addAff(S, id, 2, ch); fx(S, {self:2, bond:1}, ch); lvSet(S, id, 'jealTalk');
         return {text:`“의심받는 기분이 들어서 조금 서운했어. 그래도 네가 불안한 건 이해해.” ${nm}은 말이 없다가 천천히 고개를 끄덕였다. “…내가 미안해. 불안을 묻는 것과 의심하는 건 다르다는 걸 알아야겠네.” 서로의 속도가 조금 맞춰졌다.`, chips:ch}; }
       addAff(S, id, -3, ch); fx(S, {stress:4, self:1}, ch);
       return {text:`“나를 못 믿는 것 같아서 서운해.” 말이 날카롭게 나가 버렸다. ${nm}의 표정이 굳었다. “…그런 뜻은 아니었는데.” 공기가 한참 식은 채 이야기가 끊겼다.`, chips:ch};
     }},
-    {label:'장난으로 질투를 즐긴다', sub:'매력 +1 · 호감↓ 위험', run(S){
+    {label:'장난으로 질투를 즐긴다', sub:'비주얼 +1 · 호감↓ 위험', run(S){
       const ch = [], id = _scOff(S), nm = _scName(id); const d = -(4 + R() * 3) - (R() < 0.4 ? 3 : 0);
       addAff(S, id, d, ch); fx(S, {charm:1, dare:0.5, stress:2}, ch);
       return {text:`“누구일 것 같아? 알아맞혀 봐.” 웃으며 말하자 ${nm}의 웃음이 어색하게 멎었다. 그는 “…알았어”라고만 하고 시선을 돌렸다. 장난이 장난으로 닿지 않았다는 걸 침묵이 말해 주었다.`, chips:ch};
@@ -383,7 +383,7 @@ const _scPop = [
       S.album.push(`${nm}의 불안한 마음을 안아 줌`);
       return {text:_scJ2ok[id] || _scJ2ok.minjun, chips:ch};
     }},
-    {label:'매번 해명하기는 힘들다고 말한다', sub:'나 +2 · 통찰에 따라 호감 변화', run(S){
+    {label:'매번 해명하기는 힘들다고 말한다', sub:'마음 +2 · 멘탈에 따라 호감 변화', run(S){
       const ch = [], id = _scOff(S), nm = _scName(id);
       if(S.st.ins + rand(-10, 10) >= 45){ addAff(S, id, 3, ch); fx(S, {self:2, ins:1}, ch);
         return {text:`“네 불안은 알겠어. 그래도 나도 모든 걸 해명하는 건 지쳐. 같이 방법을 찾자.” ${nm}은 한참 생각하다가 고개를 끄덕였다. “…나도 내 불안을 네 책임으로 만들고 싶지 않아. 같이 줄여 가 보자.” 이야기가 한 칸 앞으로 나아갔다.`, chips:ch}; }

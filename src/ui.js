@@ -350,7 +350,7 @@ function showCareer(){
 function showLove(){
   const ids = Object.keys(LOVERS), met = ids.filter(i => S.love[i]).sort((a, b) => ((S.love[a].stage === -9) - (S.love[b].stage === -9)) || S.love[b].aff - S.love[a].aff); // 호감 높은 순 (끝난 사람은 아래)
   const row = id => { const lv = LOVERS[id], v = S.love[id];
-    if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${lv.career ? '직장에서 만날지도 몰라요' : '캠퍼스 어딘가에서 만날지도 몰라요'}</small></span><span></span></div>`;
+    if(!v) return `<div class="lcard"><img class="av sil" src="art/lv_${id}.webp" alt=""><span><b>???</b><small>${esc(lv.hint || '어딘가에서 만날지도 몰라요')}</small></span><span></span></div>`;
     const callable = contactsOf(S).some(c => c.id === id);
     const tag = (v.stage === 3 ? ' 💍' : '') + (S.secret && S.secret[id] ? ' 🤫' : '') + (S.partner === id && v.stage >= 1 && v.stage < 3 ? ' ❤' : '');
     const dt = dateTargets(S).includes(id);
